@@ -58,48 +58,9 @@ pub fn build_hash() -> &'static str {
     env!("INFIGRAPH_BUILD_HASH")
 }
 
-/// Kuzu's IO-layer error for "another process holds this database's lock"
-/// (see docs.ladybugdb.com/concurrency) is lock contention, not corruption.
-/// `GraphStore::open` collapses the underlying Kuzu error into a stringified
-/// `anyhow::Error` before it reaches `Infigraph::init`, so there's no
-/// structured error variant to match on here -- only Kuzu's own error text.
-/// This was previously indistinguishable from genuine corruption, so a
-/// second `infigraph` process opening a graph while a watcher already had
-/// it open would trigger `wipe_graph`, destroying the watcher's live data.
-fn is_lock_contention_error(err: &anyhow::Error) -> bool {
-    err.to_string().contains("Could not set lock on file")
-}
-
-/// lbug's `DatabaseHeader` refusal for a data file stamped with a storage
-/// version this build cannot read ("Trying to read a database file with a
-/// different version. Database file version: N, Current build storage
-/// version: M"). `Database::new` raises it on any non-empty file (via
-/// `Checkpointer::readCheckpoint`), so it arrives through `GraphStore::open`'s
-/// "failed to open kuzu db" wrapping like every other open failure. It is
-/// neither transient nor corruption: the graph was written by an `infigraph`
-/// on a different lbug version (typically a stale binary still on the old
-/// one, or a graph left behind by a newer install) and this process simply
-/// cannot read it. Wiping it would destroy a perfectly good graph and serve
-/// an empty one back as healthy (#140).
-fn is_storage_version_mismatch_error(err: &anyhow::Error) -> bool {
-    err.to_string()
-        .contains("Trying to read a database file with a different version")
-}
-
-/// Context line for a storage-version refusal. lbug's own message (kept as
-/// the cause) already names both versions; this adds which build is
-/// speaking, that nothing was touched, and the two ways out.
-fn storage_version_mismatch_context(db_path: &Path) -> String {
-    format!(
-        "graph {} was written on a different lbug storage version than this build (v{}) \
-         can read -- not corrupted, so it was left untouched. Every process touching this \
-         project must run the same installed infigraph build (`infigraph doctor` / \
-         `infigraph ps` show mixed builds); to rebuild the graph on this build's version \
-         instead, run `infigraph index --full`.",
-        db_path.display(),
-        kuzu::get_storage_version()
-    )
-}
+// Shared refusal classification for code, document and combined stores.
+use graph::store::{is_lock_contention_error, is_storage_version_mismatch_error,
+                   storage_version_mismatch_context};
 
 /// Open the Kùzu graph, retrying briefly on lock contention (AIF3X-331 #36).
 ///
