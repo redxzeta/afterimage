@@ -1,6 +1,7 @@
 mod analysis;
 pub mod bench;
 pub mod bridges;
+pub mod byte_reader;
 pub mod check;
 pub mod claude_md;
 pub mod cluster;

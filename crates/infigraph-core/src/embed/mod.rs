@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use anyhow::{Context, Result};
 
+use crate::byte_reader::ByteReader;
 use crate::model::Symbol;
 
 struct CachedEmbeddings {
@@ -388,37 +389,26 @@ pub fn load_embeddings(path: &Path) -> Result<Vec<(String, Vec<f32>)>> {
     let data = &mmap[..];
 
     anyhow::ensure!(data.len() >= 4, "embeddings file too small");
-    let count = u32::from_le_bytes(data[0..4].try_into().unwrap()) as usize;
-    // Each entry needs at least an ID length and a dimension (two u32s).
-    // This bound is already present in Afterimage; retain the source's
-    // corruption diagnostic without importing its newer embedding format.
-    anyhow::ensure!(count <= (data.len() - 4) / 8,
-        "embeddings file claims {count} entries but its payload is only {} bytes — corrupt",
-        data.len());
+    // Keep Afterimage's headerless (id, vector) format.
+    const MIN_ENTRY_BYTES: usize = 4 + 4;
+    let mut r = ByteReader::new(data, "embeddings file");
+    let count = r.count(MIN_ENTRY_BYTES)?;
     let mut result = Vec::with_capacity(count);
-    let mut pos = 4usize;
 
     for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
-        let id_len = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        anyhow::ensure!(pos + id_len <= data.len(), "truncated embeddings file");
-        let id = std::str::from_utf8(&data[pos..pos + id_len])
-            .context("invalid utf8 in embedding id")?
-            .to_string();
-        pos += id_len;
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
-        let dim = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        let float_bytes = dim * 4;
-        anyhow::ensure!(pos + float_bytes <= data.len(), "truncated embeddings file");
-        let vec: Vec<f32> = data[pos..pos + float_bytes]
+        // Strict UTF-8: a symbol id is a lookup key.
+        let id = r.utf8_u32()?;
+        let dim = r.u32()? as usize;
+        let float_bytes = dim.checked_mul(4).ok_or_else(|| {
+            anyhow::anyhow!("embeddings file: dimension {dim} overflows — corrupt")
+        })?;
+        let vec: Vec<f32> = r
+            .bytes(float_bytes)?
             .as_chunks::<4>()
             .0
             .iter()
-            .map(|chunk| f32::from_le_bytes(*chunk))
+            .map(|c| f32::from_le_bytes(*c))
             .collect();
-        pos += float_bytes;
         result.push((id, vec));
     }
     Ok(result)
@@ -771,30 +761,27 @@ fn read_sidecar(bytes: &[u8]) -> Result<SidecarData> {
         });
     }
     // Binary format: [version:u8] [count:u32] [dim:u32] [emb_mtime_secs:u64] foreach: [id_len:u32] [id_bytes]
-    anyhow::ensure!(bytes[0] == 1, "unsupported sidecar version {}", bytes[0]);
-    anyhow::ensure!(bytes.len() >= 17, "sidecar too small for header");
-    let count = u32::from_le_bytes(bytes[1..5].try_into().unwrap()) as usize;
-    let dim = u32::from_le_bytes(bytes[5..9].try_into().unwrap()) as usize;
-    let emb_mtime_secs = u64::from_le_bytes(bytes[9..17].try_into().unwrap());
-    // Same unvalidated-count hazard as `load_embeddings_impl` above: `count`
-    // comes straight off disk, and pre-reserving it aborts the process on a
-    // corrupt sidecar before the per-id `ensure!`s can reject it. Each id
-    // costs at least its 4-byte length prefix.
+    // Binary layout, after the version byte:
+    //   [count:u32] [dim:u32] [emb_mtime_secs:u64] then count * [id_len:u32][id]
+    // Each id costs at least its own 4-byte length prefix.
+    const ID_MIN_BYTES: usize = 4;
+    let mut r = ByteReader::new(bytes, "hnsw sidecar");
+    anyhow::ensure!(r.u8()? == 1, "unsupported sidecar version {}", bytes[0]);
+    // `count` precedes `dim`/`emb_mtime_secs` on disk, but it can only be
+    // validated against the bytes that follow the whole header -- so read the
+    // trailing header fields first and check the count against what is left.
+    let raw_count = r.u32()? as usize;
+    let dim = r.u32()? as usize;
+    let emb_mtime_secs = r.u64()?;
+    let max_ids = r.remaining() / ID_MIN_BYTES;
     anyhow::ensure!(
-        count <= (bytes.len() - 17) / 4,
-        "sidecar claims {count} ids but is only {} bytes — corrupt",
-        bytes.len()
+        raw_count <= max_ids,
+        "hnsw sidecar: claims {raw_count} ids but only {} bytes remain (at most {max_ids}) — corrupt",
+        r.remaining()
     );
-    let mut ids = Vec::with_capacity(count);
-    let mut pos = 17usize;
-    for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= bytes.len(), "truncated sidecar");
-        let id_len = u32::from_le_bytes(bytes[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        anyhow::ensure!(pos + id_len <= bytes.len(), "truncated sidecar id");
-        let id = String::from_utf8_lossy(&bytes[pos..pos + id_len]).into_owned();
-        pos += id_len;
-        ids.push(id);
+    let mut ids = Vec::with_capacity(raw_count);
+    for _ in 0..raw_count {
+        ids.push(r.string_u32()?);
     }
     Ok(SidecarData {
         emb_mtime_secs,
