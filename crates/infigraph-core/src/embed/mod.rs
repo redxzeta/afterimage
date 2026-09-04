@@ -390,8 +390,11 @@ pub fn load_embeddings(path: &Path) -> Result<Vec<(String, Vec<f32>)>> {
     anyhow::ensure!(data.len() >= 4, "embeddings file too small");
     let count = u32::from_le_bytes(data[0..4].try_into().unwrap()) as usize;
     // Each entry needs at least an ID length and a dimension (two u32s).
-    // Validate the untrusted count before reserving memory from it.
-    anyhow::ensure!(count <= (data.len() - 4) / 8, "truncated embeddings file");
+    // This bound is already present in Afterimage; retain the source's
+    // corruption diagnostic without importing its newer embedding format.
+    anyhow::ensure!(count <= (data.len() - 4) / 8,
+        "embeddings file claims {count} entries but its payload is only {} bytes — corrupt",
+        data.len());
     let mut result = Vec::with_capacity(count);
     let mut pos = 4usize;
 
@@ -773,6 +776,15 @@ fn read_sidecar(bytes: &[u8]) -> Result<SidecarData> {
     let count = u32::from_le_bytes(bytes[1..5].try_into().unwrap()) as usize;
     let dim = u32::from_le_bytes(bytes[5..9].try_into().unwrap()) as usize;
     let emb_mtime_secs = u64::from_le_bytes(bytes[9..17].try_into().unwrap());
+    // Same unvalidated-count hazard as `load_embeddings_impl` above: `count`
+    // comes straight off disk, and pre-reserving it aborts the process on a
+    // corrupt sidecar before the per-id `ensure!`s can reject it. Each id
+    // costs at least its 4-byte length prefix.
+    anyhow::ensure!(
+        count <= (bytes.len() - 17) / 4,
+        "sidecar claims {count} ids but is only {} bytes — corrupt",
+        bytes.len()
+    );
     let mut ids = Vec::with_capacity(count);
     let mut pos = 17usize;
     for _ in 0..count {
@@ -903,4 +915,70 @@ fn fnv1a(data: &[u8]) -> u64 {
         hash = hash.wrapping_mul(0x100000001b3);
     }
     hash
+}
+
+#[cfg(test)]
+mod corrupt_input_tests {
+    use super::*;
+
+    /// #132-class regression: the entry count is an unvalidated `u32` read
+    /// straight off disk, so a corrupt file names an arbitrary number of
+    /// 56-byte `(String, Vec<f32>, u64)` tuples. Reserving that many up front
+    /// asked glibc for ~92GB, and Rust's allocation-failure handler aborted
+    /// the whole process -- no `Result`, nothing to catch, the entire test
+    /// binary gone. It only reproduced on Linux because macOS overcommits.
+    ///
+    /// These are the exact bytes and the exact arithmetic from the CI abort:
+    /// `b"garbage"` reads "garb" as 1_651_663_207, and 1_651_663_207 * 56 is
+    /// 92_493_139_592 -- the byte count in the failure message.
+    ///
+    /// A corrupt file must be a plain `Err`, which is what the caller
+    /// (`infigraph verify`) already reports as a FAIL.
+    #[test]
+    fn a_garbage_embeddings_file_errors_instead_of_aborting_the_process() {
+        let tmp = tempfile::tempdir().unwrap();
+        let path = tmp.path().join("embeddings.bin");
+        std::fs::write(&path, b"garbage").unwrap();
+
+        let err = load_embeddings(&path).expect_err("garbage must not parse");
+        assert!(
+            err.to_string().contains("corrupt"),
+            "a bogus entry count must be reported as corruption, got: {err}"
+        );
+    }
+
+    /// The count is only trustworthy relative to how many bytes actually
+    /// follow it, so bound it by the payload rather than by a magic constant:
+    /// a file claiming more entries than its own length could hold is corrupt
+    /// however it was produced.
+    #[test]
+    fn an_entry_count_larger_than_the_payload_could_hold_is_rejected() {
+        let tmp = tempfile::tempdir().unwrap();
+        let path = tmp.path().join("embeddings.bin");
+        // Legacy headerless payload: count = 1000, then nothing to back it up.
+        let mut buf = 1000u32.to_le_bytes().to_vec();
+        buf.extend_from_slice(&[0u8; 16]);
+        std::fs::write(&path, &buf).unwrap();
+
+        assert!(
+            load_embeddings(&path).is_err(),
+            "a count the payload cannot possibly hold must be rejected"
+        );
+    }
+
+    /// The sidecar loader carries the same unvalidated count in its own
+    /// header and had the same abort.
+    #[test]
+    fn a_sidecar_claiming_more_ids_than_it_holds_is_rejected() {
+        // [version=1][count=u32::MAX][dim][emb_mtime] and no ids at all.
+        let mut bytes = vec![1u8];
+        bytes.extend_from_slice(&u32::MAX.to_le_bytes());
+        bytes.extend_from_slice(&8u32.to_le_bytes());
+        bytes.extend_from_slice(&0u64.to_le_bytes());
+
+        assert!(
+            read_sidecar(&bytes).is_err(),
+            "a sidecar id count beyond its own length must be rejected"
+        );
+    }
 }
