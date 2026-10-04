@@ -923,6 +923,15 @@ prerequisites are recorded as skipped. Caller, callee, and impact queries show
 coverage notices, including after restarting the CLI or MCP worker. Missing,
 invalid, or obsolete receipts report unknown coverage. These receipts describe
 stage execution, not working-tree freshness or proof that every caller is known.
+Remote graph queries report unknown coverage. Re-running local indexing retries
+enrichment even when source files are unchanged; library-only no-op indexing
+preserves previous failures.
+
+TypeScript and TSX calls belong to the innermost extracted function, method, or
+test. Anonymous callbacks fall back to an enclosing callable; arbitrary function
+factory results remain variables. SCIP ownership uses callable spans and leaves
+boundary-line owners, indistinguishable inline owners, or ambiguous targets
+unresolved. Tree-sitter ownership uses full line and column spans.
 
 ```bash
 # Generate SCIP index with an existing indexer

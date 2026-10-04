@@ -19,6 +19,8 @@ fn queries_show_persistent_warnings_for_populated_and_empty_results_without_writ
     let mut prism = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
     prism.init().unwrap();
     prism.index().unwrap();
+    // AST and compiler enrichment can both contribute the same caller pair.
+    prism.backend().unwrap().raw_query("MATCH (a:Symbol), (b:Symbol) WHERE a.id = 'a.ts::status' AND b.id = 'a.ts::helper' CREATE (a)-[:CALLS]->(b)").unwrap();
     let run = index_status::load(dir.path()).unwrap().run_id;
     index_status::update_current(dir.path(), &run, prism.backend(), |r| {
         r.scip.insert(
@@ -37,6 +39,10 @@ fn queries_show_persistent_warnings_for_populated_and_empty_results_without_writ
     let callers = tool_trace_callers(&args).unwrap();
     assert!(callers.starts_with(&expected));
     assert!(callers.contains("a.ts::status"));
+    assert_eq!(callers.matches("a.ts::status").count(), 1);
+    let populated_callees =
+        tool_trace_callees(&json!({"path":dir.path(), "symbol_id":"a.ts::status"})).unwrap();
+    assert_eq!(populated_callees.matches("a.ts::helper").count(), 1);
     let impact = tool_transitive_impact(&args).unwrap();
     assert!(impact.starts_with(&expected));
     assert!(impact.contains("status"));

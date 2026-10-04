@@ -62,7 +62,9 @@ pub(crate) fn cmd_callers(root: &Path, symbol: &str) -> Result<()> {
     print!("{}", prism.coverage_notice());
 
     let backend = prism.backend().context("graph not initialized")?;
-    let callers = backend.callers_of(symbol)?;
+    let mut callers = backend.callers_of(symbol)?;
+    callers.sort();
+    callers.dedup();
     if callers.is_empty() {
         println!("No callers found in the current graph for '{}'", symbol);
         return Ok(());
@@ -82,7 +84,9 @@ pub(crate) fn cmd_callees(root: &Path, symbol: &str) -> Result<()> {
     print!("{}", prism.coverage_notice());
 
     let backend = prism.backend().context("graph not initialized")?;
-    let callees = backend.callees_of(symbol)?;
+    let mut callees = backend.callees_of(symbol)?;
+    callees.sort();
+    callees.dedup();
     if callees.is_empty() {
         println!("No callees found in the current graph for '{}'", symbol);
         return Ok(());

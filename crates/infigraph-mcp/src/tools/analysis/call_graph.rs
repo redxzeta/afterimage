@@ -178,7 +178,9 @@ fn tool_trace_callees_body(args: &Value, prism: &infigraph_core::Infigraph) -> R
         .unwrap_or(true);
 
     let backend = prism.backend().context("not initialized")?;
-    let callees = backend.callees_of_filtered(symbol_id, include_tests)?;
+    let mut callees = backend.callees_of_filtered(symbol_id, include_tests)?;
+    callees.sort();
+    callees.dedup();
     if callees.is_empty() {
         let suffix = if include_tests {
             String::new()
