@@ -914,6 +914,16 @@ max_dead = 20
 ### SCIP Integration (Compiler-grade Enrichment)
 Infigraph natively imports [SCIP](https://sourcegraph.com/blog/announcing-scip) indexes to enrich the graph with precise compiler-grade symbols, types, and cross-file relationships. SCIP indexers are **auto-downloaded** — `infigraph index` detects project languages and fetches the right indexer binaries (with portable runtimes for Node.js, JRE, .NET, Dart, PHP) on first use:
 
+Local indexing records analysis-stage outcomes in `.infigraph/index-status.json`.
+With `--no-embed`, compiler enrichment runs in the foreground: if call resolution
+or an applicable SCIP indexer fails, indexing exits with code 1 and retains the
+usable syntax graph. Normal indexing reports background SCIP as pending; its
+final outcome is saved by the child process. Missing optional project
+prerequisites are recorded as skipped. Caller, callee, and impact queries show
+coverage notices, including after restarting the CLI or MCP worker. Missing,
+invalid, or obsolete receipts report unknown coverage. These receipts describe
+stage execution, not working-tree freshness or proof that every caller is known.
+
 ```bash
 # Generate SCIP index with an existing indexer
 scip-typescript index --cwd .          # TypeScript/JavaScript

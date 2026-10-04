@@ -58,12 +58,13 @@ pub(crate) fn cmd_export(
 pub(crate) fn cmd_callers(root: &Path, symbol: &str) -> Result<()> {
     let registry = bundled_registry()?;
     let mut prism = Infigraph::open(root, registry)?;
-    prism.init()?;
+    prism.init_read_only()?;
+    print!("{}", prism.coverage_notice());
 
     let backend = prism.backend().context("graph not initialized")?;
     let callers = backend.callers_of(symbol)?;
     if callers.is_empty() {
-        println!("No callers found for '{}'", symbol);
+        println!("No callers found in the current graph for '{}'", symbol);
         return Ok(());
     }
 
@@ -77,12 +78,13 @@ pub(crate) fn cmd_callers(root: &Path, symbol: &str) -> Result<()> {
 pub(crate) fn cmd_callees(root: &Path, symbol: &str) -> Result<()> {
     let registry = bundled_registry()?;
     let mut prism = Infigraph::open(root, registry)?;
-    prism.init()?;
+    prism.init_read_only()?;
+    print!("{}", prism.coverage_notice());
 
     let backend = prism.backend().context("graph not initialized")?;
     let callees = backend.callees_of(symbol)?;
     if callees.is_empty() {
-        println!("No callees found for '{}'", symbol);
+        println!("No callees found in the current graph for '{}'", symbol);
         return Ok(());
     }
 
@@ -135,13 +137,17 @@ pub(crate) fn cmd_dead_code(root: &Path) -> Result<()> {
 pub(crate) fn cmd_impact(root: &Path, symbol: &str, depth: u32) -> Result<()> {
     let registry = bundled_registry()?;
     let mut prism = Infigraph::open(root, registry)?;
-    prism.init()?;
+    prism.init_read_only()?;
+    print!("{}", prism.coverage_notice());
 
     let backend = prism.backend().context("graph not initialized")?;
     let impacted = backend.transitive_impact(symbol, depth)?;
 
     if impacted.is_empty() {
-        println!("No symbols affected by changes to '{}'", symbol);
+        println!(
+            "No affected symbols found in the current graph for '{}'",
+            symbol
+        );
         return Ok(());
     }
 
