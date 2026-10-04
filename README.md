@@ -924,8 +924,9 @@ coverage notices, including after restarting the CLI or MCP worker. Missing,
 invalid, or obsolete receipts report unknown coverage. These receipts describe
 stage execution, not working-tree freshness or proof that every caller is known.
 Remote graph queries report unknown coverage. Re-running local indexing retries
-enrichment even when source files are unchanged; library-only no-op indexing
-preserves previous failures.
+failed or interrupted enrichment even when source files are unchanged. Successful
+stages are reused when indexed-file fingerprints match; library-only no-op
+indexing preserves previous failures.
 
 TypeScript and TSX calls belong to the innermost extracted function, method, or
 test. Anonymous callbacks fall back to an enclosing callable; arbitrary function

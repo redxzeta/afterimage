@@ -305,7 +305,13 @@ fn spawn_scip_child_process(
 ) -> Result<()> {
     use crate::scip_download;
 
-    let indexers = scip_download::indexers_for_languages(detected_languages);
+    let mut indexers = Vec::new();
+    for indexer in scip_download::indexers_for_languages(detected_languages) {
+        if should_run_indexer(root, indexer) && !scip_succeeded(root, run_id, indexer.binary_name)?
+        {
+            indexers.push(indexer);
+        }
+    }
     if indexers.is_empty() {
         return Ok(());
     }
@@ -570,6 +576,18 @@ fn local_run_id(root: &Path) -> Result<Option<String>> {
     Ok(Some(index_status::current_run(root)?.run_id))
 }
 
+fn scip_succeeded(root: &Path, run_id: Option<&str>, label: &str) -> Result<bool> {
+    let Some(run_id) = run_id else {
+        return Ok(false);
+    };
+    let report = index_status::current_run(root)?;
+    anyhow::ensure!(report.run_id == run_id, "obsolete enrichment run");
+    Ok(report
+        .scip
+        .get(label)
+        .is_some_and(|stage| stage.state == StageState::Succeeded))
+}
+
 fn indexed_languages(
     backend: &dyn infigraph_core::graph::GraphBackend,
 ) -> Result<std::collections::HashSet<String>> {
@@ -604,6 +622,9 @@ fn prepare_scip(
     run_id: Option<&str>,
 ) -> Result<()> {
     for indexer in crate::scip_download::indexers_for_languages(languages) {
+        if should_run_indexer(root, indexer) && scip_succeeded(root, run_id, indexer.binary_name)? {
+            continue;
+        }
         let stage = if should_run_indexer(root, indexer) {
             StageOutcome::new(StageState::Pending, "SCIP_PENDING")
         } else {
@@ -643,6 +664,9 @@ fn enrich_scip_with_tools(
     for indexer in crate::scip_download::indexers_for_languages(languages) {
         let label = indexer.binary_name;
         if !should_run_indexer(root, indexer) {
+            continue;
+        }
+        if scip_succeeded(root, run_id, label)? {
             continue;
         }
         if !record_scip(
@@ -970,7 +994,9 @@ fn run_scip_indexer_cmd(
     } else {
         None
     };
-    if output_path.exists() || (output_flag.is_none() && default_out.exists()) {
+    if std::fs::symlink_metadata(output_path).is_ok()
+        || (output_flag.is_none() && std::fs::symlink_metadata(&default_out).is_ok())
+    {
         return StageOutcome::new(StageState::Failed, "SCIP_OUTPUT_CONFLICT");
     }
     let status = command.status();
@@ -981,13 +1007,16 @@ fn run_scip_indexer_cmd(
         return StageOutcome::new(StageState::Failed, "SCIP_ARTIFACT_MOVE_FAILED");
     }
     match status {
-        Ok(status) if status.success() => {
-            if output_path.is_file() {
+        Ok(status) if status.success() => match std::fs::symlink_metadata(output_path) {
+            Ok(meta) if meta.is_file() && meta.len() > 0 => {
                 StageOutcome::new(StageState::Succeeded, "SCIP_ARTIFACT_CREATED")
-            } else {
+            }
+            Ok(_) => StageOutcome::new(StageState::Failed, "SCIP_ARTIFACT_INVALID"),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 StageOutcome::new(StageState::Failed, "SCIP_ARTIFACT_MISSING")
             }
-        }
+            Err(_) => StageOutcome::new(StageState::Failed, "SCIP_ARTIFACT_UNREADABLE"),
+        },
         Ok(status) => {
             eprintln!("Auto-SCIP: {label} exited with {status}");
             let mut result = StageOutcome::new(StageState::Failed, "SCIP_PROCESS_FAILED");
@@ -1625,6 +1654,29 @@ mod outcome_tests {
     }
 
     #[test]
+    fn empty_or_linked_artifacts_are_not_valid_current_attempt_outputs() {
+        let dir = tempfile::tempdir().unwrap();
+        let output = dir.path().join("attempt.scip");
+        let retained = dir.path().join("retained.scip");
+        std::fs::write(&retained, b"retained").unwrap();
+        for command in [": > \"$2\"", "ln -s retained.scip \"$2\""] {
+            let script = fake_script(dir.path(), command);
+            let result = run_scip_indexer_cmd(
+                dir.path(),
+                script.to_str().unwrap(),
+                &[],
+                "test",
+                None,
+                Some("--output"),
+                &output,
+            );
+            assert_eq!(result.reason, "SCIP_ARTIFACT_INVALID");
+            assert_eq!(std::fs::read(&retained).unwrap(), b"retained");
+            std::fs::remove_file(&output).unwrap();
+        }
+    }
+
+    #[test]
     fn subprocess_failure_missing_output_and_retained_artifacts_are_distinct() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::create_dir(dir.path().join(".infigraph")).unwrap();
@@ -1796,6 +1848,13 @@ mod pipeline_tests {
         .unwrap();
         assert!(!index_status::load(dir.path()).unwrap().has_failures());
         assert!(prism.coverage_notice().starts_with("Coverage:"));
+        assert_eq!(prism.index().unwrap().indexed_files, 0);
+        let current = local_run_id(dir.path()).unwrap().unwrap();
+        prepare_scip(dir.path(), &languages, Some(&current)).unwrap();
+        enrich_scip_with_tools(dir.path(), &languages, Some(&current), backend, |_| {
+            panic!("successful unchanged enrichment must not run again")
+        })
+        .unwrap();
         assert_eq!(backend.symbols_in_file("a.ts").unwrap().len(), 1);
         assert!(std::fs::read_dir(dir.path().join(".infigraph"))
             .unwrap()
