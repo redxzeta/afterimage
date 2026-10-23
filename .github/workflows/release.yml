@@ -13,6 +13,8 @@ env:
 jobs:
   create-release:
     name: Create Release
+    # Fork tags must not create releases or start the dependent publishing jobs.
+    if: github.repository == 'intuit/infigraph' && github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub Release
@@ -143,6 +145,8 @@ jobs:
 
   npm-publish:
     name: Publish npm packages
+    # Defense in depth: these packages belong to the upstream @intuit scope.
+    if: github.repository == 'intuit/infigraph' && github.server_url == 'https://github.com'
     needs: build
     runs-on: ubuntu-latest
     steps:

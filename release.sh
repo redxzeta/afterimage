@@ -23,6 +23,19 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# This script defaults to the upstream release destination. Refuse a fork's
+# checkout before any build, release creation, or upload can happen.
+ORIGIN_URL="$(git remote get-url origin 2>/dev/null || true)"
+case "$ORIGIN_URL" in
+  "https://${GHE_HOST}/${GHE_REPO}"|"https://${GHE_HOST}/${GHE_REPO}.git"|\
+  "git@${GHE_HOST}:${GHE_REPO}"|"git@${GHE_HOST}:${GHE_REPO}.git"|\
+  "ssh://git@${GHE_HOST}/${GHE_REPO}"|"ssh://git@${GHE_HOST}/${GHE_REPO}.git") ;;
+  *)
+    echo "error: release destination must match this checkout's origin; fork publishing is disabled." >&2
+    exit 1
+    ;;
+esac
+
 # Guard against releasing a binary whose baked-in CARGO_PKG_VERSION doesn't
 # match the release tag. Cutting a release with a stale workspace version
 # ships a binary that reports the wrong `infigraph --version` (see #49) --
