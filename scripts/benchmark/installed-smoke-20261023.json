@@ -1,0 +1,60 @@
+{
+  "binary_sha256": "bb1f6fe16f42195d22a3897e69ec8847c0134da58b32f6c71f0000c264721408",
+  "calls": {
+    "false_edges": [],
+    "labelled_negative_absent": [],
+    "labelled_precision": null,
+    "matched": [],
+    "missing": [
+      [
+        "main.ts::caller",
+        "helper.ts::helper"
+      ]
+    ],
+    "precision": null,
+    "recall": 0.0,
+    "status": "SOURCE_LABELLED_SUBSET",
+    "unadjudicated": []
+  },
+  "exact_sha_ab": {
+    "baseline": "cf82f5d7440d9be158e219df1ef256d6359ed1f6",
+    "candidate": "4ed6708c4a9fbb693435079288d7242b3f30f1ef",
+    "reason": "Distinct build-owner binaries and idle-host handoff pending at engineering delivery.",
+    "status": "NOT_RUN"
+  },
+  "installed_version": "infigraph 3.2.16",
+  "kind": "SYNTHETIC_SMOKE_ONLY",
+  "limits": [
+    "Two-file synthetic fixture only, no repo-wide quality claim.",
+    "Native build was active; timings excluded from this summary.",
+    "CLI/MCP transport completion is separate from missing source-positive relationships.",
+    "GNU time unavailable; RSS unmeasured."
+  ],
+  "mcp": {
+    "status": "OK",
+    "timing_scope": "whole stdio session including startup; not per-query"
+  },
+  "mcp_sha256": "7190af5875459b45f0e0cf64c5f4ed0223ab278f4839ac96ce28a89378b39a3d",
+  "observed_date": "2026-10-23",
+  "performance_comparison": "NOT_RUN",
+  "raw_artifact_basename": "afterimage-installed-smoke-20261023-v3.json",
+  "raw_artifact_sha256": "1bd5b1d78eb6ba8474515f3d9c17148dab4e4d3d0245511071e77d26b678418d",
+  "revision": "UNKNOWN",
+  "schema": "afterimage-benchmark-v1",
+  "scip": "NOT_RUN: external tooling absent from PATH",
+  "status": "COMPLETED",
+  "symbols": {
+    "false_edges": [],
+    "labelled_negative_absent": [],
+    "labelled_precision": 1.0,
+    "matched": [
+      "helper.ts::helper",
+      "main.ts::caller"
+    ],
+    "missing": [],
+    "precision": null,
+    "recall": 1.0,
+    "status": "SOURCE_LABELLED_SUBSET",
+    "unadjudicated": []
+  }
+}

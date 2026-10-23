@@ -1,0 +1,927 @@
+{
+  "anchors": [
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:25",
+      "line": 25,
+      "line_sha256": "626415434b953ff11a216955fad1d4dc3b84aefa6e43203aab42e9c3aae5aa94",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:38",
+      "line": 38,
+      "line_sha256": "464c5744b259701ba18cdea048e48eb5a557428ae11f3f3b0032363f4119b1e8",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:68",
+      "line": 68,
+      "line_sha256": "1092ef44a1c9cc50c08b20e4712639deb8e53dd21946866f1402136b33e4cc3e",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:83",
+      "line": 83,
+      "line_sha256": "58644d1ad5ae49105f23de7c7ef6467acba636545461f512755d64b3c05da9c4",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:106",
+      "line": 106,
+      "line_sha256": "8f3ff82d5449314750e55e940b56907fd39a384dcb45c84fb401348c89d8b7b9",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:247",
+      "line": 247,
+      "line_sha256": "90bc2b5577109d707d6fcb6bb12ef9add33d2a988d8391bb89e5654dc79eaf3d",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:248",
+      "line": 248,
+      "line_sha256": "c4338070c68d41eab72bb36e7d73fb6bf2942bd7e5b6d2bffe69d8547144d226",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:33",
+      "line": 33,
+      "line_sha256": "120c12503665dc36296cefedcfa1779ad2c3771f6cc17677a9d804eaac598014",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:34",
+      "line": 34,
+      "line_sha256": "a9015a6069450b452c3495a70128f3cc1c8bdc36f297bdf14c0f3ea6915f6068",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "4be1f972d8334ef4323835cc99016733f19d463467f5d5b7b5afd380106d0bc1",
+      "id": "packages/controllers/src/prompt.ts:15",
+      "line": 15,
+      "line_sha256": "3e7595ce0ddd9c68cd8290bf21092c05eb9ee24e0b49720f7333e80c095addfb",
+      "path": "packages/controllers/src/prompt.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:429",
+      "line": 429,
+      "line_sha256": "3f5cd767a934fbceb4e5b2b98eca2e1b1bf83b0bf9ba4ec7c075fbea9efd285e",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:435",
+      "line": 435,
+      "line_sha256": "60ccfe147407f2cef22bde1b33f658bb3d0c06e50d6b2d0e2e4c257279f1bdf8",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:406",
+      "line": 406,
+      "line_sha256": "4dfee672d92e4f8c8e314af6cf7c017ed441258f77e8a8ccddde71cbd541e008",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:411",
+      "line": 411,
+      "line_sha256": "4e0cbee9c79b03f710866a9ccdaa59adca738569ec35bfdcf2bfb7288d9d3e06",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:85",
+      "line": 85,
+      "line_sha256": "09d741ab9e787b44c39e3eb85454cbb525f8350ebe1f58cde7ba2d8955ae2599",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:60",
+      "line": 60,
+      "line_sha256": "f5ed4c2ac271bf98c24678eb966c283c50e26b95fb409f9f08f617ef8a1b83bd",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:63",
+      "line": 63,
+      "line_sha256": "e7cbc4f21fff8a77a604e6c316d0cc2a5a11888b4c18721420b529af7e3bc398",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:59",
+      "line": 59,
+      "line_sha256": "2bffca83b002539b6dedf9cae77ba013bc8216167d2c57a07406249cac1f95bf",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:100",
+      "line": 100,
+      "line_sha256": "3c8193e73acbd19f0484001094ba5193b510b159d363c74411a5cb8fbfe1e59c",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:103",
+      "line": 103,
+      "line_sha256": "441eec0e870225b091d62cc11ae843ee8461ec490135c02929fe7453c388c306",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "cecd453984861c703c834594f4f2b241b0aeaaf957d9f646816a866dad310a0d",
+      "id": "packages/controllers/test/ollama.test.ts:20",
+      "line": 20,
+      "line_sha256": "c51117bd5305cf3069c8bbb8a0048d4e90d5df427165670b215d1a350eed0058",
+      "path": "packages/controllers/test/ollama.test.ts"
+    },
+    {
+      "file_sha256": "490ff9d3c2f8432f97b14d7714cffa1d04cb870eb5073f3c6a9af9db423077d0",
+      "id": "packages/datasets/test/dataset.test.ts:30",
+      "line": 30,
+      "line_sha256": "21c04cf5ee2ff3e33d5cddd9a90cfec657d6ac44d4b3007575d974d88002404b",
+      "path": "packages/datasets/test/dataset.test.ts"
+    },
+    {
+      "file_sha256": "490ff9d3c2f8432f97b14d7714cffa1d04cb870eb5073f3c6a9af9db423077d0",
+      "id": "packages/datasets/test/dataset.test.ts:37",
+      "line": 37,
+      "line_sha256": "0750d0a83e0b8aff9ad3e42ea166d9f90cb84b26dd07589b689f16cd992f978a",
+      "path": "packages/datasets/test/dataset.test.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:26",
+      "line": 26,
+      "line_sha256": "d4fe0ff799cf5dfd8ce541cb6f80b6f2ff91b7cda2dacb55290547d64124a4d1",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:70",
+      "line": 70,
+      "line_sha256": "dbb1e67166e8bb1db35dd35a4228921a2628efb6aed4b8cf9c401fe1115a6450",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:71",
+      "line": 71,
+      "line_sha256": "7eaa8c5bdf1344e35ac9b5f8dc8582d628f60eb15d78a2cfb7b77ea97bd41f37",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:73",
+      "line": 73,
+      "line_sha256": "2367870c4984ba310e6c930915302f1715261ccac00f7c8d477ff5e727882252",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:42",
+      "line": 42,
+      "line_sha256": "43e84af7e3d78b7e5192effa6277aa1b9bdee42a96e9a770e5f9418292b0230e",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:63",
+      "line": 63,
+      "line_sha256": "b3a18b934bce690b58cf2699e2b88d55a5c855a505238cea91e6f06548945d98",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:135",
+      "line": 135,
+      "line_sha256": "26d456a471e03b8133dd0a7ef3262069776eddd514d5f18261e3f3764a5d290e",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:97",
+      "line": 97,
+      "line_sha256": "0691fd8db8db20a1ff7ac23cbaaabe7ac06a5f87ee8f3551406cbc260234302a",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "4be1f972d8334ef4323835cc99016733f19d463467f5d5b7b5afd380106d0bc1",
+      "id": "packages/controllers/src/prompt.ts:19",
+      "line": 19,
+      "line_sha256": "c80c1b74d8f13e3e4737669fa55182be85386c8c112d3ee82b262eb0097c8665",
+      "path": "packages/controllers/src/prompt.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:436",
+      "line": 436,
+      "line_sha256": "65a5eedfb3c2e4625f312f1996ff55f9429de591dea9fc1d767816e208237dd8",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:87",
+      "line": 87,
+      "line_sha256": "687f3122c03a05466bf9c01fb0e0c6b9c3d09b29e773e4e077f1bd3f444291e3",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:77",
+      "line": 77,
+      "line_sha256": "7cbfd0cd47c9db4650cc04fc5dbc0d67426b4b2c96ea3cd2bb60109e5eb66377",
+      "path": "packages/controllers/src/ollama.ts"
+    },
+    {
+      "file_sha256": "490ff9d3c2f8432f97b14d7714cffa1d04cb870eb5073f3c6a9af9db423077d0",
+      "id": "packages/datasets/test/dataset.test.ts:32",
+      "line": 32,
+      "line_sha256": "b4e4b1dc89e92112425085c4b74fe8164f5c236de303418d5c17d25b7d541be0",
+      "path": "packages/datasets/test/dataset.test.ts"
+    },
+    {
+      "file_sha256": "490ff9d3c2f8432f97b14d7714cffa1d04cb870eb5073f3c6a9af9db423077d0",
+      "id": "packages/datasets/test/dataset.test.ts:38",
+      "line": 38,
+      "line_sha256": "03f3b9e88b20d3b6c0f1879e2365e2d59157b56902a96e158d639fe7e8120c81",
+      "path": "packages/datasets/test/dataset.test.ts"
+    },
+    {
+      "file_sha256": "ccd8536580da9c204fbae8bef029e994ba8eb0fab4299c19975bc1519717c44f",
+      "id": "packages/contracts/src/match.ts:437",
+      "line": 437,
+      "line_sha256": "b7fe25aa16b6c89b4a3c4df8c11f99b9e3b357b460a8b189cd517d7185da1aa2",
+      "path": "packages/contracts/src/match.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:3",
+      "line": 3,
+      "line_sha256": "57597fec3684139c8fc74eddafd3e4d31bef9faab2dcf1eab65505bb6a5a7d18",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "3c92cd708c860893d28098e6a7f037cdf17b06b996d13cda837fd944ef1a2722",
+      "id": "packages/datasets/src/index.ts:2",
+      "line": 2,
+      "line_sha256": "ea38184e04361e7fc5e1298f59912693f342b4439db69d4975db706b76d468eb",
+      "path": "packages/datasets/src/index.ts"
+    },
+    {
+      "file_sha256": "45f55070f8a66fe45c303e8c6d912653e97f30bb680107e79fed248f2ada5995",
+      "id": "packages/datasets/package.json:13",
+      "line": 13,
+      "line_sha256": "d5abb52e164b43e77b78a0728d41d8f7a04be46758e72ba4287607631d66813c",
+      "path": "packages/datasets/package.json"
+    },
+    {
+      "file_sha256": "2eeec035bad85ce50fb2ad2e2512f8ee40116cffdd91914857e88acf1ead79b0",
+      "id": "packages/controllers/package.json:6",
+      "line": 6,
+      "line_sha256": "6cd543d6275152a5a913a59ad4803e2b10cde5b255fcfcd6ac6cb41542920247",
+      "path": "packages/controllers/package.json"
+    },
+    {
+      "file_sha256": "490ff9d3c2f8432f97b14d7714cffa1d04cb870eb5073f3c6a9af9db423077d0",
+      "id": "packages/datasets/test/dataset.test.ts:9",
+      "line": 9,
+      "line_sha256": "e1929000e72e3768f9c7219ce6688c65cb81f7b65a1a2c7a15e8badaabd63738",
+      "path": "packages/datasets/test/dataset.test.ts"
+    },
+    {
+      "file_sha256": "b9f5b540bfd95d19739182418c568ce00ea0d1bf080fa38fd8ab1a41f11bc783",
+      "id": "packages/contracts/package.json:6",
+      "line": 6,
+      "line_sha256": "93c83bec5173b9dab13c3c4085f1a7e83541a84ed678433ce79f657543b8028b",
+      "path": "packages/contracts/package.json"
+    },
+    {
+      "file_sha256": "0cd994694b6a36869cfb6ffa97e7e73cdfc6fcabeeadf9b14a923a68ccc0c640",
+      "id": "packages/controllers/src/ollama.ts:5",
+      "line": 5,
+      "line_sha256": "e0031b87c25748530b67289596a6b3d250e68f6bbb200e1dd044aef51f3cf14e",
+      "path": "packages/controllers/src/ollama.ts"
+    }
+  ],
+  "commit": "02cee19056c8ee902289892727a6acbbcd30a7d3",
+  "completeness": "Open-world, selected symbols and relationships only. Tests are source fixtures, never executed.",
+  "imports": [
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:2"
+      ],
+      "from": "packages/datasets/src/index.ts",
+      "label": "positive",
+      "note": "Workspace package @giglab/contracts resolves through its exports to match.ts; see package anchor.",
+      "to": "packages/contracts/src/match.ts"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:3"
+      ],
+      "from": "packages/datasets/src/index.ts",
+      "label": "positive",
+      "note": "Workspace subpath export maps @giglab/controllers/prompt to src/prompt.ts; see package anchor.",
+      "to": "packages/controllers/src/prompt.ts"
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:5"
+      ],
+      "from": "packages/controllers/src/ollama.ts",
+      "label": "positive",
+      "note": "Relative import within controller package.",
+      "to": "packages/controllers/src/prompt.ts"
+    }
+  ],
+  "project": "giglab",
+  "provenance": "Human source review; line anchors and full-file digests verified by bench.py. No graph-derived truth.",
+  "questions": [
+    {
+      "chains": [
+        [
+          "packages/datasets/test/dataset.test.ts::labelled",
+          "packages/datasets/src/index.ts::decisionSourceDigest"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "packages/datasets/test/dataset.test.ts:30",
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/test/dataset.test.ts:32"
+      ],
+      "expected": [
+        "packages/datasets/test/dataset.test.ts::labelled"
+      ],
+      "id": "source-digest",
+      "question": "Which verified test helper binds labels to the production source digest?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "packages/datasets/src/index.ts::decisionSourceDigest"
+    },
+    {
+      "chains": [
+        [
+          "packages/datasets/src/index.ts::prepareDataset",
+          "packages/controllers/src/prompt.ts::serializeDecision"
+        ],
+        [
+          "packages/controllers/src/ollama.ts::prepared",
+          "packages/controllers/src/prompt.ts::serializeDecision"
+        ],
+        [
+          "packages/datasets/test/dataset.test.ts::excluded",
+          "packages/datasets/src/index.ts::prepareDataset",
+          "packages/controllers/src/prompt.ts::serializeDecision"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "packages/datasets/src/index.ts:106",
+        "packages/controllers/src/prompt.ts:15",
+        "packages/datasets/src/index.ts:135",
+        "packages/controllers/src/ollama.ts:85",
+        "packages/controllers/src/ollama.ts:87",
+        "packages/datasets/test/dataset.test.ts:37",
+        "packages/datasets/test/dataset.test.ts:38"
+      ],
+      "expected": [
+        "packages/datasets/src/index.ts::prepareDataset",
+        "packages/controllers/src/ollama.ts::prepared",
+        "packages/datasets/test/dataset.test.ts::excluded"
+      ],
+      "id": "workspace-prompt",
+      "question": "Which verified dataset and controller callers depend on the shared prompt serializer across packages?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "packages/controllers/src/prompt.ts::serializeDecision"
+    },
+    {
+      "chains": [
+        [
+          "packages/datasets/src/index.ts::decisionSourceDigest",
+          "packages/contracts/src/match.ts::decodeWire"
+        ],
+        [
+          "packages/controllers/src/prompt.ts::serializeDecision",
+          "packages/contracts/src/match.ts::decodeWire"
+        ],
+        [
+          "packages/contracts/src/match.ts::canonicalCommand",
+          "packages/contracts/src/match.ts::decodeWire"
+        ],
+        [
+          "packages/controllers/src/ollama.ts::prepared",
+          "packages/controllers/src/prompt.ts::serializeDecision",
+          "packages/contracts/src/match.ts::decodeWire"
+        ],
+        [
+          "packages/datasets/test/dataset.test.ts::labelled",
+          "packages/datasets/src/index.ts::decisionSourceDigest",
+          "packages/contracts/src/match.ts::decodeWire"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/contracts/src/match.ts:429",
+        "packages/datasets/src/index.ts:71",
+        "packages/controllers/src/prompt.ts:15",
+        "packages/controllers/src/prompt.ts:19",
+        "packages/contracts/src/match.ts:435",
+        "packages/contracts/src/match.ts:436",
+        "packages/controllers/src/ollama.ts:85",
+        "packages/controllers/src/ollama.ts:87",
+        "packages/datasets/test/dataset.test.ts:30",
+        "packages/datasets/test/dataset.test.ts:32"
+      ],
+      "expected": [
+        "packages/datasets/src/index.ts::decisionSourceDigest",
+        "packages/controllers/src/prompt.ts::serializeDecision",
+        "packages/contracts/src/match.ts::canonicalCommand",
+        "packages/controllers/src/ollama.ts::prepared",
+        "packages/datasets/test/dataset.test.ts::labelled"
+      ],
+      "id": "workspace-decoder",
+      "question": "Which verified serializer/digest/test paths depend transitively on the contracts decoder?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "packages/contracts/src/match.ts::decodeWire"
+    },
+    {
+      "chains": [
+        [
+          "packages/datasets/src/index.ts::decisionSourceDigest",
+          "packages/datasets/src/index.ts::hash"
+        ],
+        [
+          "packages/datasets/src/index.ts::fingerprint",
+          "packages/datasets/src/index.ts::hash"
+        ],
+        [
+          "packages/datasets/test/dataset.test.ts::labelled",
+          "packages/datasets/src/index.ts::decisionSourceDigest",
+          "packages/datasets/src/index.ts::hash"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/src/index.ts:33",
+        "packages/datasets/src/index.ts:73",
+        "packages/datasets/src/index.ts:83",
+        "packages/datasets/src/index.ts:97",
+        "packages/datasets/test/dataset.test.ts:30",
+        "packages/datasets/test/dataset.test.ts:32"
+      ],
+      "expected": [
+        "packages/datasets/src/index.ts::decisionSourceDigest",
+        "packages/datasets/src/index.ts::fingerprint",
+        "packages/datasets/test/dataset.test.ts::labelled"
+      ],
+      "id": "hash-arrow",
+      "question": "Which verified source-digest and fingerprint paths depend on the hash arrow helper?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "packages/datasets/src/index.ts::hash"
+    },
+    {
+      "chains": [
+        [
+          "packages/controllers/src/ollama.ts::startupConfig",
+          "packages/controllers/src/ollama.ts::bounded"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "packages/controllers/src/ollama.ts:63",
+        "packages/controllers/src/ollama.ts:60",
+        "packages/controllers/src/ollama.ts:77"
+      ],
+      "expected": [
+        "packages/controllers/src/ollama.ts::startupConfig"
+      ],
+      "id": "config-validation",
+      "question": "Which verified startup owner invokes the bounded validation helper?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "packages/controllers/src/ollama.ts::bounded"
+    }
+  ],
+  "relations": [
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:25",
+        "packages/datasets/src/index.ts:26"
+      ],
+      "from": "packages/datasets/src/index.ts::canonical",
+      "label": "positive",
+      "note": "Recursive callback passed to Array.map.",
+      "to": "packages/datasets/src/index.ts::canonical"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/src/index.ts:38",
+        "packages/datasets/src/index.ts:70"
+      ],
+      "from": "packages/datasets/src/index.ts::decisionSourceDigest",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::inputBytes"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/contracts/src/match.ts:429",
+        "packages/datasets/src/index.ts:71"
+      ],
+      "from": "packages/datasets/src/index.ts::decisionSourceDigest",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/contracts/src/match.ts::decodeWire"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/src/index.ts:33",
+        "packages/datasets/src/index.ts:73"
+      ],
+      "from": "packages/datasets/src/index.ts::decisionSourceDigest",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::hash"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/src/index.ts:25",
+        "packages/datasets/src/index.ts:73"
+      ],
+      "from": "packages/datasets/src/index.ts::decisionSourceDigest",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::canonical"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:42",
+        "packages/datasets/src/index.ts:34"
+      ],
+      "from": "packages/datasets/src/index.ts::visit",
+      "label": "positive",
+      "note": "Nested visit calls bytes for strings and JSON primitives.",
+      "to": "packages/datasets/src/index.ts::bytes"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:38",
+        "packages/datasets/src/index.ts:42",
+        "packages/datasets/src/index.ts:63"
+      ],
+      "from": "packages/datasets/src/index.ts::inputBytes",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::visit"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:106",
+        "packages/controllers/src/prompt.ts:15",
+        "packages/datasets/src/index.ts:135"
+      ],
+      "from": "packages/datasets/src/index.ts::prepareDataset",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/controllers/src/prompt.ts::serializeDecision"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:83",
+        "packages/datasets/src/index.ts:33",
+        "packages/datasets/src/index.ts:97"
+      ],
+      "from": "packages/datasets/src/index.ts::fingerprint",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::hash"
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:83",
+        "packages/datasets/src/index.ts:25",
+        "packages/datasets/src/index.ts:97"
+      ],
+      "from": "packages/datasets/src/index.ts::fingerprint",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::canonical"
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/prompt.ts:15",
+        "packages/contracts/src/match.ts:429",
+        "packages/controllers/src/prompt.ts:19"
+      ],
+      "from": "packages/controllers/src/prompt.ts::serializeDecision",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/contracts/src/match.ts::decodeWire"
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:435",
+        "packages/contracts/src/match.ts:429",
+        "packages/contracts/src/match.ts:436"
+      ],
+      "from": "packages/contracts/src/match.ts::canonicalCommand",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/contracts/src/match.ts::decodeWire"
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:85",
+        "packages/controllers/src/prompt.ts:15",
+        "packages/controllers/src/ollama.ts:87"
+      ],
+      "from": "packages/controllers/src/ollama.ts::prepared",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/controllers/src/prompt.ts::serializeDecision"
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:63",
+        "packages/controllers/src/ollama.ts:60",
+        "packages/controllers/src/ollama.ts:77"
+      ],
+      "from": "packages/controllers/src/ollama.ts::startupConfig",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/controllers/src/ollama.ts::bounded"
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:63",
+        "packages/controllers/src/ollama.ts:59"
+      ],
+      "from": "packages/controllers/src/ollama.ts::startupConfig",
+      "label": "positive",
+      "note": "Several validation branches call configError; full-file digest pins the complete body.",
+      "to": "packages/controllers/src/ollama.ts::configError"
+    },
+    {
+      "evidence": [
+        "packages/datasets/test/dataset.test.ts:30",
+        "packages/datasets/src/index.ts:68",
+        "packages/datasets/test/dataset.test.ts:32"
+      ],
+      "from": "packages/datasets/test/dataset.test.ts::labelled",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::decisionSourceDigest"
+    },
+    {
+      "evidence": [
+        "packages/datasets/test/dataset.test.ts:37",
+        "packages/datasets/src/index.ts:106",
+        "packages/datasets/test/dataset.test.ts:38"
+      ],
+      "from": "packages/datasets/test/dataset.test.ts::excluded",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "packages/datasets/src/index.ts::prepareDataset"
+    },
+    {
+      "evidence": [
+        "packages/controllers/test/ollama.test.ts:20",
+        "packages/datasets/src/index.ts:25"
+      ],
+      "from": "packages/controllers/test/ollama.test.ts::json",
+      "label": "negative",
+      "note": "Complete one-line test function uses JSON.stringify, not dataset canonical.",
+      "to": "packages/datasets/src/index.ts::canonical"
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:435",
+        "packages/datasets/src/index.ts:25",
+        "packages/contracts/src/match.ts:437"
+      ],
+      "from": "packages/contracts/src/match.ts::canonicalCommand",
+      "label": "negative",
+      "note": "canonicalCommand serializes its own flat command; no dataset canonical call.",
+      "to": "packages/datasets/src/index.ts::canonical"
+    }
+  ],
+  "schema": "afterimage-source-truth-v1",
+  "symbols": [
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:25"
+      ],
+      "id": "packages/datasets/src/index.ts::canonical",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:38"
+      ],
+      "id": "packages/datasets/src/index.ts::inputBytes",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:68"
+      ],
+      "id": "packages/datasets/src/index.ts::decisionSourceDigest",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:83"
+      ],
+      "id": "packages/datasets/src/index.ts::fingerprint",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:106"
+      ],
+      "id": "packages/datasets/src/index.ts::prepareDataset",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:247"
+      ],
+      "id": "packages/datasets/src/index.ts::compare",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:248"
+      ],
+      "id": "packages/datasets/src/index.ts::decisionBindings",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:33"
+      ],
+      "id": "packages/datasets/src/index.ts::hash",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:34"
+      ],
+      "id": "packages/datasets/src/index.ts::bytes",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/prompt.ts:15"
+      ],
+      "id": "packages/controllers/src/prompt.ts::serializeDecision",
+      "tags": [
+        "package-boundary",
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:429"
+      ],
+      "id": "packages/contracts/src/match.ts::decodeWire",
+      "tags": [
+        "package-boundary"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:435"
+      ],
+      "id": "packages/contracts/src/match.ts::canonicalCommand",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:406"
+      ],
+      "id": "packages/contracts/src/match.ts::wireSchema",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/contracts/src/match.ts:411"
+      ],
+      "id": "packages/contracts/src/match.ts::json",
+      "tags": [
+        "arrow",
+        "nested",
+        "duplicate-name"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:85"
+      ],
+      "id": "packages/controllers/src/ollama.ts::prepared",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:60"
+      ],
+      "id": "packages/controllers/src/ollama.ts::bounded",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:63"
+      ],
+      "id": "packages/controllers/src/ollama.ts::startupConfig",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:59"
+      ],
+      "id": "packages/controllers/src/ollama.ts::configError",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:100"
+      ],
+      "id": "packages/controllers/src/ollama.ts::record",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/src/ollama.ts:103"
+      ],
+      "id": "packages/controllers/src/ollama.ts::reported",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "packages/controllers/test/ollama.test.ts:20"
+      ],
+      "id": "packages/controllers/test/ollama.test.ts::json",
+      "tags": [
+        "test",
+        "duplicate-name"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/test/dataset.test.ts:30"
+      ],
+      "id": "packages/datasets/test/dataset.test.ts::labelled",
+      "tags": [
+        "test",
+        "package-boundary"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/test/dataset.test.ts:37"
+      ],
+      "id": "packages/datasets/test/dataset.test.ts::excluded",
+      "tags": [
+        "test",
+        "package-boundary"
+      ]
+    },
+    {
+      "evidence": [
+        "packages/datasets/src/index.ts:42"
+      ],
+      "id": "packages/datasets/src/index.ts::visit",
+      "tags": [
+        "nested"
+      ]
+    }
+  ]
+}
