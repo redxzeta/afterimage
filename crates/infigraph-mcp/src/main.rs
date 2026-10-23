@@ -6,6 +6,8 @@ use serde_json::{json, Value};
 
 use infigraph_mcp::web;
 
+mod supervisor;
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
@@ -13,149 +15,10 @@ fn main() -> Result<()> {
         return run_worker();
     }
 
-    // Supervisor mode: spawn self as --worker, monitor for segfault, auto-reindex
-    loop {
-        let exe = std::env::current_exe()?;
-        let mut cmd = std::process::Command::new(&exe);
-        cmd.arg("--worker");
-        for arg in args.iter().skip(1).filter(|a| *a != "--worker") {
-            cmd.arg(arg);
-        }
-        cmd.stdin(std::process::Stdio::inherit())
-            .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit());
-
-        let status = cmd.status()?;
-
-        #[cfg(unix)]
-        {
-            use std::os::unix::process::ExitStatusExt;
-            if status.signal() == Some(11) {
-                // SIGSEGV — likely corrupt DB, reindex all registered projects
-                mcp_log(
-                    "CRASH",
-                    "SIGSEGV detected — triggering auto-reindex of registered projects (code + docs)",
-                );
-                eprintln!("infigraph-mcp: crash detected (SIGSEGV), auto-reindexing code+docs...");
-                auto_reindex_all();
-                // Respawn worker after reindex
-                continue;
-            }
-        }
-
-        #[cfg(windows)]
-        {
-            if let Some(code) = status.code() {
-                if code < 0 {
-                    // Negative exit code on Windows = unhandled exception (e.g. access violation)
-                    mcp_log(
-                        "CRASH",
-                        &format!(
-                            "Crash detected (exit {code}) — triggering auto-reindex of code+docs"
-                        ),
-                    );
-                    eprintln!("infigraph-mcp: crash detected, auto-reindexing code+docs...");
-                    auto_reindex_all();
-                    continue;
-                }
-            }
-        }
-
-        std::process::exit(status.code().unwrap_or(1));
-    }
-}
-
-fn auto_reindex_all() {
-    let cli = find_infigraph_cli_for_reindex();
-    let cli_path = match cli {
-        Some(p) => p,
-        None => {
-            mcp_log("ERROR", "Cannot find infigraph CLI for auto-reindex");
-            return;
-        }
-    };
-
-    let registry = match infigraph_core::multi::Registry::load() {
-        Ok(r) => r,
-        Err(e) => {
-            mcp_log(
-                "ERROR",
-                &format!("Registry load failed during reindex: {e}"),
-            );
-            return;
-        }
-    };
-
-    // Reindex individual projects
-    for entry in registry.repos.values() {
-        let path = &entry.path;
-        if !path.join(".infigraph").exists() {
-            continue;
-        }
-        reindex_path(&cli_path, path);
-    }
-
-    // Reindex group combined graphs
-    let groups_dir = std::env::var_os("HOME")
-        .map(std::path::PathBuf::from)
-        .or_else(dirs_next::home_dir)
-        .map(|h| h.join(".infigraph").join("groups"));
-    if let Some(ref gd) = groups_dir {
-        if let Ok(entries) = std::fs::read_dir(gd) {
-            for entry in entries.flatten() {
-                let group_path = entry.path();
-                if group_path.join(".infigraph").exists() {
-                    reindex_path(&cli_path, &group_path);
-                }
-            }
-        }
-    }
-}
-
-fn reindex_path(cli_path: &std::path::Path, path: &std::path::Path) {
-    let path_str = path.to_string_lossy().to_string();
-    mcp_log("INFO", &format!("Auto-reindexing: {path_str}"));
-
-    infigraph_mcp::recovery::wipe_code_and_docs(path);
-
-    let result = std::process::Command::new(cli_path)
-        .arg("index")
-        .current_dir(path)
-        .status();
-    match result {
-        Ok(s) if s.success() => mcp_log("INFO", &format!("Reindex OK: {path_str}")),
-        Ok(s) => mcp_log(
-            "ERROR",
-            &format!("Reindex failed (exit {:?}): {path_str}", s.code()),
-        ),
-        Err(e) => mcp_log("ERROR", &format!("Reindex spawn failed: {e}")),
-    }
-}
-
-fn find_infigraph_cli_for_reindex() -> Option<std::path::PathBuf> {
-    let bin_name = if cfg!(windows) {
-        "infigraph.exe"
-    } else {
-        "infigraph"
-    };
-    // Check next to current exe
-    if let Ok(exe) = std::env::current_exe() {
-        let sibling = exe.parent()?.join(bin_name);
-        if sibling.exists() {
-            return Some(sibling);
-        }
-    }
-    // Check common install locations
     let home = std::env::var_os("HOME")
         .map(std::path::PathBuf::from)
         .or_else(dirs_next::home_dir);
-    if let Some(ref h) = home {
-        let local_bin = h.join(".local").join("bin").join(bin_name);
-        if local_bin.exists() {
-            return Some(local_bin);
-        }
-    }
-    None
+    std::process::exit(supervisor::run(&args, home.as_deref(), mcp_log)?);
 }
 
 fn run_worker() -> Result<()> {
