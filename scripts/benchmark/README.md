@@ -48,6 +48,13 @@ and does not make an empty graph correct. Query failures, malformed rows, and
 inconsistent repeated answers are `UNRESOLVED`, not empty successful answers.
 Missing symbol discovery and engine-reported unresolved call counts are separate.
 
+`--fixture-scope truth-files` exports only files with truth anchors, preserving
+their relative paths and exact bytes. It is an explicit smaller fixture, without
+the rest of the repository or a dependency closure; it is never silently chosen
+after a failure. The default `repository` projection remains unchanged. Always
+retain `controls.fixture_scope` and `exported_files` with results; timing or quality
+on these smaller fixtures is not repository-wide acceptance.
+
 ## Run a pair
 
 The build owner must finish **all native builds first**, save immutable, distinct
@@ -82,6 +89,14 @@ return to A, an uncommitted rename, and deletion. Results require exactly the
 expected symbol set after each reindex. These tests cover manual reindex freshness;
 they do not claim automatic watcher correctness. The normal incremental case
 appends a comment to a real tracked TS file, reindexes, restores, and reindexes.
+
+Add `--test-context` to probe CLI `test-context --file <first anchored file>
+--limit 1` and direct-worker MCP `generate_test_context`. Nonzero exits, signals,
+missing expected output and MCP errors are failures. The direct-worker probe
+avoids supervisor recovery hiding a worker crash. Core dumps are disabled in every
+lane. Pass `--model-dir models/potion-base-8M` alongside `--no-embed` to make the
+same offline model assets available to these probes without generating embeddings
+during indexing. The normal MCP graph probe still exercises the supervisor path.
 
 Omit `--no-embed` and pass `--model-dir models/potion-base-8M` to include embeddings.
 The runner copies/hashes the same `config.json`, `tokenizer.json`, and
@@ -139,6 +154,16 @@ the handoff JSON. PR #84's `*status*.json` files are retained verbatim per index
 and at lane end, including unknown future fields. Their absence is unknown coverage.
 CLI exit zero does not mean all analysis stages succeeded.
 
+PR #84 can exit 1 after completing syntax indexing when an analysis stage fails.
+The runner preserves that failed command and may collect syntax-only evidence
+when a schema-v1 receipt explicitly records successful resolution, a nonempty
+fingerprint, and failed SCIP stages. `index_disposition=PARTIAL_SYNTAX_GRAPH` makes
+this visible. Signals, timeouts and unknown/absent receipts are never salvaged.
+Freshness assertions separate `graph_status` from `index_status`; matching graph
+rows after a partial index are `PARTIAL_GRAPH_MATCH`, not a passed index command.
+An index failure makes the pair `INCOMPLETE_INDEX_PAIR`; its failure duration is
+not a successful cold-index performance sample.
+
 `COMPLETED` describes harness execution, not graph acceptance. Read quality scores,
 stage outcomes, missing positives, unadjudicated observations, and freshness cases
 separately. Failed steps return exit 1; refused prerequisites/inputs return exit 2.
@@ -174,10 +199,10 @@ exercise orchestration, timeout cleanup, source drift checks, branch/deletion
 fixtures, scoring, and partial-status preservation. Those fake-binary tests are
 explicitly harness tests; their values are never benchmark evidence.
 
-## Engineering delivery, 2026-10-23
+## Engineering evidence, 2026-10-23
 
 All 68 symbols, 54 call labels, eight import labels and 15 impact questions passed
-source-anchor verification. The 12 Python harness tests and Python compilation
+source-anchor verification. The 14 Python harness tests and Python compilation
 passed; `cargo fmt --all -- --check` and `git diff --check` passed. Full Rust tests
 and Clippy were not run in this lane: the independent integration owner holds the
 single-job native build lane. This PR changes no Rust implementation or CI workflow.
@@ -192,10 +217,22 @@ candidate evidence. The first client trial timed out after successful MCP replie
 because the installed server retained its private UI loop; the final runner waits
 for responses and explicitly terminates that server, covered by a regression test.
 
-The exact-SHA A/B pair and real-binary branch/deletion/uncommitted cases remain
-`NOT_RUN` pending both immutable binary sets and the build owner's idle-host
-handoff. Embedding quality, full SCIP/compiler enrichment, watcher behavior,
-anonymous test-callback ownership, exhaustive blast radius, and agent task quality
-remain outside the delivered evidence. Confidence: high in the harness/source
-verification; no comparative performance conclusion. Recommendation: review this
-engineering change, then run the documented pairs when the build lane is idle.
+Following the build owner's explicit idle-host handoff, the exact binaries were
+exercised serially on all three projects. See the [measured evidence and exact
+commands](results/2026-10-23.md) and [machine-readable summary](results/2026-10-23-summary.json).
+The installed-smoke JSON above is a historical snapshot from before that handoff;
+its `NOT_RUN` field is not the status of the later exact-binary runs.
+
+Every baseline cold attempt exited 132. Candidate commands exited 1 with explicit
+partial syntax-graph receipts because offline SCIP tools were unavailable. The
+candidate's measured fixtures recovered 68/68 symbols and 48/49 labelled positive
+calls, with one labelled false call edge, 550 unadjudicated calls and eight missing
+positive imports. IceCouncil quality uses eight anchored files; its failed full
+projection attempt is retained separately. Overall precision remains `null`.
+
+Candidate CLI/MCP probes completed and 15 manual freshness graph assertions
+matched, all as `PARTIAL_GRAPH_MATCH` after failed index commands. These are not
+complete compiler enrichment, baseline quality evidence, automatic-watcher
+acceptance, semantic-search/model quality, exhaustive impact or agent task results.
+Confidence is high in these bounded observations; recommendation is to hold
+comparative-performance and full-acceptance claims. No speedup is established.

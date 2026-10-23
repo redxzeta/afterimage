@@ -9,6 +9,7 @@ import os
 from pathlib import Path, PurePosixPath
 import platform
 import re
+import resource
 import select
 import shutil
 import signal
@@ -78,13 +79,15 @@ def source_file(name):
             (p.name.startswith("tsconfig") and p.suffix == ".json"))
 
 
-def export(repo, commit, destination):
+def export(repo, commit, destination, paths=None):
     """Copy tracked code/config only; ignore symlinks, submodules, reports and local state."""
     pinned(repo, commit)
     count = 0
     with tarfile.open(fileobj=io.BytesIO(git(repo, "archive", "--format=tar", commit))) as archive:
         for member in archive:
             if not member.isfile() or not source_file(member.name):
+                continue
+            if paths is not None and member.name not in paths:
                 continue
             path = destination / str(safe_path(member.name))
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -165,8 +168,26 @@ def parse_rows(result, columns=1, symbols=True):
     return [row[0] if columns == 1 else row for row in rows]
 
 
+def syntax_available(index):
+    if index["status"] == "OK":
+        return True
+    # PR84's explicit partial-index contract permits reading the syntax graph.
+    # Never salvage a signal, timeout, or unrecognised/absent status receipt.
+    if index["status"] != "FAILED" or index["exit_code"] != 1:
+        return False
+    try:
+        report = json.loads(index["index_status_artifacts"]["index-status.json"])
+        return (report["schema_version"] == 1 and bool(report["indexed_file_fingerprint"])
+                and report["resolution"]["state"] == "succeeded"
+                and any(s["state"] == "failed" for s in report["scip"].values()))
+    except (ValueError, KeyError, TypeError):
+        return False
+
+
 class Lane:
     def __init__(self, root, binary, mcp, timeout, threads, model_dir=None):
+        # Failures such as baseline SIGILL must not leave large memory/core artifacts.
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
         self.root, self.timeout, self.steps = root, timeout, []
         for name in ["repo", "home/.infigraph", "registry", "state", "cache", "tmp", "bin"]:
             (root / name).mkdir(parents=True, exist_ok=True)
@@ -353,6 +374,33 @@ def mcp_smoke(lane):
     return {"status": "OK" if ok else "FAILED", "timing_scope": "whole stdio session including startup; not per-query"}
 
 
+def test_context_probes(lane, file, has_mcp):
+    cli = lane.run("cli_test_context", ["test-context", "--file", file, "--limit", "1"])
+    if cli["status"] == "OK" and "Test Generation Context" not in cli["stdout"]:
+        cli["status"] = "FAILED_OUTPUT"
+    outcomes = {"cli": cli["status"], "mcp": "NOT_RUN"}
+    if has_mcp:
+        messages = [
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                "protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": SCHEMA, "version": "1"}}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
+                "name": "generate_test_context", "arguments": {"path": "/bench/repo", "file": file, "limit": 1}}},
+        ]
+        result = lane.run("mcp_test_context", ["--worker", "--mcp"],
+                          "".join(json.dumps(m) + "\n" for m in messages), "infigraph-mcp", {1, 2})
+        try:
+            replies = {m["id"]: m for m in map(json.loads, result["stdout"].splitlines()) if "id" in m}
+            content = replies[2]["result"]
+            valid = not content.get("isError", False) and "Test Generation Context" in json.dumps(content)
+        except (ValueError, KeyError, TypeError):
+            valid = False
+        if result["status"] == "OK" and not valid:
+            result["status"] = "FAILED_OUTPUT"
+        outcomes["mcp"] = result["status"]
+    return outcomes
+
+
 def freshness(lane, index_args):
     """Synthetic opt-in only. No source project code is executed."""
     path = lane.root / "repo/afterimage_benchmark_fixture.ts"
@@ -369,8 +417,10 @@ def freshness(lane, index_args):
         result = lane.query(name + ":query", "MATCH (s:Symbol) WHERE s.file = 'afterimage_benchmark_fixture.ts' RETURN s.id")
         actual = parse_rows(result)
         wanted = {"afterimage_benchmark_fixture.ts::" + s for s in expected}
-        outcomes.append({"case": name, "status": "UNRESOLVED" if actual is None or indexed["status"] != "OK"
-                         else "PASS" if set(actual) == wanted else "FAIL", "observed": actual, "expected": sorted(wanted)})
+        graph_status = "UNRESOLVED" if actual is None or not syntax_available(indexed) else "PASS" if set(actual) == wanted else "FAIL"
+        status = graph_status if indexed["status"] == "OK" or graph_status == "UNRESOLVED" else "PARTIAL_GRAPH_" + ("MATCH" if graph_status == "PASS" else "MISMATCH")
+        outcomes.append({"case": name, "status": status, "graph_status": graph_status,
+                         "index_status": indexed["status"], "observed": actual, "expected": sorted(wanted)})
 
     path.write_text("export const branchA = () => 1;\n")
     for args in [["add", "-f", path.name], ["commit", "-qm", "fixture A"], ["branch", "fixture-a"]]:
@@ -420,6 +470,8 @@ def run(args):
               "controls": {"order": args.order, "serialized": True, "threads": args.threads,
                            "no_embed": args.no_embed, "timeout_s": args.timeout,
                            "network": "isolated namespace", "scip": "NOT_RUN: external tooling absent from PATH",
+                           "core_dumps": False,
+                           "fixture_scope": args.fixture_scope,
                            "cold": "empty index and HOME; OS page cache is NOT flushed",
                            "query_latency": "CLI process + graph open + traversal; no LLM",
                            "rss": "GNU time max RSS KiB if available; maximum, not concurrent sum",
@@ -431,14 +483,16 @@ def run(args):
         for label in args.order.split(","):
             binary, revision, mcp = getattr(args, label), getattr(args, label + "_revision"), getattr(args, label + "_mcp")
             lane = Lane(work / label, binary, mcp, args.timeout, args.threads, args.model_dir)
-            files = export(args.repo, args.commit, lane.root / "repo")
+            paths = {a["path"] for a in truth["anchors"]} if args.fixture_scope == "truth-files" else None
+            files = export(args.repo, args.commit, lane.root / "repo", paths)
             record = {"label": label, "revision": revision, "revision_provenance": "operator supplied; verify build manifest separately",
                       "binary_sha256": digest(lane.root / "bin/infigraph"),
                       "mcp_sha256": digest(lane.root / "bin/infigraph-mcp") if mcp else None, "exported_files": files}
             record["version"] = lane.run("version", ["--version"])["stdout"].strip()
             index_args = ["index"] + (["--no-embed"] if args.no_embed else [])
             cold = lane.run("cold_index", index_args)
-            if cold["status"] == "OK":
+            record["index_disposition"] = "COMPLETE_COMMAND" if cold["status"] == "OK" else "PARTIAL_SYNTAX_GRAPH" if syntax_available(cold) else "UNAVAILABLE"
+            if syntax_available(cold):
                 lane.run("warm_index", index_args)
                 record["quality"] = evaluate(lane, truth, args.repeats)
                 # Change an actual tracked TS file, without executing it or creating a new file.
@@ -449,6 +503,7 @@ def run(args):
                 change.write_bytes(original)
                 lane.run("restore_index", index_args)
                 record["mcp"] = mcp_smoke(lane) if mcp else {"status": "NOT_RUN", "reason": "no explicit MCP binary"}
+                record["test_context"] = test_context_probes(lane, truth["anchors"][0]["path"], bool(mcp)) if args.test_context else {"status": "NOT_RUN"}
                 record["freshness"] = freshness(lane, index_args) if args.freshness else {"status": "NOT_RUN"}
             else:
                 record["quality"] = {"status": "UNRESOLVED", "reason": "cold index failed"}
@@ -464,6 +519,8 @@ def run(args):
     comparable = len({r["binary_sha256"] for r in report["lanes"]}) == 2
     report["distinct_binaries"] = comparable
     report["comparison"] = "DESCRIPTIVE_SINGLE_PAIR" if comparable else "SMOKE_ONLY_IDENTICAL_BINARIES"
+    if comparable and any(next(s for s in r["steps"] if s["name"] == "cold_index")["status"] != "OK" for r in report["lanes"]):
+        report["comparison"] = "INCOMPLETE_INDEX_PAIR"
     if any(s["host_builds_at_boundaries"] for r in report["lanes"] for s in r["steps"]):
         report["comparison"] = "INVALID_BUILD_CONTENTION"
     failures = sum(s["status"] != "OK" for r in report["lanes"] for s in r["steps"])
@@ -555,6 +612,9 @@ def main():
     bench.add_argument("--no-embed", action="store_true")
     bench.add_argument("--model-dir", type=Path, help="offline potion-base-8M assets, identical in both lanes")
     bench.add_argument("--freshness", action="store_true")
+    bench.add_argument("--test-context", action="store_true", help="probe CLI and direct-worker MCP test-context; preserve crashes as failures")
+    bench.add_argument("--fixture-scope", choices=["repository", "truth-files"], default="repository",
+                       help="repository source projection or only exact files with source-truth anchors; never an implicit fallback")
     bench.add_argument("--timeout", type=float, default=120)
     bench.add_argument("--threads", type=int, default=1)
     bench.add_argument("--repeats", type=int, default=3)

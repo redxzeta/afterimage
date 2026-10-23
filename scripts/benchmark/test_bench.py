@@ -43,6 +43,19 @@ class ScoringTests(unittest.TestCase):
             self.assertIsNone(bench.parse_rows({"status": status, "stdout": text}))
         self.assertEqual(bench.parse_rows({"status": "OK", "stdout": "a.ts | b.ts"}, 2, False), [("a.ts", "b.ts")])
 
+    def test_partial_syntax_receipt_never_hides_failure_or_salvages_a_crash(self):
+        result = {"status": "FAILED", "exit_code": 1, "index_status_artifacts": {"index-status.json": json.dumps({
+            "schema_version": 1, "indexed_file_fingerprint": "fixture", "resolution": {"state": "succeeded"},
+            "scip": {"typescript": {"state": "failed", "reason": "SCIP_TOOL_UNAVAILABLE"}}})}}
+        self.assertTrue(bench.syntax_available(result))
+        self.assertEqual(result["status"], "FAILED")
+        for code in [-4, 132, 2]:
+            result["exit_code"] = code
+            self.assertFalse(bench.syntax_available(result))
+        result["exit_code"] = 1
+        result["index_status_artifacts"] = {}
+        self.assertFalse(bench.syntax_available(result))
+
     def test_export_filter_and_paths(self):
         for name in [".infigraph/state.ts", "node_modules/x.ts", "session.json", "data.db", ".env", "docs/report.md"]:
             self.assertFalse(bench.source_file(name))
@@ -83,6 +96,10 @@ elif sys.argv[1]=='index':
 elif sys.argv[1]=='query':
  print('(no results)' if 'CALLS' in sys.argv[2] or 'IMPORTS' in sys.argv[2] else 'a.ts::a')
 elif sys.argv[1]=='sleep': time.sleep(60)
+elif sys.argv[1]=='crash':
+ import resource,signal
+ assert resource.getrlimit(resource.RLIMIT_CORE)==(0,0)
+ os.kill(os.getpid(),signal.SIGILL)
 '''
 
 
@@ -122,6 +139,7 @@ class IsolationTests(unittest.TestCase):
         self.assertEqual((destination / "a.ts").read_text(), "export const a = () => 1;\n")
         self.assertFalse((destination / "link.ts").exists())
         self.assertFalse((destination / "secret.env").exists())
+        self.assertEqual(bench.export(self.repo, self.commit, self.root / "empty", paths=set()), 0)
         self.assertEqual(bench.verify_truth(self.repo, self.truth)["symbols"], 1)
         self.truth["anchors"][0]["line"] = 0
         with self.assertRaises(ValueError):
@@ -145,6 +163,13 @@ class IsolationTests(unittest.TestCase):
         result = lane.run("mcp_timeout", ["sleep"], "{}\n", stop_after_ids={1})
         self.assertEqual(result["status"], "TIMEOUT")
 
+    def test_signal_crash_is_failure_and_core_dumps_disabled(self):
+        lane = bench.Lane(self.root / "lane", self.binary, None, 3, 1)
+        result = lane.run("crash", ["crash"])
+        self.assertEqual(result["status"], "FAILED")
+        self.assertNotEqual(result["exit_code"], 0)
+        self.assertFalse(list(lane.root.rglob("core*")))
+
     def test_freshness_branches_uncommitted_and_delete_are_disposable(self):
         dynamic = FAKE.replace("elif sys.argv[1]=='query':", """elif sys.argv[1]=='query' and "WHERE s.file" in sys.argv[2]:
  import re
@@ -152,11 +177,21 @@ class IsolationTests(unittest.TestCase):
  names=re.findall(r'export const (\\w+)',p.read_text()) if p.exists() else []
  print('\\n'.join('afterimage_benchmark_fixture.ts::'+n for n in names) or '(no results)')
 elif sys.argv[1]=='query':""")
-        self.binary.write_text(dynamic)
-        lane = bench.Lane(self.root / "lane", self.binary, None, 3, 1)
-        cases = bench.freshness(lane, ["index", "--no-embed"])
-        self.assertEqual([c["status"] for c in cases], ["PASS"] * 5)
-        self.assertEqual([c["case"] for c in cases], ["branch_a", "branch_b", "branch_return", "uncommitted", "deleted"])
+        for partial in [False, True]:
+            script = dynamic
+            if partial:
+                receipt = json.dumps({"schema_version": 1, "indexed_file_fingerprint": "fixture",
+                                      "resolution": {"state": "succeeded"},
+                                      "scip": {"typescript": {"state": "failed"}}})
+                script = script.replace("print('synthetic indexing test')",
+                                        f"Path('.infigraph/index-status.json').write_text({receipt!r})\n print('partial fixture')\n sys.exit(1)")
+            self.binary.write_text(script)
+            lane = bench.Lane(self.root / str(partial), self.binary, None, 3, 1)
+            cases = bench.freshness(lane, ["index", "--no-embed"])
+            self.assertEqual([c["status"] for c in cases], ["PARTIAL_GRAPH_MATCH" if partial else "PASS"] * 5)
+            self.assertEqual([c["index_status"] for c in cases], ["FAILED" if partial else "OK"] * 5)
+            self.assertEqual([c["graph_status"] for c in cases], ["PASS"] * 5)
+            self.assertEqual([c["case"] for c in cases], ["branch_a", "branch_b", "branch_return", "uncommitted", "deleted"])
         self.assertFalse((self.repo / "afterimage_benchmark_fixture.ts").exists())
 
     def test_end_to_end_artifacts_and_mcp_preserve_partial_stage(self):
