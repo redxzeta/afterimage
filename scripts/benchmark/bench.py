@@ -392,6 +392,8 @@ def freshness(lane, index_args):
 def run(args):
     if active_builds():
         raise ValueError("native build active; defer A/B until the build owner reports an idle host")
+    if args.output.suffix != ".json":
+        raise ValueError("--output must end with .json to keep metrics and summary separate")
     truth = json.loads(args.truth.read_text())
     if truth["commit"] != args.commit:
         raise ValueError("truth and fixture commit differ")
@@ -489,6 +491,10 @@ def run(args):
 
 def smoke(args):
     """Unattested installed binaries: functionality only, never an A/B performance claim."""
+    if args.output.suffix != ".json":
+        raise ValueError("--output must end with .json")
+    if not shutil.which("bwrap") or not shutil.which("git") or not shutil.which("which"):
+        raise ValueError("Linux bubblewrap, git, and which are required; no unsafe fallback")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     if args.output.exists():
         raise ValueError("output already exists; use a new run name")
