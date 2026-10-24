@@ -145,7 +145,15 @@ impl GraphStore {
         let mut inherits_pairs: Vec<(&str, &str)> = Vec::new();
         let mut tested_by_pairs: Vec<(&str, &str)> = Vec::new();
         let mut imports_pairs: Vec<(&str, &str)> = Vec::new();
-        let module_files = super::imports::module_files(conn)?;
+        let module_files = if extraction
+            .relations
+            .iter()
+            .any(|rel| matches!(rel.kind, RelationKind::Imports | RelationKind::ImportedBy))
+        {
+            super::imports::module_files(conn)?
+        } else {
+            Vec::new()
+        };
         let modules = super::imports::ModuleImports::new(module_files.iter().map(String::as_str));
         let mut reads_pairs: Vec<(&str, &str)> = Vec::new();
         let mut writes_pairs: Vec<(&str, &str)> = Vec::new();

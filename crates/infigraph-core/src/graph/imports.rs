@@ -19,6 +19,9 @@ impl<'a> ModuleImports<'a> {
     }
 
     pub(crate) fn resolve(&self, source: &str, target: &str) -> Option<&'a str> {
+        if !self.files.contains(source) {
+            return None;
+        }
         // Already-resolved module IDs (e.g. supplied by an extractor).
         if let Some(file) = self.files.get(target) {
             return (*file != source).then_some(*file);
@@ -41,8 +44,11 @@ impl<'a> ModuleImports<'a> {
             let path = normalize(&format!("{parent}/{name}"))?;
             self.resolve_relative(&path)
         } else {
-            let candidates = self.by_stem.get(&import_stem(name))?;
-            resolve_import_candidate(name, candidates)
+            // Preserve the previous final-segment lookup for non-JS languages
+            // (notably Rust scoped identifiers captured with `::`).
+            let legacy_name = unquote(raw.rsplit("::").next().unwrap_or(raw));
+            let candidates = self.by_stem.get(&import_stem(legacy_name))?;
+            resolve_import_candidate(legacy_name, candidates)
         }?;
         (resolved != source).then_some(resolved)
     }
@@ -170,6 +176,15 @@ mod tests {
             Some("app/service/constants.py")
         );
         assert_eq!(modules.resolve("main.py", "main.py::constants"), None);
+    }
+
+    #[test]
+    fn non_javascript_scoped_identifiers_keep_existing_lookup() {
+        let modules = ModuleImports::new(["main.rs", "src/helpers.rs"]);
+        assert_eq!(
+            modules.resolve("main.rs", "main.rs::crate::helpers"),
+            Some("src/helpers.rs")
+        );
     }
 
     #[test]
