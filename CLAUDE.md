@@ -60,7 +60,7 @@ For deeper detail on any of these, see the matching skill/rule (`code-indexing-p
 
 ### CI / toolchain gotchas
 
-- CI's `dtolnay/rust-toolchain@stable` floats to whatever "stable" resolves to at run time — a newer clippy than your local toolchain can fail on lints your local run never sees. If local and CI disagree on fmt/clippy, suspect this before assuming a bug — confirm by installing CI's exact version locally (`rustup show active-toolchain` with a temporary `rust-toolchain.toml` override) rather than guessing.
+- CI and `scripts/verify.py` require Rust 1.98.1. The inherited floating `stable` workflow encountered new Clippy lints before tests ran. Review toolchain upgrades explicitly and update the workflow, verification version check and contributor docs together; compare exact local/CI compiler versions when diagnosing lint differences.
 - If a PR gets merged into `main` directly *and* separately into a feature branch, GitHub's synthetic PR-merge-commit computation can silently duplicate content (e.g. two copies of the same test module) even when neither branch alone shows a problem — this only appears in the merge commit itself. Rebase the feature branch onto current `main` to fix it for real, rather than trying to resolve it in a synthetic merge.
 - Local test runs under high parallelism (`--test-threads` default) can produce resource-contention failures (e.g. mmap/buffer-manager exhaustion from multiple embedded-DB test processes) that aren't real bugs — always confirm a suspected regression with `--test-threads=1` before treating it as one.
 
