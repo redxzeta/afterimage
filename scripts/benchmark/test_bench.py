@@ -16,6 +16,16 @@ spec.loader.exec_module(bench)
 
 
 class ScoringTests(unittest.TestCase):
+    def test_import_diagnostics_distinguish_missing_modules_from_edges(self):
+        class Queries:
+            def query(self, name, cypher):
+                return {'status': 'OK', 'stdout': {'import_modules': 'a.ts | a.ts\nb.ts | b.ts',
+                    'imports_by_id': '(no results)', 'import_edge_count': '0'}[name]}
+        result = bench.import_diagnostics(Queries(), {'imports': [{'from': 'a.ts', 'to': 'b.ts', 'label': 'positive'}]})
+        self.assertEqual(result['missing_modules'], [])
+        self.assertEqual(result['by_id']['missing'], [('a.ts', 'b.ts')])
+        self.assertEqual(result['total_edges'], 0)
+
     def test_open_world_precision_is_not_invented(self):
         value = bench.score(["a", "b", "unlabelled"], ["a", "missing"], ["b", "absent"])
         self.assertIsNone(value["precision"])
@@ -75,6 +85,7 @@ import json,os,socket,sys,time
 from pathlib import Path
 assert os.environ['HOME']=='/bench/home'
 assert os.environ['PATH']=='/bench/bin'
+assert len(os.sched_getaffinity(0))==1
 assert 'INFIGRAPH_BACKEND' not in os.environ
 assert not Path('/home').exists()
 if sys.argv[0].endswith('-mcp'):
@@ -158,6 +169,37 @@ class IsolationTests(unittest.TestCase):
         self.assertEqual(result["status"], "TIMEOUT")
         self.assertLess(result["wall_ms"], 5000)
 
+    def test_cpu_and_ram_budgets_kill_descendants(self):
+        for kind, child in [('CPU', 'while True: pass'), ('RAM', 'import time; x=bytearray(64*1024*1024); time.sleep(30)')]:
+            self.binary.write_text('#!/usr/bin/python3\nimport subprocess\nsubprocess.run(["/usr/bin/python3","-c",' + repr(child) + '])\n')
+            lane = bench.Lane(self.root / kind, self.binary, None, 5, 1,
+                              cpu_seconds=0.15 if kind == 'CPU' else 5, memory_mib=32 if kind == 'RAM' else 256)
+            result = lane.run('budget', [])
+            self.assertEqual(result['status'], 'BUDGET_EXCEEDED')
+            self.assertEqual(result['budget_exceeded'], kind)
+            self.assertLess(result['wall_ms'], 5000)
+
+    def test_unavailable_namespace_has_no_unsandboxed_fallback(self):
+        lane = bench.Lane(self.root / 'refused', self.binary, None, 3, 1)
+        with patch.object(lane, 'sandbox', return_value=['/usr/bin/false']):
+            result = lane.run('refused', ['--version'])
+        self.assertEqual(result['status'], 'FAILED')
+        self.assertEqual(result['stdout'], '')
+
+    def test_fixed_mcp_questions_score_source_subset_and_tool_errors(self):
+        question = {'id': 'one', 'depth': 1, 'target': 'a.ts::a', 'expected': ['a.ts::a'], 'evidence': ['a']}
+        lane = bench.Lane(self.root / 'questions', self.binary, self.binary, 3, 1)
+        result = bench.tool_questions(lane, {'questions': [question] * 5})
+        self.assertEqual(result['status'], 'OK')
+        self.assertEqual(result['tool_calls'], 5)
+        self.assertTrue(all(q['score']['recall'] == 1 for q in result['questions']))
+        self.binary.write_text(FAKE.replace("result={'content'", "result={'isError':True,'content'"))
+        lane = bench.Lane(self.root / 'errors', self.binary, self.binary, 3, 1)
+        result = bench.tool_questions(lane, {'questions': [question] * 5})
+        self.assertEqual(result['status'], 'FAILED')
+        self.assertTrue(all(q['score']['recall'] is None for q in result['questions']))
+        self.assertEqual(lane.steps[-1]['status'], 'FAILED_OUTPUT')
+
     def test_mcp_timeout_with_closed_stdin_preserves_output(self):
         lane = bench.Lane(self.root / "lane", self.binary, None, 0.15, 1)
         result = lane.run("mcp_timeout", ["sleep"], "{}\n", stop_after_ids={1})
@@ -170,12 +212,25 @@ class IsolationTests(unittest.TestCase):
         self.assertNotEqual(result["exit_code"], 0)
         self.assertFalse(list(lane.root.rglob("core*")))
 
+    def test_mcp_crash_during_input_is_a_failed_step(self):
+        lane = bench.Lane(self.root / 'early-crash', self.binary, None, 3, 1)
+        processes, spawn = [], subprocess.Popen
+        def capture(*args, **kwargs):
+            process = spawn(*args, **kwargs)
+            processes.append(process)
+            return process
+        with patch.object(bench.subprocess, 'Popen', side_effect=capture):
+            result = lane.run('early_crash', ['crash'], 'x' * 100_000, stop_after_ids={1})
+        self.assertEqual(result['status'], 'FAILED')
+        self.assertFalse(result['stopped_after_responses'])
+        self.assertTrue(processes[0].stdin.closed)
+
     def test_freshness_branches_uncommitted_and_delete_are_disposable(self):
         dynamic = FAKE.replace("elif sys.argv[1]=='query':", """elif sys.argv[1]=='query' and "WHERE s.file" in sys.argv[2]:
  import re
- p=Path('afterimage_benchmark_fixture.ts')
+ p=next((p for p in [Path('afterimage_benchmark_fixture.ts'),Path('afterimage_benchmark_renamed.ts')] if p.exists()),Path('afterimage_benchmark_fixture.ts'))
  names=re.findall(r'export const (\\w+)',p.read_text()) if p.exists() else []
- print('\\n'.join('afterimage_benchmark_fixture.ts::'+n for n in names) or '(no results)')
+ print('\\n'.join(p.name+'::'+n for n in names) or '(no results)')
 elif sys.argv[1]=='query':""")
         for partial in [False, True]:
             script = dynamic
@@ -188,10 +243,15 @@ elif sys.argv[1]=='query':""")
             self.binary.write_text(script)
             lane = bench.Lane(self.root / str(partial), self.binary, None, 3, 1)
             cases = bench.freshness(lane, ["index", "--no-embed"])
-            self.assertEqual([c["status"] for c in cases], ["PARTIAL_GRAPH_MATCH" if partial else "PASS"] * 5)
-            self.assertEqual([c["index_status"] for c in cases], ["FAILED" if partial else "OK"] * 5)
-            self.assertEqual([c["graph_status"] for c in cases], ["PASS"] * 5)
-            self.assertEqual([c["case"] for c in cases], ["branch_a", "branch_b", "branch_return", "uncommitted", "deleted"])
+            self.assertEqual([c["status"] for c in cases], ["PARTIAL_GRAPH_MATCH" if partial else "PASS"] * 6)
+            self.assertEqual([c["index_status"] for c in cases], ["FAILED" if partial else "OK"] * 6)
+            self.assertEqual([c["graph_status"] for c in cases], ["PASS"] * 6)
+            self.assertEqual([c["case"] for c in cases], ["branch_a", "branch_b", "branch_return", "uncommitted", "file_renamed", "deleted"])
+            self.assertEqual(cases[0]['after_reindex']['git_head'], cases[2]['after_reindex']['git_head'])
+            self.assertNotEqual(cases[0]['after_reindex']['git_head'], cases[1]['after_reindex']['git_head'])
+            self.assertEqual(cases[0]['after_reindex']['source_sha256'], cases[2]['after_reindex']['source_sha256'])
+            self.assertEqual(cases[3]['after_reindex']['source_sha256'], cases[4]['after_reindex']['source_sha256'])
+            self.assertIsNone(cases[5]['before_reindex']['source_sha256'])
         self.assertFalse((self.repo / "afterimage_benchmark_fixture.ts").exists())
 
     def test_end_to_end_artifacts_and_mcp_preserve_partial_stage(self):

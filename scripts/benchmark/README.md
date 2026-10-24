@@ -2,7 +2,7 @@
 
 `bench.py` is a Python 3.11+ standard-library runner. It never builds Infigraph or
 executes a fixture project's code, tests, install scripts, hooks, or applications.
-Linux, Bubblewrap (`bwrap` with unprivileged namespaces), `git`, and `which` are
+Linux `/proc`, Bubblewrap (`bwrap` with unprivileged namespaces), `git`, and `which` are
 required. GNU `time` is optional. Missing prerequisites have no unsafe fallback.
 
 ## Source truth
@@ -85,8 +85,11 @@ python3 scripts/benchmark/bench.py run \
 Run Nightwire and GigLab sequentially with their corresponding repo, truth, commit,
 and unique output names from the table. Add `--freshness` to exercise the opt-in
 synthetic fixture in each disposable copy: commit A, branch B with a renamed arrow,
-return to A, an uncommitted rename, and deletion. Results require exactly the
-expected symbol set after each reindex. These tests cover manual reindex freshness;
+return to A, an uncommitted symbol edit, a file rename, and deletion. Results
+require exactly the expected symbol set after each reindex. Each case retains the
+source fixture digest, synthetic Git HEAD and available index receipt fingerprint
+and run ID before and after reindex. Missing receipts are unknown
+metadata coverage. These tests cover manual reindex freshness;
 they do not claim automatic watcher correctness. The normal incremental case
 appends a comment to a real tracked TS file, reindexes, restores, and reindexes.
 
@@ -137,7 +140,15 @@ Metrics distinguish cold (empty index + HOME), warm (same index), changed-file
 incremental, and restored indexing. `indexed_files` records the CLI count if its
 known text format matches, otherwise `null`; warm is not assumed to be a no-op.
 Cold does not mean a cold OS page cache. Each impact query is repeated serially;
-its median includes CLI startup, graph open, and traversal. GNU-time max RSS is
+its median includes CLI startup, graph open, and traversal. Default per-command
+limits are 120 CPU seconds and 4096 MiB summed descendant RSS, adjustable with `--cpu-seconds` and `--memory-mib`; `--timeout` caps wall time.
+`--threads` also constrains inherited CPU affinity for the entire sandbox,
+including native graph workers; Rayon/OpenMP environment hints alone cannot
+enforce this. The Linux `/proc` monitor samples every 50 ms and kills the private sandbox on a
+breach (`BUDGET_EXCEEDED`), including MCP commands. These are sampled limits,
+not a cgroup allocation cap: short-lived children and between-sample peaks can
+be missed, and shared pages can be counted more than once. Sampled CPU and peak
+tree RSS are separate from optional GNU-time max RSS. GNU-time max RSS is
 reported in KiB when available, otherwise `null`; it is not summed concurrent RSS.
 MCP uses stdio initialize, tools/list and query_graph. Session wall time includes
 startup/handshake/list/query, not per-request latency. The client kills its private
@@ -236,3 +247,29 @@ complete compiler enrichment, baseline quality evidence, automatic-watcher
 acceptance, semantic-search/model quality, exhaustive impact or agent task results.
 Confidence is high in these bounded observations; recommendation is to hold
 comparative-performance and full-acceptance claims. No speedup is established.
+
+## B/C/E follow-on validation
+
+See [matched no-default-feature evidence](results/2026-10-23-bce.md) and its
+[summary](results/2026-10-23-bce-summary.json). It supplements the historical
+default-feature crash runs above; source revisions and build features differ.
+The follow-on has 19 focused harness tests. Its three repository projections
+recover 46/49 candidate positive calls versus baseline 39/49, with 0/8 imports
+in both lanes. Candidate indexing still exits 1 for unavailable SCIP tooling;
+all pairs remain incomplete. The separately repeated eight-file IceCouncil
+diagnostic reproduces the historical 11/12 candidate calls and labelled false
+edge. Neither that subset nor the unadjudicated counts establish full precision.
+
+`run --tool-questions` adds a deterministic, bounded MCP retrieval protocol:
+initialize, list tools, then one `query_graph(detail=true)` for each of the first
+five manifest questions in their declared order, with no retries. Scores use
+the same source-labelled positives as CLI impact queries. Response UTF-8 bytes
+and whole-session time are observed; they are not model tokens, per-tool latency,
+agent reasoning quality or a controlled agent A/B. `agent_differential` remains
+`NOT_RUN`. Nonzero command exits and malformed/error tool replies remain failures.
+
+Cold import diagnostics independently query Module IDs/files, total IMPORTS
+count and labelled sources by ID, before warm indexing. The normal file-based
+score remains unchanged. The [synthetic import fixture](fixtures/imports/README.md)
+separates quote/extension, re-export and workspace resolution cases without
+executing target code. No source truth labels are weakened to match the graph.
