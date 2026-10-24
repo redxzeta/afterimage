@@ -9,10 +9,87 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+import diagnose_cli_compiler as compiler_control
 
 spec = importlib.util.spec_from_file_location("diagnose_cli", Path(__file__).with_name("diagnose_cli.py"))
 diagnose = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(diagnose)
+
+
+class RealCliControlTests(unittest.TestCase):
+    def test_compile_preserves_primary_integration_context_without_running_other_suites(self):
+        integration = ["cargo", "test", "--locked", "--workspace", "--test", "cli_parity",
+                       "--test", "typescript_imports", "--test", "watch_new_directory",
+                       "--", "--test-threads=1"]
+        self.assertEqual(compiler_control.compile_command([["cargo", "fmt"], integration]),
+                         integration[:-2] + ["--offline", "--no-run"])
+        with self.assertRaisesRegex(ValueError, "context unavailable"):
+            compiler_control.compile_command([["cargo", "test", "--workspace"]])
+
+    def test_original_executables_and_runtime_env_are_preserved_and_input_drift_is_incomplete(self):
+        for drift, reproduces in [(False, True), (True, True), (False, False)]:
+            with self.subTest(drift=drift, reproduces=reproduces), tempfile.TemporaryDirectory() as tmp:
+                target = Path(tmp)
+                cli = target / "debug/infigraph"
+                test = target / "debug/deps/cli_parity-fixture"
+                test.parent.mkdir(parents=True)
+                cli.write_bytes(b"original CLI")
+                test.write_bytes(b"original test")
+                cli.chmod(0o700)
+                test.chmod(0o700)
+                library = target / "native"
+                library.mkdir()
+                for name in ["liblbug.a", "lbug.h", "lbug.hpp"]:
+                    (library / name).write_text("fixed native input")
+                build = ["cargo", "test", "--workspace", "--test", "cli_parity", "--offline", "--no-run"]
+                def command(argv, timeout, **kwargs):
+                    if "--version" in argv:
+                        return subprocess.CompletedProcess(argv, 0, "fixture compiler", "")
+                    if argv == build:
+                        self.assertEqual(timeout, 180)
+                        self.assertEqual(kwargs["env"], dict(compiler_control.os.environ, CXX="/fixture/g++-13"))
+                        saved = next((target / "ci-native-control").iterdir())
+                        self.assertEqual((saved / "infigraph").read_bytes(), b"original CLI")
+                        self.assertEqual((saved / "cli_parity").read_bytes(), b"original test")
+                        cli.write_bytes(b"rebuilt CLI")
+                        return subprocess.CompletedProcess(argv, 0, "fixture build", "")
+                    self.assertEqual(timeout, 60)
+                    self.assertEqual(argv[-1], "--test-threads=1")
+                    self.assertNotIn("env", kwargs)  # No CXX override in runtime environment.
+                    self.assertEqual(Path(argv[0]).read_bytes(), b"original test")
+                    if cli.read_bytes() == b"original CLI":
+                        return subprocess.CompletedProcess(argv, 101 if reproduces else 0,
+                            "index failed:\nunix_signal: Some(11)" if reproduces else "fixture pass", "")
+                    self.assertEqual(cli.read_bytes(), b"rebuilt CLI")
+                    return subprocess.CompletedProcess(argv, 0, "fixture test result: 4 passed", "")
+                receipt = io.StringIO()
+                with patch.object(compiler_control.shutil, "which", return_value="/fixture/g++-13"), \
+                        patch.object(compiler_control.shutil, "disk_usage", return_value=Mock(free=3 * 1024**3)), \
+                        patch.object(compiler_control, "lbug_builds", return_value=[
+                            (target / "output", {"LBUG_PRECOMPILED_LIBRARY_DIR": str(library),
+                                                 "LBUG_PRECOMPILED_SOURCE": "release:fixture/latest"})]), \
+                        patch.object(compiler_control, "feature_signature", side_effect=[
+                            ["same"], ["changed" if drift else "same"]]), \
+                        patch.object(compiler_control, "stdlib_identity", return_value="same-runtime-sha"), \
+                        patch.object(compiler_control, "integration_compile_command", return_value=build), \
+                        patch.object(compiler_control, "inspect"), \
+                        patch.object(compiler_control, "bounded_command", side_effect=command), \
+                        contextlib.redirect_stdout(receipt):
+                    self.assertEqual(compiler_control.run(target), 1 if not reproduces else 2 if drift else 0)
+                if not reproduces:
+                    self.assertIn("NOT_REPRODUCED", receipt.getvalue())
+                    self.assertEqual(cli.read_bytes(), b"original CLI")
+                if drift:
+                    self.assertIn("INCOMPLETE", receipt.getvalue())
+
+    def test_missing_installed_compiler_does_not_mutate_or_build(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                patch.object(compiler_control.shutil, "which", return_value=None), \
+                patch.object(compiler_control, "bounded_command") as command:
+            with self.assertRaisesRegex(ValueError, "installed GCC13"):
+                compiler_control.run(Path(tmp))
+            command.assert_not_called()
+            self.assertFalse((Path(tmp) / "ci-native-control").exists())
 
 
 class DiagnosticTests(unittest.TestCase):

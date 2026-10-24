@@ -42,6 +42,7 @@ def fingerprint(label, path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     print(f"{label}: bytes={path.stat().st_size} sha256={digest.hexdigest()}", flush=True)
+    return digest.hexdigest()
 
 
 def inspect(target):
@@ -103,12 +104,12 @@ def debugger():
     return selected
 
 
-def bounded_command(command, timeout):
+def bounded_command(command, timeout, env=None):
     def child_limits():
         import resource  # Only the Linux failure probe executes this child hook.
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               text=True, start_new_session=True, preexec_fn=child_limits)
+                               text=True, start_new_session=True, preexec_fn=child_limits, env=env)
     try:
         stdout, stderr = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired as error:

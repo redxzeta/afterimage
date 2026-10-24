@@ -91,13 +91,25 @@ a 90-second bound. It never installs tools or rebuilds. Missing tools, timeout,
 or a non-reproducing probe are incomplete diagnostic evidence; the original
 verification failure remains fatal. Build metadata can include stale candidates;
 its source label alone does not prove which bytes were linked or establish cause.
-The failure step also records archive/bridge object compiler tags and, when both
-GCC 13 and 15 are already installed and one native directory is recorded, builds
+The failure step also records archive/bridge object compiler tags. The optional
+`--compare-compilers` diagnostic, when GCC 13 and 15 are already installed, builds
 one tiny C++ constructor/formatting fixture with each compiler against the same
 archive/header/configuration. Each compile has a 30-second bound and each run
 10 seconds, with separate disposable databases, core dumps disabled and process
 groups killed on timeout. These are synthetic causal controls, not CLI test
 passes. No compiler/environment pin is inferred automatically from their result.
+Both standalone controls passed on hosted head `06fe48d`; they did not reproduce
+the real CLI failure or validate a compiler pin. The standard failure follow-up
+now preserves/hashes the original CLI and parity executable inside the job,
+confirms that unchanged parity still reports index SIGSEGV (60 seconds), then
+uses installed GCC13 to rebuild the same integration target context offline
+(`--no-run`, 180-second bound). It runs the preserved, unchanged parity executable
+against the rebuilt CLI (60 seconds), with the original runtime environment.
+Native archive/header hashes, Cargo feature sets and linked libstdc++ hash are
+compared before/after; drift is incomplete causal evidence even if tests pass.
+No fresh target/dependency build or artifact/database upload is performed; the
+original primary verification failure remains fatal. Copied original binaries
+last until runner disposal; only logged evidence is durable.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed

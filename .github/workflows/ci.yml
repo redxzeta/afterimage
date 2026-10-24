@@ -62,4 +62,9 @@ jobs:
         run: python3 scripts/verify.py
       - name: Diagnose failed CLI fixture without rebuilding
         if: failure() && runner.os == 'Linux'
-        run: python3 scripts/diagnose_cli.py --compare-compilers
+        run: python3 scripts/diagnose_cli.py
+      - name: Compare actual CLI with controlled native bridge compiler
+        if: failure() && runner.os == 'Linux'
+        env:
+          VERIFY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/diagnose_cli_compiler.py
