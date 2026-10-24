@@ -7,7 +7,9 @@ use infigraph_core::{
 use infigraph_languages::bundled_registry;
 
 fn extract(file: &str, source: &str) -> FileExtraction {
-    let registry = bundled_registry().unwrap();
+    static REGISTRY: std::sync::OnceLock<infigraph_core::lang::LanguageRegistry> =
+        std::sync::OnceLock::new();
+    let registry = REGISTRY.get_or_init(|| bundled_registry().unwrap());
     extract_file(file, source.as_bytes(), registry.for_file(file).unwrap()).unwrap()
 }
 
