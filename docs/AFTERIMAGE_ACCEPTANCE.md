@@ -2,13 +2,14 @@
 
 Snapshot: 2026-10-24 UTC. Repository: `redxzeta/afterimage`; development/default
 base: `afterimage-main`. Reviewed source base:
-`f4568cf15e004391f549bc8705112e37502bd3dc`. This receipt grants no installation,
+`dc858dc73e671c5ed5a5727457f2e5b5173d7fd8`. This receipt grants no installation,
 deployment, release, publishing, runtime, scheduling, or financial authority.
 
 Protected mirror `main` remains
 `cf82f5d7440d9be158e219df1ef256d6359ed1f6`. Upstream intuit/infigraph PRs
 #78/#81/#82/#83/#84 are separate from fork integration; no upstream mutation
-was performed. The provisional advisory trial #10 remains outside this gate.
+was performed. The provisional advisory trial #10 and separate corrected-source
+trial remain outside this gate; neither gains merge, adoption or runtime approval here.
 
 ## PR outcomes
 
@@ -19,13 +20,14 @@ was performed. The provisional advisory trial #10 remains outside this gate.
 | [#8: acceptance checkpoint](https://github.com/redxzeta/afterimage/pull/8) | `83a700968e63d9737eec8461fab8b69ee876d2c6` | MERGED: `de02e762c5581055d2adcefe7efe1a58bc0c7cab` |
 | [#9: relative module imports](https://github.com/redxzeta/afterimage/pull/9) | `78c7c64494661ae906565156b957d648e1820f79` | MERGED: `a5b19badfd4ae496965a803c7be770d2281bc573` |
 | [#11: benchmark harness/evidence](https://github.com/redxzeta/afterimage/pull/11) | `eee27b712d19c745cd2950dc95a7470bab14c3f4` | MERGED: `f4568cf15e004391f549bc8705112e37502bd3dc` |
-| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `f9ffc6f199212c7c2e05d788ef0a8b2c8dfe6603` | HOLD: hosted SIGSEGV cause and new import-suite selection remain open; replacement must include current base and receive fresh review. |
+| [#12: acceptance refresh](https://github.com/redxzeta/afterimage/pull/12) | `cfde338da7f4e2377d23286002e5c88f54540ccd` | MERGED: `7cf421a61e0838daa6b29f2e341c85241221b032` |
+| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `437eed818c32a68dbde8983ef6dc12600dca3345` | MERGED: `dc858dc73e671c5ed5a5727457f2e5b5173d7fd8` |
 
 Every merge above used an expected-head guard after independent source/test
 review. #9 included #6/#7 before final combined validation; #11 then integrated
 #9. Merge construction and diff whitespace checks passed. No known new failing
-product test was waived. Missing checks under the inherited main-only CI filter
-are NOT_CONFIGURED, not passes; #5 owns the pending target correction.
+product test was waived. Historical missing checks under the inherited main-only
+CI filter remain NOT_CONFIGURED, not passes. #5 corrects the filter to `afterimage-main`.
 
 ## Validation receipts
 
@@ -64,42 +66,64 @@ reports. No full workspace or cross-platform matrix is claimed.
   records per lane, and all **30 CLI/MCP question scores** were checked.
   Public artifact inspection found no private host paths or credential material;
   fixed `/bench/home` paths are sandbox namespace constants.
-- **#5:** reviewer independently passed **14 selector + 4 diagnostic tests** at
-  `ffdd27af366140f40116a7bf525aa0063386a0c9`, then **14 + 5** at `f9ffc6f1`.
-  Both selector gaps are corrected: unknown/workspace inputs retain watcher and
-  graph-lock suites, and watcher changes select integrated `watch_new_directory`.
-  Author native receipt at `0eb9e229fcebc0a2d054fcfcaa9706481bae8f81` has
-  **4 CLI parity + 4 watcher tests**, 113.35 s including build; the `ffdd27af`
-  documentation merge leaves relevant source/build/CI files identical.
+- **#5:** normal Linux [run 40132348569](https://github.com/redxzeta/afterimage/actions/runs/40132348569)
+  at `9429449c891f7988870e1c5cf90179b5c6d5d872` **PASSES**: formatting,
+  locked all-target workspace Clippy with warnings denied, actual CLI/MCP builds,
+  **234 selected integration + 686 library/binary unit tests**, zero failures or
+  ignores; **19 benchmark harness tests**, supervisor **2 Rust + 8 process
+  fixtures**, and whitespace checks. Includes graph, namespace/unchanged-consumer,
+  SCIP/receipt, relative imports, watcher/direct-graph and lock suites. The
+  selected integration command took **527.8 s**; unit command **62.7 s**;
+  complete hosted job **14m23s**. These are descriptive timings, not speedup proof.
+  Hosted Python guards were **15 selector + 11 diagnostic** tests; the final
+  cleanup removes only six guards for retired one-off compiler controls.
+  Reviewer independently passed **15 selector + 5 diagnostic tests** at final
+  `437eed818c32a68dbde8983ef6dc12600dca3345`, plus Python compilation and
+  whitespace. Final changes from the green head are limited to CI documentation
+  and retired diagnostic machinery/tests: workflow, verifier/selector, Rust
+  source/product tests, Cargo/native and benchmark inputs are byte-identical.
+  Final-head rerun was **PENDING at merge**; unchanged native inputs use the
+  pinned successful run, not a claimed second native execution. See
+  [final independent review](https://github.com/redxzeta/afterimage/pull/5#issuecomment-6389704212).
 
 Native work respected the benchmark's explicit release at **15:31:58 UTC** and
 subsequent Sable slot handoff. No measured target apps, hooks or services ran.
 The earlier Debian provider usage-limit interruption is historical: authors
-resumed and completed #9/#11 delivery. It does not waive #5's unresolved failure.
+resumed and completed #9/#11 delivery. It does not waive any failed test.
 
-## Remaining CI diagnosis
+## CI failure disposition
 
-[Run 40127988676](https://github.com/redxzeta/afterimage/actions/runs/40127988676)
-on `ffdd27af` fails CLI parity **3 passed / 1 failed**: fixture index dies from
-**SIGSEGV 11**, core dumped, no exit code, empty stdout/stderr. Earlier runs
-[40106285931](https://github.com/redxzeta/afterimage/actions/runs/40106285931) and
-[40107320071](https://github.com/redxzeta/afterimage/actions/runs/40107320071)
-retain the same failure. Unreached hosted suites remain NOT_RUN.
+The retained failed runs report real CLI fixture index **SIGSEGV 11**, core
+reported, empty streams, and CLI parity **3 passed / 1 failed**. The initial
+probe selected `lldb-dap-21`; reviewer reproduction and a helpers-first regression
+corrected discovery to a debugger CLI. The resulting actual backtrace reaches
+`std::__format` / `std::vformat` → `Database::initBufferManager` → native database
+construction → `GraphStore::open`, before extraction or SCIP.
 
-Reported hosted native archive and both header hashes match the passing local
-cache; the native version is 0.21.2. Different downloaded bytes are unsupported
-as the explanation. The probe selected `lldb-dap-21` instead of a debugger CLI,
-so its exit zero supplied **no backtrace**. The reviewer reproduced that
-selection defect; `f9ffc6f1` rejects helpers and its new discovery test passes.
-Corrected hosted diagnosis remains pending. Underlying cause and inherited
-versus environment regression remain **UNDETERMINED**. Production-source equality
-alone does not prove inheritance; no OOM, SIGILL, timeout-only or green claim.
+Native archive/header hashes match the passing local/published v0.21.2 inputs.
+Both standalone constructor/format controls pass with GCC13 and GCC15; these
+negative controls do not establish a generic GCC15 defect. The actual CLI
+[controlled run 40131432398](https://github.com/redxzeta/afterimage/actions/runs/40131432398)
+at `02cd75f3cb03887f23d101b25ef66463ad670fd3` remains **FAILED** in its primary
+job. Its preserved, unchanged parity executable reproduces index SIGSEGV with
+the original CLI, then passes **4/4** against the rebuilt CLI after changing only
+build `CXX` to installed GCC13. Native archive/headers, Cargo features and linked
+libstdc++ hashes stay equal; native dependents also rebuild. This establishes
+controlled compiler-input sensitivity in the actual CLI context, not an isolated
+lbug bridge/ABI mechanism or historical inherited-failure provenance.
 
-A combined-base probe also finds that `f9ffc6f1` omits merged #9's
-`typescript_imports` target for core graph, language-query and CI changes when
-the test file itself is unchanged. The owner received the reproducer and a
-request to retain that critical regression with present/absent target tests.
-This coverage gap must be resolved before final #5 acceptance.
+Normal Linux CI explicitly requires installed `g++-13`, exports `CXX` before
+cache/build, and separates its cache key. Missing compiler fails without
+installation or fallback. Normal verification subsequently passes as recorded
+above. Temporary comparison machinery is retired; bounded failure-only debugger
+metadata remains, and failed diagnostic commits/logs preserve their evidence.
+Runtime source, dependency versions, assertions and timeouts are unchanged.
+macOS/Windows and release/Pages workflows are unchanged and unvalidated here.
+
+Selector regressions now retain integrated `watch_new_directory` for watcher and
+shared-build changes, `typescript_imports` for core/language/shared-build changes,
+and graph/lock/watcher suites for CI/unknown inputs or missing history. Present
+and absent-target cases pass. No product failure is hidden to obtain green CI.
 
 ## Benchmark and operational limits
 
@@ -134,8 +158,8 @@ Those measurements predate #6/#7/#9 and do not measure this integration base.
   and subscriptions, not retroactive graph purge. Successful snapshots within a
   deadline are not error-free-read or universal freshness proof.
 
-**GO:** reviewed #6/#7/#9 source and #11 harness/evidence integration.
-**HOLD:** #5 merge, blanket graph freshness/completeness/performance acceptance,
+**GO:** reviewed #5 CI, #6/#7/#9 source and #11 harness/evidence integration.
+**HOLD:** blanket graph freshness/completeness/performance acceptance,
 agent A/B acceptance, and operational use claims. No deployment or activation
 was authorized or performed. No new service, container, schedule, credential,
 database, monitoring duty, or installation step is introduced.
