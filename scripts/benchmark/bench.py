@@ -274,10 +274,14 @@ class Lane:
                 try:
                     if stdin:
                         proc.stdin.write(stdin.encode())
-                    proc.stdin.close()
                 except BrokenPipeError:
                     # A crashing/unsupported MCP must be recorded, not abort the pair.
                     pass
+                finally:
+                    try:
+                        proc.stdin.close()
+                    except BrokenPipeError:
+                        pass
                 deadline = time.monotonic() + self.timeout
                 pending, buffer = set(stop_after_ids or ()), b""
                 while True:

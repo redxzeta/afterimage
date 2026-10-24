@@ -214,9 +214,16 @@ class IsolationTests(unittest.TestCase):
 
     def test_mcp_crash_during_input_is_a_failed_step(self):
         lane = bench.Lane(self.root / 'early-crash', self.binary, None, 3, 1)
-        result = lane.run('early_crash', ['crash'], 'x' * 100_000, stop_after_ids={1})
+        processes, spawn = [], subprocess.Popen
+        def capture(*args, **kwargs):
+            process = spawn(*args, **kwargs)
+            processes.append(process)
+            return process
+        with patch.object(bench.subprocess, 'Popen', side_effect=capture):
+            result = lane.run('early_crash', ['crash'], 'x' * 100_000, stop_after_ids={1})
         self.assertEqual(result['status'], 'FAILED')
         self.assertFalse(result['stopped_after_responses'])
+        self.assertTrue(processes[0].stdin.closed)
 
     def test_freshness_branches_uncommitted_and_delete_are_disposable(self):
         dynamic = FAKE.replace("elif sys.argv[1]=='query':", """elif sys.argv[1]=='query' and "WHERE s.file" in sys.argv[2]:
