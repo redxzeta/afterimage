@@ -109,28 +109,46 @@ a 90-second bound. It never installs tools or rebuilds. Missing tools, timeout,
 or a non-reproducing probe are incomplete diagnostic evidence; the original
 verification failure remains fatal. Build metadata can include stale candidates;
 its source label alone does not prove which bytes were linked or establish cause.
-The failure step also records archive/bridge object compiler tags. The optional
-`--compare-compilers` diagnostic, when GCC 13 and 15 are already installed, builds
-one tiny C++ constructor/formatting fixture with each compiler against the same
-archive/header/configuration. Each compile has a 30-second bound and each run
-10 seconds, with separate disposable databases, core dumps disabled and process
-groups killed on timeout. These are synthetic causal controls, not CLI test
-passes. No compiler/environment pin is inferred automatically from their result.
-Both standalone controls passed on hosted head `06fe48d`; they did not reproduce
-the real CLI failure or validate a compiler pin. The one-off actual-CLI follow-up
-`scripts/diagnose_cli_compiler.py` preserved/hashed the original CLI and parity executable inside the job,
-confirms that unchanged parity still reports index SIGSEGV (60 seconds), then
-uses installed GCC13 to rebuild the same integration target context offline
-(`--no-run`, 180-second bound). It runs the preserved, unchanged parity executable
-against the rebuilt CLI (60 seconds), with the original runtime environment.
-Native archive/header hashes, Cargo feature sets and linked libstdc++ hash are
-compared before/after; drift is incomplete causal evidence even if tests pass.
-No fresh target/dependency build or artifact/database upload is performed; the
-original primary verification failure remains fatal. Copied original binaries
-last until runner disposal; only logged evidence is durable. This comparison is
-no longer run automatically in CI after the controlled result; its scripts and
-unit guards are retained temporarily while the normal Linux verification is
-assessed. Diagnostic commits/logs preserve the receipts for later trimming.
+The failure step also records archive/bridge object compiler tags. One-off
+standalone and actual-CLI compiler comparison machinery and its six synthetic
+unit guards were removed after normal verification passed. Product/parity tests,
+15 selector regressions and five ongoing diagnostic regressions remain. No
+compiler rebuild or comparison is performed by the final failure diagnostic.
+The investigation code and evidence are retained in immutable
+[diagnostic commit 02cd75f3](https://github.com/redxzeta/afterimage/commit/02cd75f3cb03887f23d101b25ef66463ad670fd3),
+its failed/control run linked above, and
+[the negative standalone comparison](https://github.com/redxzeta/afterimage/actions/runs/40129886421).
+Both standalone controls passed; only the actual-CLI comparison supported the
+narrow compiler mitigation. Copied binaries lasted until runner disposal; logged
+hashes, signals, streams and results are durable, without artifact/database uploads.
+
+## Passing standard verification receipt
+
+[Run40132348569](https://github.com/redxzeta/afterimage/actions/runs/40132348569)
+on `9429449c891f7988870e1c5cf90179b5c6d5d872`, base
+`7cf421a61e0838daa6b29f2e341c85241221b032`, passed normal Linux verification
+with installed GCC13.4 (26 Python checks before diagnostic cleanup):
+
+| Check | Result | Command duration |
+| --- | --- | --- |
+| Formatting | PASS | 0.7s |
+| Locked workspace all-target Clippy | PASS | 145.0s |
+| Actual CLI/MCP binaries | PASS | 106.0s |
+| 25 selected integration targets | 234 passed, 0 failed/ignored | 527.8s |
+| Workspace library/binary units | 686 passed, 0 failed/ignored | 62.7s |
+| Synthetic benchmark harness | 19 passed | 3.2s |
+| Supervisor harness | 2 Rust checks and 8 process scenarios passed | 1.0s |
+| Committed-diff whitespace | PASS | <0.1s |
+
+This includes CLI parity, all eight module-import regressions, direct-graph
+watcher tests, watcher/concurrency, graph/lock suites, cross-repository contracts
+and SCIP/receipt unit coverage. No source test was skipped to obtain green.
+The job took 863s; the Verify step took 847s. This is a successful scoped Linux
+receipt, not full workspace integration/doc, cross-platform, release, real-repo
+performance or agent A/B acceptance. Failed baseline timings are not a speedup
+comparison. The final diagnostic-only cleanup preserves all native sources,
+selection commands and workflow environment; its lightweight checks and exact
+head/source-equality evidence are recorded in PR #5.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed

@@ -7,7 +7,6 @@ from pathlib import Path
 import platform
 import re
 import shutil
-import signal
 import subprocess
 import tempfile
 
@@ -42,7 +41,6 @@ def fingerprint(label, path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     print(f"{label}: bytes={path.stat().st_size} sha256={digest.hexdigest()}", flush=True)
-    return digest.hexdigest()
 
 
 def inspect(target):
@@ -104,94 +102,12 @@ def debugger():
     return selected
 
 
-def bounded_command(command, timeout, env=None):
-    def child_limits():
-        import resource  # Only the Linux failure probe executes this child hook.
-        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               text=True, start_new_session=True, preexec_fn=child_limits, env=env)
-    try:
-        stdout, stderr = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired as error:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        error.stdout, error.stderr = process.communicate()
-        raise
-    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-
-
-def compare_compilers(target):
-    """One synthetic constructor/format probe, two installed compilers, same archive.
-
-    This is diagnostic evidence only, separate from CLI acceptance. It exercises
-    weak std::format definitions emitted by the bridge and prebuilt library.
-    """
-    compilers = [shutil.which(name) for name in ["g++-13", "g++-15"]]
-    libraries = {Path(meta["LBUG_PRECOMPILED_LIBRARY_DIR"])
-                 for _, meta in lbug_builds(target) if "LBUG_PRECOMPILED_LIBRARY_DIR" in meta}
-    if not all(compilers) or len(libraries) != 1:
-        print("COMPILER_COMPARISON NOT_RUN: need installed g++-13/g++-15 and one native directory",
-              flush=True)
-        return
-    library = libraries.pop()
-    if not all((library / name).is_file() for name in ["lbug.hpp", "liblbug.a"]):
-        print("COMPILER_COMPARISON NOT_RUN: native archive/header unavailable", flush=True)
-        return
-    source = '''#include "lbug.hpp"
-#include <format>
-#include <iostream>
-int main(int argc, char** argv) {
-    if (argc != 2) return 2;
-    std::cout << "cplusplus=" << __cplusplus << " glibcxx=" << __GLIBCXX__
-              << " cxx11_abi=" << _GLIBCXX_USE_CXX11_ABI
-              << " format_arg_bytes=" << sizeof(std::basic_format_arg<std::format_context>)
-              << std::endl;
-    std::cout << std::format("probe {}", std::string("ready")) << std::endl;
-    lbug::main::Database db(argv[1]);
-    std::cout << "database opened" << std::endl;
-}
-'''
-    with tempfile.TemporaryDirectory(prefix="native-format-control-") as fixture:
-        root = Path(fixture)
-        (root / "probe.cpp").write_text(source)
-        for compiler in compilers:
-            name = Path(compiler).name
-            executable = root / name
-            command = [compiler, "-std=c++20", "-O0", "-I", str(library), str(root / "probe.cpp"),
-                       "-Wl,--allow-multiple-definition", "-Wl,--whole-archive",
-                       str(library / "liblbug.a"), "-Wl,--no-whole-archive", "-lssl", "-lcrypto",
-                       "-lpthread", "-ldl", "-o", str(executable)]
-            try:
-                version = bounded_command([compiler, "--version"], 5)
-                print(f"COMPILER_COMPARISON {name} version={version.stdout.splitlines()[:1]}", flush=True)
-                build = bounded_command(command, 30)
-                print(f"COMPILER_COMPARISON {name} build_exit={build.returncode}", flush=True)
-                if build.returncode:
-                    print(build.stderr[-2000:], flush=True)
-                    continue
-                result = bounded_command([str(executable), str(root / f"database-{name}")], 10)
-                child_signal = -result.returncode if result.returncode < 0 else None
-                print(f"COMPILER_COMPARISON {name} run_exit={result.returncode} signal={child_signal} "
-                      f"stdout={result.stdout!r} stderr={result.stderr!r}", flush=True)
-            except subprocess.TimeoutExpired as error:
-                print(f"COMPILER_COMPARISON {name} INCOMPLETE: timeout; process group killed; "
-                      f"stdout={error.stdout!r} stderr={error.stderr!r}", flush=True)
-            except OSError as error:
-                print(f"COMPILER_COMPARISON {name} NOT_RUN: {type(error).__name__}", flush=True)
-    print("Compiler comparison is not a CLI test pass or an automatic environment fix.", flush=True)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inspect-only", action="store_true")
-    parser.add_argument("--compare-compilers", action="store_true")
     args = parser.parse_args()
     target = Path(os.environ.get("CARGO_TARGET_DIR", "target")).resolve()
     cli = inspect(target)
-    if args.compare_compilers:
-        compare_compilers(target)
     tool = debugger()
     if args.inspect_only:
         return
