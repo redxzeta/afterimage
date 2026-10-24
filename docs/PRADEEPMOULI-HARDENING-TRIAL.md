@@ -370,3 +370,19 @@ permission model, monitoring task, recovery mechanism or deployment obligation
 from this change. Local compilation scratch data is disposable; no recurring
 work was scheduled. No merge, release, tag, package publication or deployment
 was performed.
+
+### Published draft readback
+
+[Corrected-source trial PR #13](https://github.com/redxzeta/afterimage/pull/13)
+is **OPEN / DRAFT**, targets `afterimage-main`, and is registered with this T3
+thread. Creation readback reported base
+`7cf421a61e0838daa6b29f2e341c85241221b032`, implementation commit
+`05b40a8978273a59fbb7475a93e6034ccef3a4c8`, and report commit
+`b2e02c89c1d8faf8b03bd0e0bf8ea3d9e5b0c50b`. This final update only adds delivery
+metadata. GitHub reported `MERGEABLE` / `CLEAN`; that is conflict status, not
+source approval. `statusCheckRollup` was empty: **no hosted CI result**.
+
+PR #10 was freshly read back as OPEN / DRAFT at
+`96039796dc7bd6de74f4c46a9ecddadb3c852b72` and remains unchanged by this task.
+No PR was merged or marked ready for review. Final worktree/diff and remote-head
+readbacks accompany delivery in the T3 thread.
