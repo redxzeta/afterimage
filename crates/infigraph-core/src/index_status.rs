@@ -162,7 +162,12 @@ impl<'a> AstRun<'a> {
             .filter_map(|r| r.into_iter().next())
             .collect();
         if let Some(previous) = &self.previous {
-            if previous.indexed_file_fingerprint == self.report.indexed_file_fingerprint {
+            // Rewriting even byte-identical files replaces their symbols and
+            // removes compiler-added edges. Only a true AST no-op can reuse
+            // enrichment outcomes; matching file hashes alone are insufficient.
+            if !resolution_attempted
+                && previous.indexed_file_fingerprint == self.report.indexed_file_fingerprint
+            {
                 self.report.scip.clone_from(&previous.scip);
             }
         }
