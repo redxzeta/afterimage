@@ -13,6 +13,10 @@ Verified identities on October 24, 2026:
 - Experiment started at `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`.
 - Fork integration baseline advanced independently through PR #6; this experiment
   fast-forwarded its own branch to `4d5266fe10c2c39dbaac423c7a43731329601e85`.
+- During final readback the coordinator merged PR #7, advancing the base to
+  `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`. Only the experiment branch was
+  updated, by normal merge `f2efc043cab718c235f4b2a3a6cfbe4c61e8ee52`;
+  no force push or integration merge was performed by this trial.
 - Fork default/base: `afterimage-main`. Fork pristine `main` and upstream `main`:
   `cf82f5d7440d9be158e219df1ef256d6359ed1f6`.
 - Candidate: `02c498dae06557a15a5f57d6ea3346725fdc5e4b`; code commit:
@@ -35,7 +39,7 @@ Verified identities on October 24, 2026:
 | Watcher-start reconciliation | Reject for this trial | Candidate `watch/mod.rs:434-461` returns when HEAD matches, missing offline uncommitted edits. It emits only `Modified` callbacks, not normal change-batch/deletion work. Its added test asserts pending status, not repaired graph contents. |
 | Treat dirty Git state as a known stale graph | Adapt | Dirty files may already be indexed. Report the observation while keeping freshness unverified. |
 | Read pending cross-file work | Adapt | Inspect the owning MCP registry without blocking; unavailable/busy/poisoned state remains explicit. This vector excludes the core queue, in-progress indexing, and other processes. |
-| Watch-status formatting | Defer | It would overlap the separately owned watcher work. Existing status/doctor contracts remain unchanged. |
+| Watch-status formatting | Defer | It is not needed for the four-tool advisory. Existing status/doctor contracts remain unchanged. |
 | Populated-directory watcher repair | Separate PR #7 | Fork PR #7 addresses directory registration and initial file queuing, not query warnings. No watcher code is changed here. |
 | Docker harness and `.dockerignore` | Reject | Disposable local fixtures can validate this adaptation without new container/build infrastructure. |
 | README/index-freshness guide | Adapt | This report documents the narrower behavior and its limits rather than importing unsupported guarantees. |
@@ -72,7 +76,93 @@ Rejected alternatives:
 4. Change watcher startup or add strict query waiting: overlaps #7 ownership and
    changes runtime behavior beyond a conservative advisory trial.
 
-## Native validation and exact results
+## Current-base combined validation
+
+The following supersedes the historical watcher failure for the final trial
+branch. The coordinator independently merged PR #7 during final readback. The
+trial incorporated that base in its own branch, reacquired explicit Sable idle
+clearance, and reran targeted checks at:
+
+- Base: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`.
+- Combined code/test checkpoint: `f2efc043cab718c235f4b2a3a6cfbe4c61e8ee52`.
+- Trial delta against this base: the same seven MCP/test/report files; no core,
+  watcher, CLI, CI, dependency or operational changes in the trial diff.
+
+CPU 0/1, two build jobs, isolated fixture execution, original test/12-second
+watcher deadlines, offline dependencies and the same 8 GiB RSS cap were retained.
+No full-workspace or performance benchmark was repeated.
+
+```sh
+cargo test --locked --offline --no-default-features -p infigraph-mcp \
+  --test freshness_tools --test coverage_reporting --test watch_new_directory \
+  --no-run --message-format=json
+cargo test --manifest-path target/freshness-trial/base-585/Cargo.toml \
+  --locked --offline --no-default-features -p infigraph-mcp \
+  --test freshness_tools --no-run --message-format=json
+cargo clippy --locked --offline --no-default-features -p infigraph-mcp \
+  --lib --bin infigraph-mcp --test freshness_tools --test watch_new_directory \
+  -- -D warnings
+cargo build --locked --offline --no-default-features \
+  -p infigraph-cli -p infigraph-mcp --bin infigraph --bin infigraph-mcp
+```
+
+Compiled executables were run from a disposable CWD:
+
+```sh
+watch_new_directory-da2f1310091b99bc --test-threads=1 --nocapture
+freshness_tools-c36c7fd8b8ff5520 --test-threads=1
+coverage_reporting-1171ed4747198ffc --test-threads=1
+```
+
+| Combined check | Exact result | Process wall seconds |
+| --- | --- | ---: |
+| Targeted test build | PASS, exit 0 | 20.653 |
+| Four inherited watcher regressions | 4 passed, 0 failed | 36.401 |
+| Final freshness regressions | 2 passed, 0 failed | 118.316 |
+| Coverage reporting | 1 passed, 0 failed | 28.936 |
+| Exact current-base archive build | PASS, exit 0 | 18.940 |
+| Same freshness tests on exact current base without adaptation | 0 passed, 2 failed; expected exit 101 | 6.758 |
+| Refreshed strict focused Clippy | PASS, exit 0 | 4.706 |
+| Refreshed CLI/MCP build | PASS, exit 0 | 15.030 |
+| Combined primary-worker watcher smoke | 14 passed, 0 failed; exit 0 | 40.188 |
+| Final formatting/whitespace | PASS, exit 0 | Formatting 0.760 |
+
+**Seven targeted tests pass on the combined branch.** The earlier 105-test
+focused result belongs to the pre-#7 checkpoint below; it is not relabeled as a
+full rerun on the combined head.
+
+The four direct watcher tests cover populated directories, return checkout,
+hidden ancestors with project ignores, and queued ignore-rule changes. Exact
+return contents were observed after **2.031128054 s**, within the original
+12-second deadline. Their captured polling log contains **four unsuccessful
+native reads**: three checkpoint-in-progress errors and one missing-WAL read.
+Subsequent correct snapshots do not establish error-free reads. No WAL repair,
+error suppression, assertion weakening or deadline increase was performed.
+
+The separate real-primary MCP smoke passed all 14 checks and recorded zero read
+errors in that small sample:
+
+| Combined watcher observation | Result |
+| --- | --- |
+| Existing-file edit | PASS, 3.152 s |
+| Populated nested-directory checkout | PASS, 3.152 s |
+| File deletion | PASS, 3.103 s |
+| Exact return graph | PASS, 6.370 s |
+| Advisory during edit/branch-switch/deletion | PASS |
+| CLI help/index/doctor JSON, watcher registration, MCP EOF | PASS |
+
+The populated-directory improvement comes from the inherited #7 fix, not this
+advisory adaptation. General error-free concurrent reads remain unproven.
+Combined smoke input binary SHA-256 values:
+
+- `cli`: `1f762c47ef673d1c93daa7817ff816f17a8fc81560bf161e2258198e1371e11e`
+- `candidate_mcp`: `42800d3db43a6c11b9f8b5333bc397e84ab3e630e01771e821ca04bb58b44143`
+- `base_mcp`: `e90f2217ddf7b895f76411b41a2166969b740a601b6e2cc28c6f2acf1a2f8410`
+
+The Sable slot was explicitly released again after these checks; only report,
+formatting and Git readback work followed.
+
+## Historical validation on pre-PR-7 base `4d5266f`
 
 The benchmark hold was explicitly released at 15:31:58 UTC on October 24.
 The PR #7 owner subsequently handed over an idle Sable slot. All native work
@@ -119,7 +209,7 @@ git diff --check
 | Formatting/whitespace | PASS, exit 0 | Final formatting 0.761 |
 
 Do not compare these build times as speedups: cache state and selected targets
-were different. Highest sampled build RSS was 8,215,166,976 bytes, below the
+were different. Highest sampled build RSS across both validation rounds was 8,240,975,872 bytes, below the
 8 GiB cap; no command hit the RSS cap.
 
 ### Executed test commands and counts
@@ -154,9 +244,9 @@ infigraph_mcp-0a435b910c151ead session_context::tests --test-threads=1
 | Compression units | 61 passed, 0 failed; 63 unrelated tests filtered | 0.541 |
 | Session units | 28 passed, 0 failed; 96 unrelated tests filtered | 0.109 |
 
-Total final candidate focused tests: **105 passed, 0 failed**. This does not mean
-all validation is green: the watcher probe below still fails on both base and
-candidate.
+Pre-#7 candidate focused tests: **105 passed, 0 failed**. The historical watcher
+probe below failed on both pre-#7 base and candidate; current combined results are
+reported separately above.
 
 The base failures are substantive: ordinary structural output lacks the freshness
 advisory, and reference compression removes an appended advisory. Candidate tests
@@ -231,7 +321,7 @@ fixture scripts and A/B samples remain locally under the ignored
 `target/freshness-trial/` directory. No binary, database, private machine path,
 credential or transcript is included in the PR.
 
-## Measured A/B latency and output size
+## Pre-PR-7 measured A/B latency and output size
 
 One disposable Lua file, two functions, CPU 0/1, persistent MCP secondary workers,
 compression/dedup disabled for body comparison, three timed requests per tool
@@ -271,8 +361,11 @@ Binary SHA-256 values for the actual smoke inputs:
 - **Preservation check:** existing read-only query paths and caller coverage
   prefixes remain; no watcher/core or #7-owned code was changed.
 - **Verification completed:** compilation, strict focused Clippy, 105 candidate
-  tests and exact-base red regressions ran. The populated-directory failure is
-  reproduced in the baseline control and remains unresolved outside this scope.
+  tests and exact-base red regressions ran on the pre-#7 checkpoint. Seven
+  targeted combined tests, refreshed strict lint/build and a 14/14 live smoke
+  pass after inheriting #7. The historical populated-directory failure was
+  reproduced on its base and is resolved by #7 in the combined branch. Four
+  transient native read errors remain explicit in the direct-test log.
   No independent second-agent review was requested/run.
 
 ## Operational and security limits
@@ -286,14 +379,15 @@ The advisory is deliberately conservative and can remain present after a correct
 index. It adds two Git subprocesses and a local registry read per affected tool
 call; large repositories may incur noticeable cost. Git status excludes submodule
 inspection and is not a content-hash reconciliation. Queries and observations are
-not atomic. Zero pending cross-file entries is not caught-up evidence. This trial
-does not fix hidden-ancestor watcher omissions, offline edits, event loss,
+not atomic. Zero pending cross-file entries is not caught-up evidence. The advisory
+itself does not fix hidden-ancestor watcher omissions, offline edits, event loss,
 branch-switch convergence, ignored-file freshness, or incomplete SCIP enrichment.
 Only four named MCP tools gain the advisory; this is partial issue #48 coverage.
 
 Recommendation: the narrow advisory adaptation is supported for source review and
 isolated trial; reject a wholesale import of the upstream branch. Keep the PR
 experimental/draft and separate from the coordinator's acceptance gate. Confirm
-the intended source branch, review the final diff, and retest the combined base
-if/when PR #7 lands before claiming broader freshness acceptance. No merge,
-installation, deployment or runtime authority is granted by these results.
+the intended source branch and review the final diff. The merged #7 base has now
+been retested as documented above; remaining native read errors, optional modes
+and large-repository cost limit broader acceptance. No PR merge, installation,
+deployment or runtime authority is granted by these results.
