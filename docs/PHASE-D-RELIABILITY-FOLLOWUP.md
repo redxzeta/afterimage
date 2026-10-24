@@ -1,5 +1,114 @@
 # Phase D follow-up: Linux lifecycle and working-tree freshness
 
+## 2026-10-24 practical-gap closure on the merged #6 base
+
+Current base: `4d5266fe10c2c39dbaac423c7a43731329601e85`.
+Code/test checkpoint:
+[`b65ad6cd086f76124bc6884308c6751f50bf2b3a`](https://github.com/redxzeta/afterimage/commit/b65ad6cd086f76124bc6884308c6751f50bf2b3a).
+The unchanged rebased watcher used for before tests was
+`2a3c3d005d8608ca433afabf15c275939651d2f2`. The original October 23 evidence
+below is retained historically; its return-checkout and hidden-ancestor gaps
+are superseded by these focused results, not by a full reliability claim.
+
+### Causes and changes
+
+- Every removal opened a transient graph **and rebuilt the entire language
+  registry**. Multiple removal notifications delayed the restored-file batch.
+  Reuse the immutable registry through existing `Infigraph::open_shared`;
+  graph connections still close after each operation. Advisory writer locking,
+  batch writing, and #6's receipt invalidation are unchanged.
+- The hidden-path filter inspected absolute components, including ancestors
+  outside the project. Match relative to the canonical project root. The
+  existing locked `ignore` crate supplies hierarchical `.gitignore`, `.ignore`,
+  `.infigraphignore`, nested negations, and git exclude/global-file semantics.
+  Existing hard exclusions remain: private dot entries inside the project,
+  `.git`, `.infigraph`, build directories, and the other established names.
+  Registration and new-directory discovery use those same rules. The matcher
+  is refreshed per notification and before batch flush, so newly ignored queued
+  files are discarded before opening the graph. Rule notifications refresh
+  directory subscriptions without eagerly indexing the project.
+- The initial new-directory callback could read outside-root files through
+  directory symlinks and repeatedly traverse a loop. Use non-following file
+  types for both recursive entries and direct directory events, and skip
+  symlinks. The regression proves no external marker enters the graph, the
+  loop is skipped, and the outside file bytes/mtime and directory contents stay
+  unchanged. This matches the scanner's default no-follow policy.
+
+No dependency, graph-store, lock, worker-lifecycle, timeout, or other agent's
+script was changed. These changes are independent of the provisional MCP
+advisory trial and contain no code from it.
+
+### Focused serial results
+
+All runtime cases used disposable directories, no core dumps, two CPU affinity
+slots, 32 TiB virtual-address allowance, a sampled 2 GiB owned-child RSS stop,
+and finite outer deadlines. Builds used two jobs and the earlier bounded build
+controller. Native work began only after explicit benchmark release at
+15:31:58 UTC and occupied the Sable slot before the provisional trial.
+
+| Direct-graph case | Before | After |
+| --- | --- | --- |
+| Populated directory, outside symlink, loop, later edit/removal | FAIL, exit 101, 6.447 s | PASS, exit 0, 8.378 s |
+| Real Git branch return plus working edit/removal | FAIL, exit 101, 27.176 s | PASS, exit 0, 13.070 s |
+| Hidden ancestor, private/build/git/index exclusions, nested negation, later edits | FAIL, exit 101, 15.580 s | PASS, exit 0, 8.837 s |
+| Ignore change after a source file is queued and before flush | FAIL, exit 101, 16.882 s | PASS, exit 0, 6.676 s |
+
+The return assertion starts its **single absolute 12-second deadline before
+`git checkout`**, checks the clock after graph reads, and requires the exact
+symbol set. Return converged in **2.183042707 seconds**; the 13.070-second total
+case includes setup, forward checkout, later edits, and deletion. No timeout
+was raised. Before failures were assertions, not outer timeout or memory stops;
+the symlink case explicitly found the fake outside marker and loop duplicates.
+
+The first fixed return probe aborted on an explicit native WAL-missing read
+error. The final eventual-freshness loop records failed reads and retries only
+within the same absolute deadline; an error never counts as a valid snapshot.
+The final return case recorded one unsuccessful read during forward checkout,
+two during return, zero during the later edit, and one during deletion. Exact
+snapshots arrived within their budgets. Native checkpoint/WAL read errors remain
+an observed limitation; no native replay/repair fix or error-free-read guarantee
+is claimed. The failed first probe remains in the local packet.
+
+- #6 receipt regression `reindexing_unchanged_files_invalidates_compiler_enrichment`:
+  **1 passed**, 3.536 s, exit 0. It preserves enrichment for a true AST no-op,
+  then requires invalidation when an unchanged watcher batch rewrites symbols.
+  The unchanged `crates/infigraph-core/tests/typescript_callers.rs` was compiled
+  with `rustc --test`, Cargo's exact core/language/native dependencies and the
+  already cached `protobuf`, `scip`, and `tempfile` crates. This avoids fetching
+  the uncached core dev dependency; neither the test source nor manifests were
+  modified. Exact compiler arguments are retained locally.
+- Supporting native writer/reader regression: **1 passed**, 13.219 s;
+  52 correct reads, zero explicit errors, zero silently wrong results in this run.
+- Ordinary duplicate-watch control: **1 passed**, 15.865 s. Nine-second
+  `inotify_init` delay: **expected failure reproduced**, exit 101, 13.087 s.
+  The existing five-second test cleanup budget still expires while startup
+  holds the watch lock. This is a timing-sensitive startup/cleanup failure,
+  not proof of a lock bypass. No retry, timeout, mutex, or existing assertion was
+  relaxed. This delayed-start case remains unresolved deliberately.
+- Focused strict Clippy: **PASS**, 67.239 s, exit 0. Formatting and whitespace:
+  **PASS**, exit 0. No full-workspace matrix was run.
+
+The exact build/test commands from the earlier reproduction section still
+apply; select the four named tests in `watch_new_directory` individually with
+`--exact NAME --test-threads=1 --nocapture`. Outer limits were respectively
+40/60/40/35 seconds, while freshness assertions retained 12 seconds. The verbose
+Cargo build used `--offline --locked -vv` and printed the executable identities.
+Receipt execution used `--exact reindexing_unchanged_files_invalidates_compiler_enrichment
+--test-threads=1 --nocapture`. The writer/reader and duplicate-watch commands are
+unchanged. Raw bounded JSON/logs, source identities, and compiler arguments are
+retained in the Sable packet announced in the thread; none is uploaded publicly.
+
+Residuals: transient native read failures, the delayed-start test shutdown
+budget, real crash-generated WAL recovery, and Windows/macOS remain outside the
+closed freshness cases. Ignore changes are snapshots, not an atomic filesystem
+policy transaction or a retroactive purge of previously indexed data. No native
+backend or transaction redesign, release, deployment, production access, or new
+operational responsibility is introduced.
+
+---
+
+## Original 2026-10-23 investigation (historical)
+
 Tested on Sable (Linux x86_64), 2026-10-23, Rust `1.99.1 (58cf8f9c3 2026-10-13)`.
 This is a bounded Sable-only follow-up to [Phase D](PHASE-D-RELIABILITY.md),
 using integrated fork base
