@@ -17,13 +17,16 @@ fork, not installation, deployment, release, or runtime authority.
 | [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
 | [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `d04471dd64c062178057e1b20cc0e45738f7b5c3` | HOLD: incorporates #6 and child-process diagnostics; hosted index dies from SIGSEGV, underlying cause unresolved. Future watcher target selection corrected; broader fallback correction remains unpublished. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `1c1fe4ffdf0838f11c61c6a7909a2ca606f23929` | HOLD: follow-up for hidden ancestors and return-checkout latency in progress. Original direct-graph regression passes; lifecycle receipt retains a failed case. |
-| Three-repository benchmark follow-up | No delivery PR yet | Measurements active; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final evidence/review pending. |
+| Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final artifacts/review pending. |
 | [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `d2e0790155d1cc7e97aaca9d986af978df1b0a52` | DRAFT / HOLD: order-dependent provisional imports identified at `32459fd` are corrected in source with regression fixtures; native red/green replay and final acceptance remain pending. Base includes #6. |
 
 Every remaining delivery must include the current `afterimage-main` base and
 receive a fresh diff/conflict review. Passing one PR does not establish combined
 acceptance of still-unmerged changes. The issue-48 advisory trial (draft fork
 PR #10) is provisional, outside this gate, and has no merge authorization here.
+The benchmark explicitly released native builds at 15:31:58 UTC after its final
+measurement. Clearance was forwarded to the existing lanes; Sable freshness
+checks and the provisional trial coordinate their bounded native work.
 
 ## Review and validation receipts
 
