@@ -32,13 +32,13 @@ These behaviors remain supported and their tests are not obsolete.
   tests), build the actual CLI and MCP binaries, `embedding_format`, `cli_parity`
   (includes the process-level test-context regression), `tool_parity`, and
   `git diff --check`.
-- Core/language/plugin changes: affected crate library tests; `typescript_callers`;
+- Core/language/plugin changes: affected crate library/binary unit tests; `typescript_callers`;
   core `diagnostics::tests`, `index_status::tests`, `scip::tests`; interface
   checks below; plus `namespace_prefix`, `namespace_link`, `calls_service_edges`,
   `group_build_steps`, `combined_graph`, `grpc_cross_service`, `schema_parity`.
   In particular, `group_build_steps` retains the unchanged-consumer/changed-
   producer regression. The actual local graph/contract tests run, not substitutes.
-- CLI/MCP changes: affected library tests, CLI `doctor`, MCP `diagnose` and
+- CLI/MCP changes: affected library/binary unit tests, CLI `doctor`, MCP `diagnose` and
   `coverage_reporting`, MCP `web::tests::`, and the cross-repo tests listed above.
   MCP changes also run the Linux
   synthetic supervisor process regressions. Other workspace crates run their
@@ -46,6 +46,12 @@ These behaviors remain supported and their tests are not obsolete.
 - Changed Rust integration-test files are also selected directly. Manifests,
   dependency locks, build configuration, fixtures, grammars, CI and unknown paths
   expand to every compatibility group plus workspace library and binary unit tests.
+- Watcher paths additionally select real MCP watcher/reindex, parent-directory
+  search and concurrent reader/writer process tests. Core graph/index/lock/watch
+  paths select graph-query and lock/wiring regressions. Cargo manifests/lockfiles,
+  native patches/config and unavailable history select both of these groups.
+  Known watcher failures remain visible in these checks and the full suite;
+  they are not disabled or reclassified as obsolete.
 - Benchmark paths: compile the harness Python sources and run its synthetic
   unittest suite on Linux/Bubblewrap. This does not run benchmarks or execute
   the source repositories' applications. Supervisor script changes select its
@@ -107,6 +113,10 @@ previously locally validated **1.98.1**; it retains `-D warnings` with no lint
 allowances. Toolchain upgrades need explicit lint review. Failed/cancelled
 baseline durations are not successful test-suite timings and do not support a
 claimed end-to-end speedup percentage. New exact-head results belong in the PR.
+
+Recent fork PR creation-to-merge times were #2: 6h27m51s, #3: 6h04m42s,
+and #4: 5h59m52s (merged on 2026-10-24 UTC). Those include review/manual
+integration delay and are not CI execution times.
 
 The upstream-readiness lane owns runtime/SCIP fixes and its readiness document;
 the A/B lane owns benchmark source/results; Sable reliability code is untouched.

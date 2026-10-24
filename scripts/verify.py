@@ -96,11 +96,9 @@ def commands(paths, full=False):
             result.append(["cargo", "test", "--locked", "--workspace", "--lib", "--bins", "--", "--test-threads=1"])
         else:
             for crate in sorted(crates):
-                if (ROOT / "crates" / crate / "src/lib.rs").exists():
-                    result.append(test_command(crate, unit_filter=""))
-                else:
-                    result.append(["cargo", "test", "--locked", "-p", crate,
-                                   "--bins", "--", "--test-threads=1"])
+                unit_targets = ["--lib", "--bins"] if (ROOT / "crates" / crate / "src/lib.rs").exists() else ["--bins"]
+                result.append(["cargo", "test", "--locked", "-p", crate,
+                               *unit_targets, "--", "--test-threads=1"])
         if "interfaces" in suites:
             result += [test_command("infigraph-cli", ["doctor"]),
                        test_command("infigraph-mcp", ["diagnose", "coverage_reporting"]),
@@ -111,6 +109,18 @@ def commands(paths, full=False):
                 result.append(test_command("infigraph-core", unit_filter=group))
         if "cross-repo" in suites:
             result.append(test_command("infigraph-core", CORE_TESTS))
+        shared_build = paths is None or any(
+            p in {"Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml"}
+            or p.endswith("/Cargo.toml") or p.startswith((".cargo/", "patches/"))
+            for p in paths)
+        if shared_build or any(p.startswith("crates/") and "watch" in p for p in paths or []):
+            result.append(test_command("infigraph-mcp", [
+                "watcher_concurrency", "watcher_reindex", "parent_dir_search", "concurrent_writer_reader"]))
+        if shared_build or any(p.startswith("crates/infigraph-core/src/") and
+                               any(part in p for part in ["graph/", "lockfile", "index", "watch"])
+                               for p in paths or []):
+            result.append(test_command("infigraph-core", [
+                "graph_queries", "lockfile", "write_lock", "write_lock_edge_cases", "write_lock_wiring"]))
         # Changed integration targets outside the fixed contract lists must run.
         for path in sorted(paths or []):
             parts = Path(path).parts

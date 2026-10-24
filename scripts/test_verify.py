@@ -41,6 +41,8 @@ class CoverageTests(unittest.TestCase):
         self.assertIn(["python3", "scripts/test-mcp-supervisor.py"], plan)
         self.assertTrue(any("diagnose" in cmd for cmd in plan))
         self.assertTrue(any("group_build_steps" in cmd for cmd in plan))
+        self.assertTrue(any("infigraph-mcp" in cmd and "--lib" in cmd
+                            and "--bins" in cmd for cmd in plan))
 
     def test_benchmark_checks_do_not_execute_real_benchmarks(self):
         with patch.object(verify.sys, "platform", "linux"):
@@ -60,6 +62,13 @@ class CoverageTests(unittest.TestCase):
     def test_binary_only_cli_keeps_its_unit_tests(self):
         plan = verify.commands({"crates/infigraph-cli/src/main.rs"})
         self.assertTrue(any("infigraph-cli" in cmd and "--bins" in cmd for cmd in plan))
+
+    def test_watch_and_storage_changes_keep_process_and_lock_regressions(self):
+        for path in ["crates/infigraph-core/src/watch.rs", "Cargo.lock"]:
+            plan = verify.commands({path})
+            for name in ["watcher_reindex", "watcher_concurrency", "concurrent_writer_reader",
+                         "write_lock", "write_lock_wiring"]:
+                self.assertTrue(any(name in cmd for cmd in plan), name)
 
     def test_git_diff_includes_deleted_renamed_and_untracked_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
