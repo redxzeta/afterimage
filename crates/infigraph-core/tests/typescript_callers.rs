@@ -233,3 +233,89 @@ fn ambiguous_helpers_and_function_factories_remain_unresolved() {
         "Variable"
     );
 }
+
+#[test]
+fn reindexing_unchanged_files_invalidates_compiler_enrichment() {
+    use infigraph_core::{
+        index_status::{self, StageOutcome, StageState},
+        Infigraph,
+    };
+    use protobuf::Message;
+    use scip::types::{Document, Index, Occurrence, SymbolRole};
+
+    let dir = tempfile::tempdir().unwrap();
+    // A compiler reference without a syntax CALLS edge (e.g. a value use).
+    std::fs::write(
+        dir.path().join("app.ts"),
+        "export const helper = () => 1;\nexport const caller = () => {\n  return helper;\n};\n",
+    )
+    .unwrap();
+    let mut prism = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+    prism.init().unwrap();
+    prism.index().unwrap();
+    let backend = prism.backend().unwrap();
+    let symbol = "scip-test npm test 1.0.0 `app.ts`/helper().";
+    let artifact = dir.path().join("fixture.scip");
+    let index = Index {
+        documents: vec![Document {
+            relative_path: "app.ts".into(),
+            occurrences: vec![
+                Occurrence {
+                    range: vec![0, 13, 19],
+                    symbol: symbol.into(),
+                    symbol_roles: SymbolRole::Definition as i32,
+                    ..Default::default()
+                },
+                Occurrence {
+                    range: vec![2, 9, 15],
+                    symbol: symbol.into(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    std::fs::write(&artifact, index.write_to_bytes().unwrap()).unwrap();
+    backend.import_scip_index(&artifact, None).unwrap();
+    assert_eq!(
+        backend.callers_of("app.ts::helper").unwrap(),
+        vec!["app.ts::caller"]
+    );
+    let run = index_status::current_run(dir.path()).unwrap();
+    index_status::update_current(dir.path(), &run.run_id, Some(backend), |report| {
+        report.scip.insert(
+            "scip-typescript".into(),
+            StageOutcome::new(StageState::Succeeded, "SCIP_IMPORTED"),
+        );
+        Ok(())
+    })
+    .unwrap()
+    .unwrap();
+    // A genuine no-op may reuse its receipt and retain the imported edge.
+    assert_eq!(prism.index().unwrap().indexed_files, 0);
+    assert!(prism.coverage_notice().starts_with("Coverage:"));
+    assert_eq!(
+        backend.callers_of("app.ts::helper").unwrap(),
+        vec!["app.ts::caller"]
+    );
+
+    // Watcher/batch indexing rewrites even an unchanged file and its symbols.
+    assert_eq!(
+        prism.index_files(&["app.ts".into()]).unwrap().indexed_files,
+        1
+    );
+    assert!(backend.callers_of("app.ts::helper").unwrap().is_empty());
+    let updated = index_status::current_run(dir.path()).unwrap();
+    assert_eq!(
+        updated.indexed_file_fingerprint,
+        run.indexed_file_fingerprint
+    );
+    assert!(
+        updated.scip.is_empty(),
+        "rewritten symbols lost the imported edge; require enrichment again"
+    );
+    assert!(prism
+        .coverage_notice()
+        .contains("no compiler enrichment recorded"));
+}
