@@ -2,6 +2,7 @@ mod agent;
 mod analysis_commands;
 mod commands;
 mod config_targets;
+mod doctor;
 mod git_commands;
 mod graph_commands;
 mod group_commands;
@@ -60,6 +61,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Diagnose this project and installation without modifying state
+    Doctor {
+        /// Print stable JSON for coding agents and automation
+        #[arg(long)]
+        json: bool,
+    },
     /// Initialize infigraph in the current project
     Init {
         /// Associate with a repo group (writes multi-repo instructions for agents)
@@ -580,6 +587,8 @@ enum Commands {
     /// Background SCIP enrichment (spawned by index)
     #[command(hide = true)]
     ScipEnrich {
+        #[arg(long)]
+        run_id: Option<String>,
         /// Comma-separated detected languages
         languages: String,
     },
@@ -787,6 +796,20 @@ pub(crate) enum PipelineAction {
 }
 
 fn main() -> Result<()> {
+    if let Some(code) = infigraph_core::diagnostics::run_probe_if_requested() {
+        std::process::exit(code);
+    }
+    let cli = Cli::parse();
+    let root = cli.root.unwrap_or_else(|| PathBuf::from("."));
+
+    if let Commands::Doctor { json } = cli.command {
+        let code = doctor::run(&root, json)?;
+        if code != 0 {
+            std::process::exit(code);
+        }
+        return Ok(());
+    }
+
     // ANTLR parsers recurse deeply; Rayon's default 2MB stack overflows.
     // Windows default main-thread stack is 1MB — also too small.
     let _ = rayon::ThreadPoolBuilder::new()
@@ -794,10 +817,6 @@ fn main() -> Result<()> {
         .build_global();
 
     let update_handle = install::check_for_update_background();
-
-    let cli = Cli::parse();
-    let root = cli.root.unwrap_or_else(|| PathBuf::from("."));
-
     let should_auto_watch = !matches!(
         cli.command,
         Commands::Watch { .. }
@@ -809,6 +828,9 @@ fn main() -> Result<()> {
             | Commands::Install
             | Commands::Uninstall
             | Commands::Init { .. }
+            | Commands::Callers { .. }
+            | Commands::Callees { .. }
+            | Commands::Impact { .. }
             | Commands::Languages
             | Commands::Repos
             | Commands::CleanRuntimes
@@ -834,6 +856,7 @@ fn main() -> Result<()> {
 
 fn run(command: Commands, root: &Path) -> Result<()> {
     match command {
+        Commands::Doctor { json } => doctor::run(root, json).map(|_| ()),
         Commands::Init { group, quick, yes } => cmd_init(root, group.as_deref(), quick, yes),
         Commands::Index { full, no_embed } => cmd_index(root, full, no_embed),
         Commands::Stats => cmd_stats(root),
@@ -1014,14 +1037,13 @@ fn run(command: Commands, root: &Path) -> Result<()> {
         Commands::DetectPatterns { pattern, json } => {
             cmd_detect_patterns(root, pattern.as_deref(), json)
         }
-        Commands::ScipEnrich { languages } => {
+        Commands::ScipEnrich { languages, run_id } => {
             let detected: std::collections::HashSet<String> = languages
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
                 .collect();
-            index::cmd_scip_enrich(root, &detected);
-            Ok(())
+            index::cmd_scip_enrich(root, &detected, run_id.as_deref())
         }
         Commands::CleanRuntimes => {
             scip_download::clean_runtimes();
