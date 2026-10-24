@@ -1,0 +1,2325 @@
+{
+  "binary_builds": {
+    "baseline": {
+      "infigraph": {
+        "bytes": 270111064,
+        "sha256": "85414849b0969ee46c82a9bb8d257a582ca3a5d5ca3cf44de968b7ef1f0a3f32"
+      },
+      "infigraph-mcp": {
+        "bytes": 268124392,
+        "sha256": "ac1e24c7af92538132f75ffe7f96c30ca109b4fd23b995f834ad39b012e5b560"
+      },
+      "profile": "dev; debug=0; default features",
+      "source_clean": true,
+      "source_head": "cf82f5d7440d9be158e219df1ef256d6359ed1f6"
+    },
+    "candidate": {
+      "infigraph": {
+        "bytes": 246512152,
+        "sha256": "893d57a0299d81c32991758fef060b4fb92a25d1aa3c64296ee19b58da12ef0d"
+      },
+      "infigraph-mcp": {
+        "bytes": 243802168,
+        "sha256": "c88c980778f21df0398c72ab94c9c7acf7a3ab3862451c62ba1a5ed8706ee961"
+      },
+      "profile": "dev; debug=0; default features",
+      "source_clean": true,
+      "source_head": "4ed6708c4a9fbb693435079288d7242b3f30f1ef"
+    }
+  },
+  "build_inputs_as_supplied": {
+    "baseline_lock_sha256": "9068a23aeea9053d895d9aa1706f31dfc51bdc4832c8407f9883dc8ca7017371",
+    "candidate_lock_sha256": "f1c33ba66829fb179a1ceb48d3c2036776812953e6d8b6cc1d0a277c45689eca",
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "cargo_jobs": 1,
+    "cmake_jobs": 1,
+    "cpu_avx": true,
+    "cpu_avx2": false,
+    "cpu_bmi2": false,
+    "lbug_crate": "0.19.1",
+    "lbug_prebuilt_archive_sha256": "9100591f7cf1de0f565c96b55e3293998763260fc936bfbb9e304bef6f4ec2b8",
+    "profile": "dev/test with debug=0",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)"
+  },
+  "conclusion": "NO_COMPARATIVE_PERFORMANCE_ACCEPTANCE",
+  "limits": [
+    "Every baseline cold index exited 132 before query evidence. Baseline quality is UNRESOLVED, never zero recall.",
+    "Candidate indexing exited 1 with explicit partial syntax-graph receipts; SCIP tooling is unavailable in the intentionally offline sandbox.",
+    "IceCouncil quality comes from eight anchored files, not the full repository. Its full-source attempt is retained separately.",
+    "Command failure durations are observations, not successful cold-index samples or speedups.",
+    "Overall precision remains null; observed unlabelled edges are unadjudicated.",
+    "One host, fixed baseline-first order, one cold attempt per fixture; no OS page-cache flush or statistical performance claim.",
+    "RSS is unmeasured (GNU time unavailable). Embeddings were not indexed; identical model assets were supplied only for probes.",
+    "Anonymous test-callback ownership, full compiler enrichment, semantic-search quality and agent differential are unaccepted/unrun.",
+    "Raw logs and unreviewed observed names stay in operator-owned artifact storage; this summary is intentionally lossy."
+  ],
+  "observed_date": "2026-10-23",
+  "runs": [
+    {
+      "commit": "10435a8c19f84549a0206f6b249ea13166aff6d0",
+      "comparison": "INCOMPLETE_INDEX_PAIR",
+      "controls": {
+        "build_control": "refuse if builder active at start; sample command boundaries; operator must reserve idle host",
+        "cold": "empty index and HOME; OS page cache is NOT flushed",
+        "core_dumps": false,
+        "export": "tracked code + selected package/ignore config; no install/dependency tree",
+        "network": "isolated namespace",
+        "no_embed": true,
+        "order": "baseline,candidate",
+        "query_latency": "CLI process + graph open + traversal; no LLM",
+        "rss": "GNU time max RSS KiB if available; maximum, not concurrent sum",
+        "scip": "NOT_RUN: external tooling absent from PATH",
+        "serialized": true,
+        "threads": 1,
+        "timeout_s": 60.0
+      },
+      "fixture_scope": "repository",
+      "lanes": [
+        {
+          "binary_sha256": "85414849b0969ee46c82a9bb8d257a582ca3a5d5ca3cf44de968b7ef1f0a3f32",
+          "exported_files": 811,
+          "failed_steps": [
+            {
+              "exit_code": 132,
+              "name": "cold_index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": {
+            "status": "NOT_RUN"
+          },
+          "host_builds_seen": [],
+          "index_disposition": "UNAVAILABLE",
+          "index_steps": [
+            {
+              "engine_call_resolution": null,
+              "exit_code": 132,
+              "indexed_files": null,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {},
+              "status": "FAILED",
+              "wall_ms": 40751.29356
+            }
+          ],
+          "label": "baseline",
+          "mcp": {
+            "reason": "cold index failed",
+            "status": "NOT_RUN"
+          },
+          "mcp_sha256": "ac1e24c7af92538132f75ffe7f96c30ca109b4fd23b995f834ad39b012e5b560",
+          "probe_steps": [],
+          "quality": {
+            "calls": {
+              "false_edges": null,
+              "known_positives": 12,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "impact": [
+              {
+                "id": "canonical-arrow-chain",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "optional-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 4,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "required-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 2,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "json-render",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": null,
+              "known_positives": 2,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "symbols": {
+              "false_edges": null,
+              "known_positives": 21,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            }
+          },
+          "revision": "cf82f5d7440d9be158e219df1ef256d6359ed1f6",
+          "test_context": {
+            "reason": "cold index unavailable",
+            "status": "NOT_RUN"
+          }
+        },
+        {
+          "binary_sha256": "893d57a0299d81c32991758fef060b4fb92a25d1aa3c64296ee19b58da12ef0d",
+          "exported_files": 811,
+          "failed_steps": [
+            {
+              "exit_code": 1,
+              "name": "cold_index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": {
+            "status": "NOT_RUN"
+          },
+          "host_builds_seen": [],
+          "index_disposition": "PARTIAL_SYNTAX_GRAPH",
+          "index_steps": [
+            {
+              "engine_call_resolution": {
+                "cross_file": 107206,
+                "resolved": 19438,
+                "unresolved": 87783
+              },
+              "exit_code": 1,
+              "indexed_files": 808,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 46360.551316
+            }
+          ],
+          "label": "candidate",
+          "mcp": {
+            "reason": "cold index failed",
+            "status": "NOT_RUN"
+          },
+          "mcp_sha256": "c88c980778f21df0398c72ab94c9c7acf7a3ab3862451c62ba1a5ed8706ee961",
+          "probe_steps": [],
+          "quality": {
+            "calls": {
+              "false_edges": null,
+              "known_positives": 12,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "impact": [
+              {
+                "id": "canonical-arrow-chain",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "optional-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 4,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "required-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 2,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "json-render",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": null,
+              "known_positives": 2,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "symbols": {
+              "false_edges": null,
+              "known_positives": 21,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            }
+          },
+          "revision": "4ed6708c4a9fbb693435079288d7242b3f30f1ef",
+          "test_context": {
+            "reason": "cold index unavailable",
+            "status": "NOT_RUN"
+          }
+        }
+      ],
+      "model_files": {
+        "config.json": "2a6ac0e9aaa356a68a5688070db78fc3a464fefe85d2f06a1905ce3718687553",
+        "model.safetensors": "f65d0f325faadc1e121c319e2faa41170d3fa07d8c89abd48ca5358d9a223de2",
+        "tokenizer.json": "e67e803f624fb4d67dea1c730d06e1067e1b14d830e2c2202569e3ef0f70bb50"
+      },
+      "project": "ice-council",
+      "raw_report": "ice-pair-01.json",
+      "raw_report_sha256": "d60b11b299a115bf37a3e365b2f7e1e9dfef30dadef39bf2661a087de8b81bfc",
+      "role": "initial full-source failure attempt before partial-graph continuation",
+      "runner_sha256": null,
+      "status": "COMPLETED_WITH_FAILURES",
+      "truth_sha256": "6a37fafc9ecac56066c47d4f453e6572f07e06a7f29809999ec9e6024155b438"
+    },
+    {
+      "commit": "10435a8c19f84549a0206f6b249ea13166aff6d0",
+      "comparison": "INCOMPLETE_INDEX_PAIR",
+      "controls": {
+        "build_control": "refuse if builder active at start; sample command boundaries; operator must reserve idle host",
+        "cold": "empty index and HOME; OS page cache is NOT flushed",
+        "core_dumps": false,
+        "export": "tracked code + selected package/ignore config; no install/dependency tree",
+        "fixture_scope": "truth-files",
+        "network": "isolated namespace",
+        "no_embed": true,
+        "order": "baseline,candidate",
+        "query_latency": "CLI process + graph open + traversal; no LLM",
+        "rss": "GNU time max RSS KiB if available; maximum, not concurrent sum",
+        "scip": "NOT_RUN: external tooling absent from PATH",
+        "serialized": true,
+        "threads": 1,
+        "timeout_s": 60.0
+      },
+      "fixture_scope": "truth-files",
+      "lanes": [
+        {
+          "binary_sha256": "85414849b0969ee46c82a9bb8d257a582ca3a5d5ca3cf44de968b7ef1f0a3f32",
+          "exported_files": 8,
+          "failed_steps": [
+            {
+              "exit_code": 132,
+              "name": "cold_index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": {
+            "status": "NOT_RUN"
+          },
+          "host_builds_seen": [],
+          "index_disposition": "UNAVAILABLE",
+          "index_steps": [
+            {
+              "engine_call_resolution": null,
+              "exit_code": 132,
+              "indexed_files": null,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {},
+              "status": "FAILED",
+              "wall_ms": 6988.190183
+            }
+          ],
+          "label": "baseline",
+          "mcp": {
+            "reason": "cold index failed",
+            "status": "NOT_RUN"
+          },
+          "mcp_sha256": "ac1e24c7af92538132f75ffe7f96c30ca109b4fd23b995f834ad39b012e5b560",
+          "probe_steps": [],
+          "quality": {
+            "calls": {
+              "false_edges": null,
+              "known_positives": 12,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "impact": [
+              {
+                "id": "canonical-arrow-chain",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "optional-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 4,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "required-args",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 2,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "json-render",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": null,
+              "known_positives": 2,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "symbols": {
+              "false_edges": null,
+              "known_positives": 21,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            }
+          },
+          "revision": "cf82f5d7440d9be158e219df1ef256d6359ed1f6",
+          "test_context": {
+            "reason": "cold index unavailable",
+            "status": "NOT_RUN"
+          }
+        },
+        {
+          "binary_sha256": "893d57a0299d81c32991758fef060b4fb92a25d1aa3c64296ee19b58da12ef0d",
+          "exported_files": 8,
+          "failed_steps": [
+            {
+              "exit_code": 1,
+              "name": "cold_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "warm_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "changed_file_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "restore_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_a:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_b:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_return:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "uncommitted:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "deleted:index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": [
+            {
+              "case": "branch_a",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_b",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_return",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "uncommitted",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "deleted",
+              "expected": [],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [],
+              "status": "PARTIAL_GRAPH_MATCH"
+            }
+          ],
+          "host_builds_seen": [],
+          "index_disposition": "PARTIAL_SYNTAX_GRAPH",
+          "index_steps": [
+            {
+              "engine_call_resolution": {
+                "cross_file": 767,
+                "resolved": 12,
+                "unresolved": 755
+              },
+              "exit_code": 1,
+              "indexed_files": 8,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 6332.903593
+            },
+            {
+              "engine_call_resolution": null,
+              "exit_code": 1,
+              "indexed_files": 0,
+              "max_rss_kib": null,
+              "name": "warm_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 5426.122411
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 12,
+                "resolved": 0,
+                "unresolved": 12
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "changed_file_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 5928.882798
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 12,
+                "resolved": 0,
+                "unresolved": 12
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "restore_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 5938.430494
+            }
+          ],
+          "label": "candidate",
+          "mcp": {
+            "status": "OK",
+            "timing_scope": "whole stdio session including startup; not per-query"
+          },
+          "mcp_sha256": "c88c980778f21df0398c72ab94c9c7acf7a3ab3862451c62ba1a5ed8706ee961",
+          "probe_steps": [
+            {
+              "exit_code": -9,
+              "name": "mcp_session",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5377.932655
+            },
+            {
+              "exit_code": 0,
+              "name": "cli_test_context",
+              "status": "OK",
+              "stopped_after_responses": false,
+              "wall_ms": 5503.265885
+            },
+            {
+              "exit_code": -9,
+              "name": "mcp_test_context",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5442.337308
+            }
+          ],
+          "quality": {
+            "calls": {
+              "false_edges": [
+                [
+                  "test/containmentCollectorV2.test.mjs::hash",
+                  "src/utils/canonicalJson.ts::canonicalJson"
+                ]
+              ],
+              "known_positives": 12,
+              "labelled_precision": 0.9166666666666666,
+              "matched_positive_count": 11,
+              "missing_positive_count": 1,
+              "missing_positive_ids": [
+                [
+                  "src/equity/offline/groundingDataset.ts::jsonl",
+                  "src/equity/offline/groundingDataset.ts::json"
+                ]
+              ],
+              "precision": null,
+              "recall": 0.9166666666666666,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 19
+            },
+            "impact": [
+              {
+                "id": "canonical-arrow-chain",
+                "median_wall_ms": 5334.40312,
+                "samples_ms": [
+                  5132.279921,
+                  5680.265488,
+                  5334.40312
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 3,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 2,
+                  "missing_positive_count": 1,
+                  "missing_positive_ids": [
+                    "src/equity/offline/groundingDataset.ts::jsonl"
+                  ],
+                  "precision": null,
+                  "recall": 0.6666666666666666,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 13
+                }
+              },
+              {
+                "id": "optional-args",
+                "median_wall_ms": 5176.486054,
+                "samples_ms": [
+                  5230.939584,
+                  5176.486054,
+                  5131.434697
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 4,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 4,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 0
+                }
+              },
+              {
+                "id": "required-args",
+                "median_wall_ms": 5433.444121,
+                "samples_ms": [
+                  5433.444121,
+                  6130.204022,
+                  5176.918848
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 2,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 2,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 0
+                }
+              },
+              {
+                "id": "json-render",
+                "median_wall_ms": 5177.274245,
+                "samples_ms": [
+                  5177.274245,
+                  5128.134193,
+                  5428.549109
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 1,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 1,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 0
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": 5281.088215,
+                "samples_ms": [
+                  5281.088215,
+                  5839.525987,
+                  5127.879308
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 1,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 1,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 8
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": [],
+              "known_positives": 2,
+              "labelled_precision": null,
+              "matched_positive_count": 0,
+              "missing_positive_count": 2,
+              "missing_positive_ids": [
+                [
+                  "src/cli/gptCatalystComparison.ts",
+                  "src/cli/args.ts"
+                ],
+                [
+                  "src/equity/offline/groundingDataset.ts",
+                  "src/utils/canonicalJson.ts"
+                ]
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            },
+            "symbols": {
+              "false_edges": [],
+              "known_positives": 21,
+              "labelled_precision": 1.0,
+              "matched_positive_count": 21,
+              "missing_positive_count": 0,
+              "missing_positive_ids": [],
+              "precision": null,
+              "recall": 1.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            }
+          },
+          "revision": "4ed6708c4a9fbb693435079288d7242b3f30f1ef",
+          "test_context": {
+            "cli": "OK",
+            "mcp": "OK"
+          }
+        }
+      ],
+      "model_files": {
+        "config.json": "2a6ac0e9aaa356a68a5688070db78fc3a464fefe85d2f06a1905ce3718687553",
+        "model.safetensors": "f65d0f325faadc1e121c319e2faa41170d3fa07d8c89abd48ca5358d9a223de2",
+        "tokenizer.json": "e67e803f624fb4d67dea1c730d06e1067e1b14d830e2c2202569e3ef0f70bb50"
+      },
+      "project": "ice-council",
+      "raw_report": "ice-truth-pair-01.json",
+      "raw_report_sha256": "c6f3e30a9a2daa16f472e1ad8707f6eb42960655409420a7d5a17c73320b82cb",
+      "role": "source-quality run",
+      "runner_sha256": "d39d6315c072e41d6ad240db759a1ddb3f932440621d00deeb2278fdd8a3a7a8",
+      "status": "COMPLETED_WITH_FAILURES",
+      "truth_sha256": "6a37fafc9ecac56066c47d4f453e6572f07e06a7f29809999ec9e6024155b438"
+    },
+    {
+      "commit": "80985e6fc508f309b17ba1889ff2ca15b0253c08",
+      "comparison": "INCOMPLETE_INDEX_PAIR",
+      "controls": {
+        "build_control": "refuse if builder active at start; sample command boundaries; operator must reserve idle host",
+        "cold": "empty index and HOME; OS page cache is NOT flushed",
+        "core_dumps": false,
+        "export": "tracked code + selected package/ignore config; no install/dependency tree",
+        "fixture_scope": "repository",
+        "network": "isolated namespace",
+        "no_embed": true,
+        "order": "baseline,candidate",
+        "query_latency": "CLI process + graph open + traversal; no LLM",
+        "rss": "GNU time max RSS KiB if available; maximum, not concurrent sum",
+        "scip": "NOT_RUN: external tooling absent from PATH",
+        "serialized": true,
+        "threads": 1,
+        "timeout_s": 120.0
+      },
+      "fixture_scope": "repository",
+      "lanes": [
+        {
+          "binary_sha256": "85414849b0969ee46c82a9bb8d257a582ca3a5d5ca3cf44de968b7ef1f0a3f32",
+          "exported_files": 333,
+          "failed_steps": [
+            {
+              "exit_code": 132,
+              "name": "cold_index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": {
+            "status": "NOT_RUN"
+          },
+          "host_builds_seen": [],
+          "index_disposition": "UNAVAILABLE",
+          "index_steps": [
+            {
+              "engine_call_resolution": null,
+              "exit_code": 132,
+              "indexed_files": null,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {},
+              "status": "FAILED",
+              "wall_ms": 19459.15733
+            }
+          ],
+          "label": "baseline",
+          "mcp": {
+            "reason": "cold index failed",
+            "status": "NOT_RUN"
+          },
+          "mcp_sha256": "ac1e24c7af92538132f75ffe7f96c30ca109b4fd23b995f834ad39b012e5b560",
+          "probe_steps": [],
+          "quality": {
+            "calls": {
+              "false_edges": null,
+              "known_positives": 20,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "impact": [
+              {
+                "id": "quantity-arrow",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 8,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "scale-transitive",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 5,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "minimum-size",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "sort-callback",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 2,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": null,
+              "known_positives": 3,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "symbols": {
+              "false_edges": null,
+              "known_positives": 23,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            }
+          },
+          "revision": "cf82f5d7440d9be158e219df1ef256d6359ed1f6",
+          "test_context": {
+            "reason": "cold index unavailable",
+            "status": "NOT_RUN"
+          }
+        },
+        {
+          "binary_sha256": "893d57a0299d81c32991758fef060b4fb92a25d1aa3c64296ee19b58da12ef0d",
+          "exported_files": 333,
+          "failed_steps": [
+            {
+              "exit_code": 1,
+              "name": "cold_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "warm_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "changed_file_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "restore_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_a:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_b:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_return:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "uncommitted:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "deleted:index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": [
+            {
+              "case": "branch_a",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_b",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_return",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "uncommitted",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "deleted",
+              "expected": [],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [],
+              "status": "PARTIAL_GRAPH_MATCH"
+            }
+          ],
+          "host_builds_seen": [],
+          "index_disposition": "PARTIAL_SYNTAX_GRAPH",
+          "index_steps": [
+            {
+              "engine_call_resolution": {
+                "cross_file": 34906,
+                "resolved": 7893,
+                "unresolved": 27013
+              },
+              "exit_code": 1,
+              "indexed_files": 332,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 21210.527046
+            },
+            {
+              "engine_call_resolution": null,
+              "exit_code": 1,
+              "indexed_files": 0,
+              "max_rss_kib": null,
+              "name": "warm_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 5325.464263
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 17,
+                "resolved": 2,
+                "unresolved": 15
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "changed_file_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 10638.242561
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 17,
+                "resolved": 2,
+                "unresolved": 15
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "restore_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 10888.235519
+            }
+          ],
+          "label": "candidate",
+          "mcp": {
+            "status": "OK",
+            "timing_scope": "whole stdio session including startup; not per-query"
+          },
+          "mcp_sha256": "c88c980778f21df0398c72ab94c9c7acf7a3ab3862451c62ba1a5ed8706ee961",
+          "probe_steps": [
+            {
+              "exit_code": -9,
+              "name": "mcp_session",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5183.19257
+            },
+            {
+              "exit_code": 0,
+              "name": "cli_test_context",
+              "status": "OK",
+              "stopped_after_responses": false,
+              "wall_ms": 5075.343138
+            },
+            {
+              "exit_code": -9,
+              "name": "mcp_test_context",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5117.104925
+            }
+          ],
+          "quality": {
+            "calls": {
+              "false_edges": [],
+              "known_positives": 20,
+              "labelled_precision": 1.0,
+              "matched_positive_count": 20,
+              "missing_positive_count": 0,
+              "missing_positive_ids": [],
+              "precision": null,
+              "recall": 1.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 364
+            },
+            "impact": [
+              {
+                "id": "quantity-arrow",
+                "median_wall_ms": 5024.971785,
+                "samples_ms": [
+                  5024.971785,
+                  5024.587333,
+                  5175.659158
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 8,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 8,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 130
+                }
+              },
+              {
+                "id": "scale-transitive",
+                "median_wall_ms": 5124.889319,
+                "samples_ms": [
+                  5124.889319,
+                  4974.44554,
+                  5880.1958
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 5,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 5,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 144
+                }
+              },
+              {
+                "id": "minimum-size",
+                "median_wall_ms": 5124.984902,
+                "samples_ms": [
+                  5124.984902,
+                  5024.862162,
+                  5125.113393
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 3,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 3,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 213
+                }
+              },
+              {
+                "id": "sort-callback",
+                "median_wall_ms": 5024.981427,
+                "samples_ms": [
+                  5239.315504,
+                  5024.981427,
+                  5024.842767
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 2,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 2,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 204
+                }
+              },
+              {
+                "id": "duplicate-local",
+                "median_wall_ms": 5026.576475,
+                "samples_ms": [
+                  5074.647912,
+                  5024.818621,
+                  5026.576475
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 1,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 1,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 3
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": [],
+              "known_positives": 3,
+              "labelled_precision": null,
+              "matched_positive_count": 0,
+              "missing_positive_count": 3,
+              "missing_positive_ids": [
+                [
+                  "src/domain/decimal.ts",
+                  "src/domain/identifiers.ts"
+                ],
+                [
+                  "src/domain/index.ts",
+                  "src/domain/decimal.ts"
+                ],
+                [
+                  "tests/unit/canonical-json.test.ts",
+                  "src/services/canonical-json.ts"
+                ]
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            },
+            "symbols": {
+              "false_edges": [],
+              "known_positives": 23,
+              "labelled_precision": 1.0,
+              "matched_positive_count": 23,
+              "missing_positive_count": 0,
+              "missing_positive_ids": [],
+              "precision": null,
+              "recall": 1.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            }
+          },
+          "revision": "4ed6708c4a9fbb693435079288d7242b3f30f1ef",
+          "test_context": {
+            "cli": "OK",
+            "mcp": "OK"
+          }
+        }
+      ],
+      "model_files": {
+        "config.json": "2a6ac0e9aaa356a68a5688070db78fc3a464fefe85d2f06a1905ce3718687553",
+        "model.safetensors": "f65d0f325faadc1e121c319e2faa41170d3fa07d8c89abd48ca5358d9a223de2",
+        "tokenizer.json": "e67e803f624fb4d67dea1c730d06e1067e1b14d830e2c2202569e3ef0f70bb50"
+      },
+      "project": "nightwire",
+      "raw_report": "nightwire-pair-01.json",
+      "raw_report_sha256": "ec00873bf6c0fa99017a13480fe55d2463d00856278c51122b2af175744c7f4b",
+      "role": "source-quality run",
+      "runner_sha256": "d39d6315c072e41d6ad240db759a1ddb3f932440621d00deeb2278fdd8a3a7a8",
+      "status": "COMPLETED_WITH_FAILURES",
+      "truth_sha256": "f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1"
+    },
+    {
+      "commit": "02cee19056c8ee902289892727a6acbbcd30a7d3",
+      "comparison": "INCOMPLETE_INDEX_PAIR",
+      "controls": {
+        "build_control": "refuse if builder active at start; sample command boundaries; operator must reserve idle host",
+        "cold": "empty index and HOME; OS page cache is NOT flushed",
+        "core_dumps": false,
+        "export": "tracked code + selected package/ignore config; no install/dependency tree",
+        "fixture_scope": "repository",
+        "network": "isolated namespace",
+        "no_embed": true,
+        "order": "baseline,candidate",
+        "query_latency": "CLI process + graph open + traversal; no LLM",
+        "rss": "GNU time max RSS KiB if available; maximum, not concurrent sum",
+        "scip": "NOT_RUN: external tooling absent from PATH",
+        "serialized": true,
+        "threads": 1,
+        "timeout_s": 120.0
+      },
+      "fixture_scope": "repository",
+      "lanes": [
+        {
+          "binary_sha256": "85414849b0969ee46c82a9bb8d257a582ca3a5d5ca3cf44de968b7ef1f0a3f32",
+          "exported_files": 275,
+          "failed_steps": [
+            {
+              "exit_code": 132,
+              "name": "cold_index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": {
+            "status": "NOT_RUN"
+          },
+          "host_builds_seen": [],
+          "index_disposition": "UNAVAILABLE",
+          "index_steps": [
+            {
+              "engine_call_resolution": null,
+              "exit_code": 132,
+              "indexed_files": null,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {},
+              "status": "FAILED",
+              "wall_ms": 16358.692008
+            }
+          ],
+          "label": "baseline",
+          "mcp": {
+            "reason": "cold index failed",
+            "status": "NOT_RUN"
+          },
+          "mcp_sha256": "ac1e24c7af92538132f75ffe7f96c30ca109b4fd23b995f834ad39b012e5b560",
+          "probe_steps": [],
+          "quality": {
+            "calls": {
+              "false_edges": null,
+              "known_positives": 17,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "impact": [
+              {
+                "id": "source-digest",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "workspace-prompt",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "workspace-decoder",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 5,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "hash-arrow",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 3,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              },
+              {
+                "id": "config-validation",
+                "median_wall_ms": null,
+                "samples_ms": [],
+                "score": {
+                  "false_edges": null,
+                  "known_positives": 1,
+                  "labelled_precision": null,
+                  "matched_positive_count": null,
+                  "missing_positive_count": null,
+                  "missing_positive_ids": null,
+                  "precision": null,
+                  "recall": null,
+                  "status": "UNRESOLVED",
+                  "unadjudicated_observation_count": null
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": null,
+              "known_positives": 3,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            },
+            "symbols": {
+              "false_edges": null,
+              "known_positives": 24,
+              "labelled_precision": null,
+              "matched_positive_count": null,
+              "missing_positive_count": null,
+              "missing_positive_ids": null,
+              "precision": null,
+              "recall": null,
+              "status": "UNRESOLVED",
+              "unadjudicated_observation_count": null
+            }
+          },
+          "revision": "cf82f5d7440d9be158e219df1ef256d6359ed1f6",
+          "test_context": {
+            "reason": "cold index unavailable",
+            "status": "NOT_RUN"
+          }
+        },
+        {
+          "binary_sha256": "893d57a0299d81c32991758fef060b4fb92a25d1aa3c64296ee19b58da12ef0d",
+          "exported_files": 275,
+          "failed_steps": [
+            {
+              "exit_code": 1,
+              "name": "cold_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "warm_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "changed_file_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "restore_index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_a:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_b:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "branch_return:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "uncommitted:index",
+              "status": "FAILED"
+            },
+            {
+              "exit_code": 1,
+              "name": "deleted:index",
+              "status": "FAILED"
+            }
+          ],
+          "freshness": [
+            {
+              "case": "branch_a",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_b",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchB"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "branch_return",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::branchA"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "uncommitted",
+              "expected": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [
+                "afterimage_benchmark_fixture.ts::uncommitted"
+              ],
+              "status": "PARTIAL_GRAPH_MATCH"
+            },
+            {
+              "case": "deleted",
+              "expected": [],
+              "graph_status": "PASS",
+              "index_status": "FAILED",
+              "observed": [],
+              "status": "PARTIAL_GRAPH_MATCH"
+            }
+          ],
+          "host_builds_seen": [],
+          "index_disposition": "PARTIAL_SYNTAX_GRAPH",
+          "index_steps": [
+            {
+              "engine_call_resolution": {
+                "cross_file": 24424,
+                "resolved": 6456,
+                "unresolved": 17968
+              },
+              "exit_code": 1,
+              "indexed_files": 274,
+              "max_rss_kib": null,
+              "name": "cold_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 15914.573988
+            },
+            {
+              "engine_call_resolution": null,
+              "exit_code": 1,
+              "indexed_files": 0,
+              "max_rss_kib": null,
+              "name": "warm_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 6087.785641
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 95,
+                "resolved": 19,
+                "unresolved": 76
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "changed_file_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 7933.145466
+            },
+            {
+              "engine_call_resolution": {
+                "cross_file": 95,
+                "resolved": 19,
+                "unresolved": 76
+              },
+              "exit_code": 1,
+              "indexed_files": 1,
+              "max_rss_kib": null,
+              "name": "restore_index",
+              "stage_receipts": {
+                "index-status.json": {
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "schema_version": 1,
+                  "scip": {
+                    "scip-python": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    },
+                    "scip-typescript": {
+                      "reason": "SCIP_TOOL_UNAVAILABLE",
+                      "state": "failed"
+                    }
+                  }
+                }
+              },
+              "status": "FAILED",
+              "wall_ms": 8233.325702
+            }
+          ],
+          "label": "candidate",
+          "mcp": {
+            "status": "OK",
+            "timing_scope": "whole stdio session including startup; not per-query"
+          },
+          "mcp_sha256": "c88c980778f21df0398c72ab94c9c7acf7a3ab3862451c62ba1a5ed8706ee961",
+          "probe_steps": [
+            {
+              "exit_code": -9,
+              "name": "mcp_session",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5891.546468
+            },
+            {
+              "exit_code": 0,
+              "name": "cli_test_context",
+              "status": "OK",
+              "stopped_after_responses": false,
+              "wall_ms": 5528.698591
+            },
+            {
+              "exit_code": -9,
+              "name": "mcp_test_context",
+              "status": "OK",
+              "stopped_after_responses": true,
+              "wall_ms": 5769.862023
+            }
+          ],
+          "quality": {
+            "calls": {
+              "false_edges": [],
+              "known_positives": 17,
+              "labelled_precision": 1.0,
+              "matched_positive_count": 17,
+              "missing_positive_count": 0,
+              "missing_positive_ids": [],
+              "precision": null,
+              "recall": 1.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 167
+            },
+            "impact": [
+              {
+                "id": "source-digest",
+                "median_wall_ms": 5478.773302,
+                "samples_ms": [
+                  6079.525108,
+                  5478.773302,
+                  5428.718567
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 1,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 1,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 2
+                }
+              },
+              {
+                "id": "workspace-prompt",
+                "median_wall_ms": 5440.363607,
+                "samples_ms": [
+                  5479.115998,
+                  5227.952265,
+                  5440.363607
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 3,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 3,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 7
+                }
+              },
+              {
+                "id": "workspace-decoder",
+                "median_wall_ms": 6430.766937,
+                "samples_ms": [
+                  5678.875388,
+                  6430.766937,
+                  6492.045044
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 5,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 5,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 397
+                }
+              },
+              {
+                "id": "hash-arrow",
+                "median_wall_ms": 5936.223961,
+                "samples_ms": [
+                  6336.626829,
+                  5679.674435,
+                  5936.223961
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 3,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 3,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 7
+                }
+              },
+              {
+                "id": "config-validation",
+                "median_wall_ms": 5678.882469,
+                "samples_ms": [
+                  5526.950629,
+                  5979.70545,
+                  5678.882469
+                ],
+                "score": {
+                  "false_edges": [],
+                  "known_positives": 1,
+                  "labelled_precision": 1.0,
+                  "matched_positive_count": 1,
+                  "missing_positive_count": 0,
+                  "missing_positive_ids": [],
+                  "precision": null,
+                  "recall": 1.0,
+                  "status": "SOURCE_LABELLED_SUBSET",
+                  "unadjudicated_observation_count": 2
+                }
+              }
+            ],
+            "imports": {
+              "false_edges": [],
+              "known_positives": 3,
+              "labelled_precision": null,
+              "matched_positive_count": 0,
+              "missing_positive_count": 3,
+              "missing_positive_ids": [
+                [
+                  "packages/controllers/src/ollama.ts",
+                  "packages/controllers/src/prompt.ts"
+                ],
+                [
+                  "packages/datasets/src/index.ts",
+                  "packages/contracts/src/match.ts"
+                ],
+                [
+                  "packages/datasets/src/index.ts",
+                  "packages/controllers/src/prompt.ts"
+                ]
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            },
+            "symbols": {
+              "false_edges": [],
+              "known_positives": 24,
+              "labelled_precision": 1.0,
+              "matched_positive_count": 24,
+              "missing_positive_count": 0,
+              "missing_positive_ids": [],
+              "precision": null,
+              "recall": 1.0,
+              "status": "SOURCE_LABELLED_SUBSET",
+              "unadjudicated_observation_count": 0
+            }
+          },
+          "revision": "4ed6708c4a9fbb693435079288d7242b3f30f1ef",
+          "test_context": {
+            "cli": "OK",
+            "mcp": "OK"
+          }
+        }
+      ],
+      "model_files": {
+        "config.json": "2a6ac0e9aaa356a68a5688070db78fc3a464fefe85d2f06a1905ce3718687553",
+        "model.safetensors": "f65d0f325faadc1e121c319e2faa41170d3fa07d8c89abd48ca5358d9a223de2",
+        "tokenizer.json": "e67e803f624fb4d67dea1c730d06e1067e1b14d830e2c2202569e3ef0f70bb50"
+      },
+      "project": "giglab",
+      "raw_report": "giglab-pair-01.json",
+      "raw_report_sha256": "25daf00c92b327f2ed47903b6c95fb783312189e58fcf3e34989246b97515b84",
+      "role": "source-quality run",
+      "runner_sha256": "d39d6315c072e41d6ad240db759a1ddb3f932440621d00deeb2278fdd8a3a7a8",
+      "status": "COMPLETED_WITH_FAILURES",
+      "truth_sha256": "d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657"
+    }
+  ],
+  "schema": "afterimage-benchmark-summary-v1"
+}

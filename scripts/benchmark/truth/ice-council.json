@@ -1,0 +1,727 @@
+{
+  "anchors": [
+    {
+      "file_sha256": "0b8aa8157d0784590c0303d6a8edae6cc856a9a197c33cc3271e4d4b63d70174",
+      "id": "src/utils/canonicalJson.ts:5",
+      "line": 5,
+      "line_sha256": "57e715984f6967ff2d8aa837cb3450762204dd5f63869eb60262b959c9695863",
+      "path": "src/utils/canonicalJson.ts"
+    },
+    {
+      "file_sha256": "0b8aa8157d0784590c0303d6a8edae6cc856a9a197c33cc3271e4d4b63d70174",
+      "id": "src/utils/canonicalJson.ts:19",
+      "line": 19,
+      "line_sha256": "bcd8db66a0fa5795cbcc9db5c8bcd4e82e74de9c262ea4fec36d1d48dca3ef9d",
+      "path": "src/utils/canonicalJson.ts"
+    },
+    {
+      "file_sha256": "0b8aa8157d0784590c0303d6a8edae6cc856a9a197c33cc3271e4d4b63d70174",
+      "id": "src/utils/canonicalJson.ts:20",
+      "line": 20,
+      "line_sha256": "68f33c5956f0095dfc6a6b951a39956b4de01c09216cdc01dc350193b7294edc",
+      "path": "src/utils/canonicalJson.ts"
+    },
+    {
+      "file_sha256": "0b8aa8157d0784590c0303d6a8edae6cc856a9a197c33cc3271e4d4b63d70174",
+      "id": "src/utils/canonicalJson.ts:7",
+      "line": 7,
+      "line_sha256": "d635800cb969d0e36750e1b27c2da446d20b3b1f2c0de899b289c979642c2164",
+      "path": "src/utils/canonicalJson.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:40",
+      "line": 40,
+      "line_sha256": "a0ed657723927c7d429e7cc4185ca907183893b0a7e30fa2994efbda775d5d03",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:41",
+      "line": 41,
+      "line_sha256": "ee5e983982d868541a0e318935a6dfd0a3988ec16a5d464266d2f0157e2febd5",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:38",
+      "line": 38,
+      "line_sha256": "653ea6036cc000038d33fd4949c15b636508526351a20a63d421a114a82f464c",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:39",
+      "line": 39,
+      "line_sha256": "36d0bfdcc913ac362b866a6214758dcb426aa1e3a5ecb055dfa3e891b33299a1",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:42",
+      "line": 42,
+      "line_sha256": "809240490f34e1c5a701e34ad92c0cd9a238ad6fd1db8a61e2cc448eb93ac32c",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:45",
+      "line": 45,
+      "line_sha256": "b61ab3fe593ec23ad5a0b626c71e9afe2153ce4b1876328361aee5420f7cd9ae",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "2a4c7b38e8e00aa2c743aa3f607be8063f0fa3f811fba2d10f31df558e78348f",
+      "id": "src/equity/offline/groundingDataset.ts:9",
+      "line": 9,
+      "line_sha256": "bbfffac4b8bbb0bb5487105fc4c5aad37b56f2d4a1ebd8bd2d229105e12d7f85",
+      "path": "src/equity/offline/groundingDataset.ts"
+    },
+    {
+      "file_sha256": "6b7e732031e770d665ae9521f803db63b4e1b5d6368a900dba112b8c2cd97807",
+      "id": "src/cli/args.ts:10",
+      "line": 10,
+      "line_sha256": "f33cd1ce4fa97f91f2fab0b670246c5568d74b98cb1c0d432e0968f00c67aa27",
+      "path": "src/cli/args.ts"
+    },
+    {
+      "file_sha256": "6b7e732031e770d665ae9521f803db63b4e1b5d6368a900dba112b8c2cd97807",
+      "id": "src/cli/args.ts:18",
+      "line": 18,
+      "line_sha256": "61817f764dd87e8e07b796d7f30cb9f9bd6d6e5481f19ed279eb4b7148e91928",
+      "path": "src/cli/args.ts"
+    },
+    {
+      "file_sha256": "6b7e732031e770d665ae9521f803db63b4e1b5d6368a900dba112b8c2cd97807",
+      "id": "src/cli/args.ts:27",
+      "line": 27,
+      "line_sha256": "1f5a0ebed8ce896af8b3b1c0de0d68efa3bc525800b3892fb1b43fcb77e77c34",
+      "path": "src/cli/args.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:16",
+      "line": 16,
+      "line_sha256": "76c5e33bb37a3e02c418a7b5bb1b3c06c583ee99e05eb9e0f7e7ba9dad548a3c",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:25",
+      "line": 25,
+      "line_sha256": "640d1ee638051641ce90dc134ca1b1292d4ab661fba198b987c7542d1d10923e",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:27",
+      "line": 27,
+      "line_sha256": "740fcc323135c7672bdf34fda7cf3155ad89801ec8de09f726c2ca3e96fed5ec",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:39",
+      "line": 39,
+      "line_sha256": "75acf50c1e7593041511e92d728c8128b78c9f2e62b2120c11880907fc77b334",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:20",
+      "line": 20,
+      "line_sha256": "24129f94d057c58811935a3204095297d6d25b593a50a413e84fd7c246762ab2",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:23",
+      "line": 23,
+      "line_sha256": "2c4b8590dc15ad7441d606729c4f7dd6583bb721f8beccfcee691caaf6a089c9",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:47",
+      "line": 47,
+      "line_sha256": "709842b18261779c76f57be7f3a1f748868dd67333f99ec9ab49bfa8d32e597b",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:56",
+      "line": 56,
+      "line_sha256": "b51abec6825d6ff2de0b618ce3676f07ee8474ebc5b4633b292b507c7143d5fc",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:57",
+      "line": 57,
+      "line_sha256": "2e5a875de5c7d0214b183a48331ab7cebc3562d9821efb5acc5a3cf9dafb5e8c",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:26",
+      "line": 26,
+      "line_sha256": "9893e65ca7eae83a7d7e52f5f0ae78ec8beb84bb9a908d0c066fec43371cb268",
+      "path": "src/cli/gptCatalystComparison.ts"
+    },
+    {
+      "file_sha256": "0d810a5623f85716eb7edb2dbf76b18eef4e30ce465875a53a33a5744480e2a9",
+      "id": "src/utils/time.ts:1",
+      "line": 1,
+      "line_sha256": "46ba741a528ec084239836ca59b2b07ecdf619d81f1b2fa229545cceae0a8870",
+      "path": "src/utils/time.ts"
+    },
+    {
+      "file_sha256": "0d810a5623f85716eb7edb2dbf76b18eef4e30ce465875a53a33a5744480e2a9",
+      "id": "src/utils/time.ts:5",
+      "line": 5,
+      "line_sha256": "e6274094bb943cd11f5ab2e9decae69c3d7d3cfe6876ea51af9c1cd5e64d24dc",
+      "path": "src/utils/time.ts"
+    },
+    {
+      "file_sha256": "10c919ff64c81189e94efe41c106c6da0b7c1da16cd3068d2e263ec681e52768",
+      "id": "src/utils/id.ts:3",
+      "line": 3,
+      "line_sha256": "6637537c90fa602a4704aef25bad10cb4f54d23a8d4950b8fad5d11c3027aeb7",
+      "path": "src/utils/id.ts"
+    },
+    {
+      "file_sha256": "2d82ddad80bf9fd549ec477ef84d3686b70b63220fe01cc36069176bd533e27d",
+      "id": "src/utils/sensitiveValue.ts:18",
+      "line": 18,
+      "line_sha256": "09aa9a91d030e6361101460c73135f75baaa3ec840f7f783f315dfddd2deaa3a",
+      "path": "src/utils/sensitiveValue.ts"
+    },
+    {
+      "file_sha256": "9ee2b708527f8d2a4c82fc6926121dfe263fdd8fabcf2dd9594b8218ff039197",
+      "id": "test/containmentCollectorV2.test.mjs:104",
+      "line": 104,
+      "line_sha256": "24f4efcee7390b2eb3de267094c6f3de22c04c084155143d3f1ec2bf5116fce0",
+      "path": "test/containmentCollectorV2.test.mjs"
+    },
+    {
+      "file_sha256": "9ee2b708527f8d2a4c82fc6926121dfe263fdd8fabcf2dd9594b8218ff039197",
+      "id": "test/containmentCollectorV2.test.mjs:114",
+      "line": 114,
+      "line_sha256": "ba7c64fa764e2dc2a55e316da015038ee8a4aa49f1cda3c38b1d72331901c9e9",
+      "path": "test/containmentCollectorV2.test.mjs"
+    },
+    {
+      "file_sha256": "9ee2b708527f8d2a4c82fc6926121dfe263fdd8fabcf2dd9594b8218ff039197",
+      "id": "test/containmentCollectorV2.test.mjs:115",
+      "line": 115,
+      "line_sha256": "68f33c5956f0095dfc6a6b951a39956b4de01c09216cdc01dc350193b7294edc",
+      "path": "test/containmentCollectorV2.test.mjs"
+    },
+    {
+      "file_sha256": "4e1754912f2ac1f4406aa545d8649423f658b2b7e2fcebbcb83450dec77d3278",
+      "id": "src/cli/gptCatalystComparison.ts:14",
+      "line": 14,
+      "line_sha256": "62f7df5ea6235eb97dcb5fb4a9b69b6315c6ac1a1bd435a3802c419bb99dc0df",
+      "path": "src/cli/gptCatalystComparison.ts"
+    }
+  ],
+  "commit": "10435a8c19f84549a0206f6b249ea13166aff6d0",
+  "completeness": "Open-world, selected symbols and relationships only. Tests are source fixtures, never executed.",
+  "imports": [
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:9"
+      ],
+      "from": "src/equity/offline/groundingDataset.ts",
+      "label": "positive",
+      "note": "Relative import includes canonicalJson and an alias.",
+      "to": "src/utils/canonicalJson.ts"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:14"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts",
+      "label": "positive",
+      "note": "Relative import of argument helpers.",
+      "to": "src/cli/args.ts"
+    }
+  ],
+  "project": "ice-council",
+  "provenance": "Human source review; line anchors and full-file digests verified by bench.py. No graph-derived truth.",
+  "questions": [
+    {
+      "chains": [
+        [
+          "src/utils/canonicalJson.ts::canonicalJsonSha256",
+          "src/utils/canonicalJson.ts::canonicalJson"
+        ],
+        [
+          "src/equity/offline/groundingDataset.ts::json",
+          "src/utils/canonicalJson.ts::canonicalJson"
+        ],
+        [
+          "src/equity/offline/groundingDataset.ts::jsonl",
+          "src/equity/offline/groundingDataset.ts::json",
+          "src/utils/canonicalJson.ts::canonicalJson"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/utils/canonicalJson.ts:19",
+        "src/utils/canonicalJson.ts:5",
+        "src/utils/canonicalJson.ts:20",
+        "src/equity/offline/groundingDataset.ts:40",
+        "src/equity/offline/groundingDataset.ts:41"
+      ],
+      "expected": [
+        "src/utils/canonicalJson.ts::canonicalJsonSha256",
+        "src/equity/offline/groundingDataset.ts::json",
+        "src/equity/offline/groundingDataset.ts::jsonl"
+      ],
+      "id": "canonical-arrow-chain",
+      "question": "Which verified helpers depend on canonical serialization, including jsonl through a callback?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/utils/canonicalJson.ts::canonicalJson"
+    },
+    {
+      "chains": [
+        [
+          "src/cli/args.ts::parseRequiredArg",
+          "src/cli/args.ts::parseOptionalArg"
+        ],
+        [
+          "src/cli/args.ts::parseStrictOptionalArg",
+          "src/cli/args.ts::parseOptionalArg"
+        ],
+        [
+          "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+          "src/cli/args.ts::parseOptionalArg"
+        ],
+        [
+          "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+          "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+          "src/cli/args.ts::parseOptionalArg"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/cli/args.ts:18",
+        "src/cli/args.ts:10",
+        "src/cli/args.ts:27",
+        "src/cli/gptCatalystComparison.ts:16",
+        "src/cli/gptCatalystComparison.ts:20",
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:47"
+      ],
+      "expected": [
+        "src/cli/args.ts::parseRequiredArg",
+        "src/cli/args.ts::parseStrictOptionalArg",
+        "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+        "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli"
+      ],
+      "id": "optional-args",
+      "question": "Which verified CLI helpers would be affected by optional flag parsing?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/cli/args.ts::parseOptionalArg"
+    },
+    {
+      "chains": [
+        [
+          "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+          "src/cli/args.ts::parseRequiredArg"
+        ],
+        [
+          "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+          "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+          "src/cli/args.ts::parseRequiredArg"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:16",
+        "src/cli/args.ts:18",
+        "src/cli/gptCatalystComparison.ts:23",
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:47"
+      ],
+      "expected": [
+        "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+        "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli"
+      ],
+      "id": "required-args",
+      "question": "Which verified comparison CLI entry points depend transitively on required flags?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/cli/args.ts::parseRequiredArg"
+    },
+    {
+      "chains": [
+        [
+          "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+          "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonJson"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:25",
+        "src/cli/gptCatalystComparison.ts:56"
+      ],
+      "expected": [
+        "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli"
+      ],
+      "id": "json-render",
+      "question": "Which verified CLI owner invokes the JSON arrow renderer?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonJson"
+    },
+    {
+      "chains": [
+        [
+          "test/containmentCollectorV2.test.mjs::hash",
+          "test/containmentCollectorV2.test.mjs::canonicalJson"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "test/containmentCollectorV2.test.mjs:114",
+        "test/containmentCollectorV2.test.mjs:104",
+        "test/containmentCollectorV2.test.mjs:115"
+      ],
+      "expected": [
+        "test/containmentCollectorV2.test.mjs::hash"
+      ],
+      "id": "duplicate-local",
+      "question": "Which test helper calls its local duplicate serializer rather than the utility?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "test/containmentCollectorV2.test.mjs::canonicalJson"
+    }
+  ],
+  "relations": [
+    {
+      "evidence": [
+        "src/utils/canonicalJson.ts:19",
+        "src/utils/canonicalJson.ts:5",
+        "src/utils/canonicalJson.ts:20"
+      ],
+      "from": "src/utils/canonicalJson.ts::canonicalJsonSha256",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/utils/canonicalJson.ts::canonicalJson"
+    },
+    {
+      "evidence": [
+        "src/utils/canonicalJson.ts:5",
+        "src/utils/canonicalJson.ts:7"
+      ],
+      "from": "src/utils/canonicalJson.ts::canonicalJson",
+      "label": "positive",
+      "note": "Array.map receives canonicalJson as callback; recursive invocation via callback.",
+      "to": "src/utils/canonicalJson.ts::canonicalJson"
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:40",
+        "src/utils/canonicalJson.ts:5"
+      ],
+      "from": "src/equity/offline/groundingDataset.ts::json",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/utils/canonicalJson.ts::canonicalJson"
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:41",
+        "src/equity/offline/groundingDataset.ts:40"
+      ],
+      "from": "src/equity/offline/groundingDataset.ts::jsonl",
+      "label": "positive",
+      "note": "Array.map receives json; lexical arrow owner is jsonl.",
+      "to": "src/equity/offline/groundingDataset.ts::json"
+    },
+    {
+      "evidence": [
+        "src/cli/args.ts:18",
+        "src/cli/args.ts:10"
+      ],
+      "from": "src/cli/args.ts::parseRequiredArg",
+      "label": "positive",
+      "note": "Body calls parseOptionalArg(argv, flag); declaration plus file digest pin the complete body.",
+      "to": "src/cli/args.ts::parseOptionalArg"
+    },
+    {
+      "evidence": [
+        "src/cli/args.ts:27",
+        "src/cli/args.ts:10"
+      ],
+      "from": "src/cli/args.ts::parseStrictOptionalArg",
+      "label": "positive",
+      "note": "Body calls parseOptionalArg(argv, flag); declaration plus file digest pin the complete body.",
+      "to": "src/cli/args.ts::parseOptionalArg"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:16",
+        "src/cli/args.ts:10",
+        "src/cli/gptCatalystComparison.ts:20"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/cli/args.ts::parseOptionalArg"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:16",
+        "src/cli/args.ts:18",
+        "src/cli/gptCatalystComparison.ts:23"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/cli/args.ts::parseRequiredArg"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:16",
+        "src/cli/gptCatalystComparison.ts:47"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:25",
+        "src/cli/gptCatalystComparison.ts:56"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonJson"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:39",
+        "src/cli/gptCatalystComparison.ts:27",
+        "src/cli/gptCatalystComparison.ts:57"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonSummary"
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:25",
+        "src/utils/canonicalJson.ts:5",
+        "src/cli/gptCatalystComparison.ts:26"
+      ],
+      "from": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonJson",
+      "label": "negative",
+      "note": "Renderer uses JSON.stringify; no call to canonicalJson in this complete two-line arrow body.",
+      "to": "src/utils/canonicalJson.ts::canonicalJson"
+    },
+    {
+      "evidence": [
+        "test/containmentCollectorV2.test.mjs:114",
+        "test/containmentCollectorV2.test.mjs:104",
+        "test/containmentCollectorV2.test.mjs:115"
+      ],
+      "from": "test/containmentCollectorV2.test.mjs::hash",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "test/containmentCollectorV2.test.mjs::canonicalJson"
+    },
+    {
+      "evidence": [
+        "test/containmentCollectorV2.test.mjs:114",
+        "src/utils/canonicalJson.ts:5",
+        "test/containmentCollectorV2.test.mjs:115"
+      ],
+      "from": "test/containmentCollectorV2.test.mjs::hash",
+      "label": "negative",
+      "note": "Unqualified name binds to test-local canonicalJson, not the utility in another module.",
+      "to": "src/utils/canonicalJson.ts::canonicalJson"
+    }
+  ],
+  "schema": "afterimage-source-truth-v1",
+  "symbols": [
+    {
+      "evidence": [
+        "src/utils/canonicalJson.ts:5"
+      ],
+      "id": "src/utils/canonicalJson.ts::canonicalJson",
+      "tags": [
+        "callback",
+        "recursive"
+      ]
+    },
+    {
+      "evidence": [
+        "src/utils/canonicalJson.ts:19"
+      ],
+      "id": "src/utils/canonicalJson.ts::canonicalJsonSha256",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:40"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::json",
+      "tags": [
+        "arrow",
+        "import"
+      ]
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:41"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::jsonl",
+      "tags": [
+        "arrow",
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:38"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::textHash",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:39"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::sorted",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:42"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::unique",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/equity/offline/groundingDataset.ts:45"
+      ],
+      "id": "src/equity/offline/groundingDataset.ts::safeClaim",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/cli/args.ts:10"
+      ],
+      "id": "src/cli/args.ts::parseOptionalArg",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/cli/args.ts:18"
+      ],
+      "id": "src/cli/args.ts::parseRequiredArg",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/cli/args.ts:27"
+      ],
+      "id": "src/cli/args.ts::parseStrictOptionalArg",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:16"
+      ],
+      "id": "src/cli/gptCatalystComparison.ts::parseGptCatalystComparisonArgs",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:25"
+      ],
+      "id": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonJson",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:27"
+      ],
+      "id": "src/cli/gptCatalystComparison.ts::renderGptCatalystComparisonSummary",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/cli/gptCatalystComparison.ts:39"
+      ],
+      "id": "src/cli/gptCatalystComparison.ts::runGptCatalystComparisonCli",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/utils/time.ts:1"
+      ],
+      "id": "src/utils/time.ts::nowIso",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/utils/time.ts:5"
+      ],
+      "id": "src/utils/time.ts::addSeconds",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/utils/id.ts:3"
+      ],
+      "id": "src/utils/id.ts::newId",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/utils/sensitiveValue.ts:18"
+      ],
+      "id": "src/utils/sensitiveValue.ts::containsSensitiveValue",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "test/containmentCollectorV2.test.mjs:104"
+      ],
+      "id": "test/containmentCollectorV2.test.mjs::canonicalJson",
+      "tags": [
+        "duplicate-name",
+        "test"
+      ]
+    },
+    {
+      "evidence": [
+        "test/containmentCollectorV2.test.mjs:114"
+      ],
+      "id": "test/containmentCollectorV2.test.mjs::hash",
+      "tags": [
+        "test"
+      ]
+    }
+  ]
+}

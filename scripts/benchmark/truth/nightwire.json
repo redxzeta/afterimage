@@ -1,0 +1,922 @@
+{
+  "anchors": [
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:40",
+      "line": 40,
+      "line_sha256": "f7b74ac951509a1a17aeb7a2889e6aebe320d0460b77bd50ce496d7e18529235",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:60",
+      "line": 60,
+      "line_sha256": "f89c2243175f985eb34618ee6e79116234537db3f816d96b9cea95625d6be940",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:103",
+      "line": 103,
+      "line_sha256": "0e4bf408913560a706432b89e5c2a6c2fe493be9874a36544327d0d15be07e2f",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:127",
+      "line": 127,
+      "line_sha256": "cd9d44412d6b12828450b6f0c48ff4855c6f24b4e623dc14f294bfcb7ec1e243",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:135",
+      "line": 135,
+      "line_sha256": "a21c80625fdefa0b0f8286b744270883019fb4393f23b243c47f7409e0ca1aea",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:173",
+      "line": 173,
+      "line_sha256": "959c9c2d569ee972d503486e798ffbed37435726ba499a8cf80d9e3646e08a41",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:189",
+      "line": 189,
+      "line_sha256": "c2548c089bd86fc4da30b4072d7ddf49a859f1ace185b012039ffb23d161984f",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:201",
+      "line": 201,
+      "line_sha256": "caffedb3c2ba8140c276aa6283aa64d63e5362d3a53f41ee62746a671646e5dc",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:205",
+      "line": 205,
+      "line_sha256": "1e54d113883f3a18aee5671701091afe92bf00a83d1d54fb0d434b90881f0dbd",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:373",
+      "line": 373,
+      "line_sha256": "e42922968ee742935489fe2fb4de101367c64a65b6e4ea427b89aed683b30cfe",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:141",
+      "line": 141,
+      "line_sha256": "fd78fbb404e4cfe2e3e03ae137db19a38975af4a9e2fc752e183f3b91578e1a1",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:143",
+      "line": 143,
+      "line_sha256": "436bea08d7778c9d6037bd5e437e637fae33c390ecbc2fd94648efe56af2f040",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:145",
+      "line": 145,
+      "line_sha256": "285f26df195586145ce016566a43a573cb92bb26b0c20349f0a05951bc8ddb86",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:147",
+      "line": 147,
+      "line_sha256": "6f97247440b37123af89a17b00982a12c267964d250420e1f5e8dbc6c369e488",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:157",
+      "line": 157,
+      "line_sha256": "3483e55c0a0b10880295624660683d9f0cc53354b8f09490b3d5fed722782fec",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:162",
+      "line": 162,
+      "line_sha256": "17d7eb19cf07d45daa765a31589c698af275e441872060338535044d58941ad9",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:167",
+      "line": 167,
+      "line_sha256": "7394b46ffd46b415bf417700620868acbae1ed44f98d111041643f69bf6dcbea",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:124",
+      "line": 124,
+      "line_sha256": "6dc73453633b2f399e97122a1b9765fe29b1c2ebe06682d77de8a73f433437a6",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:136",
+      "line": 136,
+      "line_sha256": "c71857d709bc2da64fbd32a971d7af9ce1f4a0ece8c92a4798599bbf7d3b5c6b",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:137",
+      "line": 137,
+      "line_sha256": "6bd7c76f037dea43b81d054494f24390561ba38b6f02cf0b6079fa2644c849e2",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:130",
+      "line": 130,
+      "line_sha256": "01490b21cbf8c37d495bcfb9003fa9f116a5c8e759264d1f154c96b60c67bacc",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:128",
+      "line": 128,
+      "line_sha256": "9183233e8a1181323bcd897729a35a6533a209bb8e85ac298ca329684739022e",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:213",
+      "line": 213,
+      "line_sha256": "53e2c236f8644cadeaab40a445c7cbcf685bcc5b7eb781c6a5a0d1448369a7a9",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:202",
+      "line": 202,
+      "line_sha256": "e9c0446c8d202b6f41d378a2af40ffb92e3c712817792be871f6e17a7355d651",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:190",
+      "line": 190,
+      "line_sha256": "c8843a1202d48b9d3ef44e198a69f0e3a054483ad01ec3f3cee1d1054e5a09c1",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:374",
+      "line": 374,
+      "line_sha256": "d4fbef7160d4cc6b55ad4967d16c63f4ef7681b9ed79a1052c0e1fe20c5b1797",
+      "path": "src/domain/decimal.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:3",
+      "line": 3,
+      "line_sha256": "15c000fb75494958829fb4d7e6ac518148fe0b26db37ed4658c42e5a39150e90",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:7",
+      "line": 7,
+      "line_sha256": "ffbafe5d4513bbb672436c5a243c5a8bc5da392cc1997413859826b70db9a7ac",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:38",
+      "line": 38,
+      "line_sha256": "57e715984f6967ff2d8aa837cb3450762204dd5f63869eb60262b959c9695863",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:42",
+      "line": 42,
+      "line_sha256": "580e0cfbcc969102b3fc09ce15a8556cdf5e65309c3fed27e048bf3565512c15",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:28",
+      "line": 28,
+      "line_sha256": "eef8f3059dde661654fabdc4e8fceee0e373b4243106c3dab4fe28f54c59cf4b",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "e4eea2294a6873a1a8d186006d6797d7e773effd0ed8a2b69bf3ab874ec3e88d",
+      "id": "src/services/canonical-json.ts:39",
+      "line": 39,
+      "line_sha256": "e5fd819272f59a424a66c20466c269e29ef6da0625482a78e0a68096357e4655",
+      "path": "src/services/canonical-json.ts"
+    },
+    {
+      "file_sha256": "0659f2fd7474e9b5d59b5e0191a8b360b9304a6c8bc7f38821cc37fa81e8f2c3",
+      "id": "src/adapters/fixture-market-catalog.ts:33",
+      "line": 33,
+      "line_sha256": "eb45f30bf24c89cc8f8906fab15be853c80c24238c38e9ef99a2fb7a0adf33ba",
+      "path": "src/adapters/fixture-market-catalog.ts"
+    },
+    {
+      "file_sha256": "0659f2fd7474e9b5d59b5e0191a8b360b9304a6c8bc7f38821cc37fa81e8f2c3",
+      "id": "src/adapters/fixture-market-catalog.ts:46",
+      "line": 46,
+      "line_sha256": "26cccd603e4d694c1f74faa9bc4a81fe91e3483c7e8d2b41a9393c8d93b19837",
+      "path": "src/adapters/fixture-market-catalog.ts"
+    },
+    {
+      "file_sha256": "0659f2fd7474e9b5d59b5e0191a8b360b9304a6c8bc7f38821cc37fa81e8f2c3",
+      "id": "src/adapters/fixture-market-catalog.ts:47",
+      "line": 47,
+      "line_sha256": "8b1c264db1d8ed0c40eeae6a8e9045ae08ecd0764d4a0ac735dcaea569ca4115",
+      "path": "src/adapters/fixture-market-catalog.ts"
+    },
+    {
+      "file_sha256": "e060680f04b565c2cf2e71c625f50366e45887b059d7fe860e93f1294d2c7f6a",
+      "id": "tests/unit/canonical-json.test.ts:6",
+      "line": 6,
+      "line_sha256": "2e865df0bac10cc2a4b4e46b8e17667700a3ea9e5db1677c2abe6af1368c872e",
+      "path": "tests/unit/canonical-json.test.ts"
+    },
+    {
+      "file_sha256": "e060680f04b565c2cf2e71c625f50366e45887b059d7fe860e93f1294d2c7f6a",
+      "id": "tests/unit/canonical-json.test.ts:2",
+      "line": 2,
+      "line_sha256": "bc52847ca1bedf37c291a7ec7d04c16dd77015c62b7cf9b16d1fa268f7873c3f",
+      "path": "tests/unit/canonical-json.test.ts"
+    },
+    {
+      "file_sha256": "91bc93aa39a5a7e4e931527edb71d75006d4da93e38d7afef5a5466014887223",
+      "id": "src/domain/index.ts:1",
+      "line": 1,
+      "line_sha256": "e73171b3fb2de4a4fad7a5bf0485fcb1eb57610de7440ab3c2dd1f10ef0dcb99",
+      "path": "src/domain/index.ts"
+    },
+    {
+      "file_sha256": "ed3a20ca83a328e318c08a8a3f3e99979a945f89d2008914a00515ecb2d4ab92",
+      "id": "src/domain/decimal.ts:1",
+      "line": 1,
+      "line_sha256": "8ff8a42c7957f387eeb961201f766bb15289e56bad10a46ad9a2e85aa0da5afa",
+      "path": "src/domain/decimal.ts"
+    }
+  ],
+  "commit": "80985e6fc508f309b17ba1889ff2ca15b0253c08",
+  "completeness": "Open-world, selected symbols and relationships only. Tests are source fixtures, never executed.",
+  "imports": [
+    {
+      "evidence": [
+        "tests/unit/canonical-json.test.ts:2"
+      ],
+      "from": "tests/unit/canonical-json.test.ts",
+      "label": "positive",
+      "note": "Test imports the service serializer.",
+      "to": "src/services/canonical-json.ts"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:1"
+      ],
+      "from": "src/domain/decimal.ts",
+      "label": "positive",
+      "note": "Relative value import.",
+      "to": "src/domain/identifiers.ts"
+    },
+    {
+      "evidence": [
+        "src/domain/index.ts:1"
+      ],
+      "from": "src/domain/index.ts",
+      "label": "positive",
+      "note": "Re-export is a source module dependency; some engines omit re-exports.",
+      "to": "src/domain/decimal.ts"
+    }
+  ],
+  "project": "nightwire",
+  "provenance": "Human source review; line anchors and full-file digests verified by bench.py. No graph-derived truth.",
+  "questions": [
+    {
+      "chains": [
+        [
+          "src/domain/decimal.ts::quantity",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::notional",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::fee",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::pnl",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::returnValue",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::edge",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::slippage",
+          "src/domain/decimal.ts::parseDecimal"
+        ],
+        [
+          "src/domain/decimal.ts::price",
+          "src/domain/decimal.ts::parseDecimal"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/domain/decimal.ts:141",
+        "src/domain/decimal.ts:103",
+        "src/domain/decimal.ts:143",
+        "src/domain/decimal.ts:145",
+        "src/domain/decimal.ts:147",
+        "src/domain/decimal.ts:157",
+        "src/domain/decimal.ts:162",
+        "src/domain/decimal.ts:167",
+        "src/domain/decimal.ts:135",
+        "src/domain/decimal.ts:136"
+      ],
+      "expected": [
+        "src/domain/decimal.ts::quantity",
+        "src/domain/decimal.ts::notional",
+        "src/domain/decimal.ts::fee",
+        "src/domain/decimal.ts::pnl",
+        "src/domain/decimal.ts::returnValue",
+        "src/domain/decimal.ts::edge",
+        "src/domain/decimal.ts::slippage",
+        "src/domain/decimal.ts::price"
+      ],
+      "id": "quantity-arrow",
+      "question": "Which verified arrow wrappers and price constructor depend on decimal parsing?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "chains": [
+        [
+          "src/domain/decimal.ts::decimalValue",
+          "src/domain/decimal.ts::powerOfTen"
+        ],
+        [
+          "src/domain/decimal.ts::parseDecimal",
+          "src/domain/decimal.ts::decimalValue",
+          "src/domain/decimal.ts::powerOfTen"
+        ],
+        [
+          "src/domain/decimal.ts::quantity",
+          "src/domain/decimal.ts::parseDecimal",
+          "src/domain/decimal.ts::decimalValue",
+          "src/domain/decimal.ts::powerOfTen"
+        ],
+        [
+          "src/domain/decimal.ts::scaledCoefficient",
+          "src/domain/decimal.ts::powerOfTen"
+        ],
+        [
+          "src/domain/decimal.ts::compare",
+          "src/domain/decimal.ts::scaledCoefficient",
+          "src/domain/decimal.ts::powerOfTen"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/domain/decimal.ts:60",
+        "src/domain/decimal.ts:40",
+        "src/domain/decimal.ts:103",
+        "src/domain/decimal.ts:124",
+        "src/domain/decimal.ts:141",
+        "src/domain/decimal.ts:201",
+        "src/domain/decimal.ts:202",
+        "src/domain/decimal.ts:205",
+        "src/domain/decimal.ts:213"
+      ],
+      "expected": [
+        "src/domain/decimal.ts::decimalValue",
+        "src/domain/decimal.ts::parseDecimal",
+        "src/domain/decimal.ts::quantity",
+        "src/domain/decimal.ts::scaledCoefficient",
+        "src/domain/decimal.ts::compare"
+      ],
+      "id": "scale-transitive",
+      "question": "Which selected constructors and comparisons depend transitively on scale validation?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/domain/decimal.ts::powerOfTen"
+    },
+    {
+      "chains": [
+        [
+          "src/domain/decimal.ts::unitInterval",
+          "src/domain/decimal.ts::compare"
+        ],
+        [
+          "src/domain/decimal.ts::price",
+          "src/domain/decimal.ts::unitInterval",
+          "src/domain/decimal.ts::compare"
+        ],
+        [
+          "src/domain/decimal.ts::meetsMinimumSize",
+          "src/domain/decimal.ts::compare"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/domain/decimal.ts:127",
+        "src/domain/decimal.ts:205",
+        "src/domain/decimal.ts:130",
+        "src/domain/decimal.ts:135",
+        "src/domain/decimal.ts:137",
+        "src/domain/decimal.ts:373",
+        "src/domain/decimal.ts:374"
+      ],
+      "expected": [
+        "src/domain/decimal.ts::unitInterval",
+        "src/domain/decimal.ts::price",
+        "src/domain/decimal.ts::meetsMinimumSize"
+      ],
+      "id": "minimum-size",
+      "question": "Which verified price and minimum-size checks depend on compare?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/domain/decimal.ts::compare"
+    },
+    {
+      "chains": [
+        [
+          "src/services/canonical-json.ts::encode",
+          "src/services/canonical-json.ts::compareCanonicalKeys"
+        ],
+        [
+          "src/services/canonical-json.ts::canonicalJson",
+          "src/services/canonical-json.ts::encode",
+          "src/services/canonical-json.ts::compareCanonicalKeys"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/services/canonical-json.ts:7",
+        "src/services/canonical-json.ts:3",
+        "src/services/canonical-json.ts:28",
+        "src/services/canonical-json.ts:38",
+        "src/services/canonical-json.ts:39"
+      ],
+      "expected": [
+        "src/services/canonical-json.ts::encode",
+        "src/services/canonical-json.ts::canonicalJson"
+      ],
+      "id": "sort-callback",
+      "question": "Which verified serializer depends on the key comparator through a sort callback?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/services/canonical-json.ts::compareCanonicalKeys"
+    },
+    {
+      "chains": [
+        [
+          "src/adapters/fixture-market-catalog.ts::sha256",
+          "src/adapters/fixture-market-catalog.ts::canonicalJson"
+        ]
+      ],
+      "depth": 3,
+      "evidence": [
+        "src/adapters/fixture-market-catalog.ts:46",
+        "src/adapters/fixture-market-catalog.ts:33",
+        "src/adapters/fixture-market-catalog.ts:47"
+      ],
+      "expected": [
+        "src/adapters/fixture-market-catalog.ts::sha256"
+      ],
+      "id": "duplicate-local",
+      "question": "Which verified fixture digest uses the local duplicate serializer?",
+      "scope": "positive subset; not an exhaustive blast radius",
+      "target": "src/adapters/fixture-market-catalog.ts::canonicalJson"
+    }
+  ],
+  "relations": [
+    {
+      "evidence": [
+        "src/domain/decimal.ts:141",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::quantity",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:143",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::notional",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:145",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::fee",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:147",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::pnl",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:157",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::returnValue",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:162",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::edge",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:167",
+        "src/domain/decimal.ts:103"
+      ],
+      "from": "src/domain/decimal.ts::slippage",
+      "label": "positive",
+      "note": "Arrow body directly calls parseDecimal on following line; full-file digest pins body.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:60",
+        "src/domain/decimal.ts:40"
+      ],
+      "from": "src/domain/decimal.ts::decimalValue",
+      "label": "positive",
+      "note": "Body calls powerOfTen(scale); full-file digest pins body.",
+      "to": "src/domain/decimal.ts::powerOfTen"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:103",
+        "src/domain/decimal.ts:60",
+        "src/domain/decimal.ts:124"
+      ],
+      "from": "src/domain/decimal.ts::parseDecimal",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::decimalValue"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:135",
+        "src/domain/decimal.ts:103",
+        "src/domain/decimal.ts:136"
+      ],
+      "from": "src/domain/decimal.ts::price",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::parseDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:135",
+        "src/domain/decimal.ts:127",
+        "src/domain/decimal.ts:137"
+      ],
+      "from": "src/domain/decimal.ts::price",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::unitInterval"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:127",
+        "src/domain/decimal.ts:205",
+        "src/domain/decimal.ts:130"
+      ],
+      "from": "src/domain/decimal.ts::unitInterval",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::compare"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:127",
+        "src/domain/decimal.ts:60",
+        "src/domain/decimal.ts:128"
+      ],
+      "from": "src/domain/decimal.ts::unitInterval",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::decimalValue"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:205",
+        "src/domain/decimal.ts:201",
+        "src/domain/decimal.ts:213"
+      ],
+      "from": "src/domain/decimal.ts::compare",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::scaledCoefficient"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:201",
+        "src/domain/decimal.ts:40",
+        "src/domain/decimal.ts:202"
+      ],
+      "from": "src/domain/decimal.ts::scaledCoefficient",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::powerOfTen"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:189",
+        "src/domain/decimal.ts:173",
+        "src/domain/decimal.ts:190"
+      ],
+      "from": "src/domain/decimal.ts::serializeDecimal",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::normalizeDecimal"
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:373",
+        "src/domain/decimal.ts:205",
+        "src/domain/decimal.ts:374"
+      ],
+      "from": "src/domain/decimal.ts::meetsMinimumSize",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/domain/decimal.ts::compare"
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:7",
+        "src/services/canonical-json.ts:3",
+        "src/services/canonical-json.ts:28"
+      ],
+      "from": "src/services/canonical-json.ts::encode",
+      "label": "positive",
+      "note": "Comparator invoked in sort callback, owned lexically by encode.",
+      "to": "src/services/canonical-json.ts::compareCanonicalKeys"
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:38",
+        "src/services/canonical-json.ts:7",
+        "src/services/canonical-json.ts:39"
+      ],
+      "from": "src/services/canonical-json.ts::canonicalJson",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/services/canonical-json.ts::encode"
+    },
+    {
+      "evidence": [
+        "src/adapters/fixture-market-catalog.ts:46",
+        "src/adapters/fixture-market-catalog.ts:33",
+        "src/adapters/fixture-market-catalog.ts:47"
+      ],
+      "from": "src/adapters/fixture-market-catalog.ts::sha256",
+      "label": "positive",
+      "note": "Direct lexical call, verified in source.",
+      "to": "src/adapters/fixture-market-catalog.ts::canonicalJson"
+    },
+    {
+      "evidence": [
+        "src/adapters/fixture-market-catalog.ts:46",
+        "src/services/canonical-json.ts:38",
+        "src/adapters/fixture-market-catalog.ts:47"
+      ],
+      "from": "src/adapters/fixture-market-catalog.ts::sha256",
+      "label": "negative",
+      "note": "The serializer is the local duplicate, with no import of the service serializer.",
+      "to": "src/services/canonical-json.ts::canonicalJson"
+    }
+  ],
+  "schema": "afterimage-source-truth-v1",
+  "symbols": [
+    {
+      "evidence": [
+        "src/domain/decimal.ts:40"
+      ],
+      "id": "src/domain/decimal.ts::powerOfTen",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:60"
+      ],
+      "id": "src/domain/decimal.ts::decimalValue",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:103"
+      ],
+      "id": "src/domain/decimal.ts::parseDecimal",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:127"
+      ],
+      "id": "src/domain/decimal.ts::unitInterval",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:135"
+      ],
+      "id": "src/domain/decimal.ts::price",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:173"
+      ],
+      "id": "src/domain/decimal.ts::normalizeDecimal",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:189"
+      ],
+      "id": "src/domain/decimal.ts::serializeDecimal",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:201"
+      ],
+      "id": "src/domain/decimal.ts::scaledCoefficient",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:205"
+      ],
+      "id": "src/domain/decimal.ts::compare",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:373"
+      ],
+      "id": "src/domain/decimal.ts::meetsMinimumSize",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:141"
+      ],
+      "id": "src/domain/decimal.ts::quantity",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:143"
+      ],
+      "id": "src/domain/decimal.ts::notional",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:145"
+      ],
+      "id": "src/domain/decimal.ts::fee",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:147"
+      ],
+      "id": "src/domain/decimal.ts::pnl",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:157"
+      ],
+      "id": "src/domain/decimal.ts::returnValue",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:162"
+      ],
+      "id": "src/domain/decimal.ts::edge",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/domain/decimal.ts:167"
+      ],
+      "id": "src/domain/decimal.ts::slippage",
+      "tags": [
+        "arrow"
+      ]
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:3"
+      ],
+      "id": "src/services/canonical-json.ts::compareCanonicalKeys",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:7"
+      ],
+      "id": "src/services/canonical-json.ts::encode",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:38"
+      ],
+      "id": "src/services/canonical-json.ts::canonicalJson",
+      "tags": []
+    },
+    {
+      "evidence": [
+        "src/services/canonical-json.ts:42"
+      ],
+      "id": "src/services/canonical-json.ts::parseCanonicalJson",
+      "tags": [
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "src/adapters/fixture-market-catalog.ts:33"
+      ],
+      "id": "src/adapters/fixture-market-catalog.ts::canonicalJson",
+      "tags": [
+        "duplicate-name",
+        "callback"
+      ]
+    },
+    {
+      "evidence": [
+        "src/adapters/fixture-market-catalog.ts:46"
+      ],
+      "id": "src/adapters/fixture-market-catalog.ts::sha256",
+      "tags": []
+    }
+  ]
+}
