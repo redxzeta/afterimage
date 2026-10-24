@@ -1,5 +1,8 @@
 # Infigraph
 
+Afterimage fork: develop on `afterimage-main`; `main` mirrors upstream only.
+See the [fork workflow and local checks](docs/FORK_WORKFLOW.md).
+
 <div align="center">
   <img src="branding-system/logos/infigraph-light.png" alt="Infigraph" width="600" />
 </div>
