@@ -106,6 +106,21 @@ class CoverageTests(unittest.TestCase):
                     self.assertTrue(any("watch_new_directory" in cmd for cmd in verify.commands(paths)))
                     regression.unlink()
 
+    def test_import_regressions_track_integrated_core_language_and_build_changes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            regression = root / "crates/infigraph-core/tests/typescript_imports.rs"
+            for paths in [{"crates/infigraph-core/src/graph/store_write.rs"},
+                          {"crates/infigraph-languages/languages/typescript/relations.scm"},
+                          {"scripts/verify.py"}, {".github/workflows/ci.yml"},
+                          {"unknown-build-input"}, None]:
+                with self.subTest(paths=paths), patch.object(verify, "ROOT", root):
+                    self.assertFalse(any("typescript_imports" in cmd for cmd in verify.commands(paths)))
+                    regression.parent.mkdir(parents=True, exist_ok=True)
+                    regression.write_text("// integrated import regression target")
+                    self.assertTrue(any("typescript_imports" in cmd for cmd in verify.commands(paths)))
+                    regression.unlink()
+
     def test_git_diff_includes_deleted_renamed_and_untracked_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -93,6 +93,10 @@ def commands(paths, full=False, comparison=None):
             targets.update({"doctor", "diagnose", "coverage_reporting"})
         if "core" in suites:
             targets.add("typescript_callers")
+            # Retain PR #9's resolver/storage regressions for later shared
+            # graph/language/build edits after that target is integrated.
+            if (ROOT / "crates/infigraph-core/tests/typescript_imports.rs").is_file():
+                targets.add("typescript_imports")
         if "cross-repo" in suites:
             targets.update(CORE_TESTS)
         shared_build = "workspace" in crates or any(

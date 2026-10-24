@@ -34,7 +34,9 @@ These behaviors remain supported and their tests are not obsolete.
   tests), build the actual CLI and MCP binaries, `embedding_format`, `cli_parity`
   (includes the process-level test-context regression), `tool_parity`, and
   `git diff --check`.
-- Core/language/plugin changes: affected crate library/binary unit tests; `typescript_callers`;
+- Core/language/plugin changes: affected crate library/binary unit tests;
+  `typescript_callers` and the integrated `typescript_imports` resolver/storage
+  regressions (guarded by target existence);
   core `diagnostics::tests`, `index_status::tests`, `scip::tests`; interface
   checks below; plus `namespace_prefix`, `namespace_link`, `calls_service_edges`,
   `group_build_steps`, `combined_graph`, `grpc_cross_service`, `schema_parity`.
