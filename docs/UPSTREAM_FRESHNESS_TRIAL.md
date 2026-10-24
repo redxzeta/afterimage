@@ -78,6 +78,14 @@ Rejected alternatives:
 
 ## Current-base combined validation
 
+After these native checks, the target advanced again to
+`de02e762c5581055d2adcefe7efe1a58bc0c7cab`, adding only
+`docs/AFTERIMAGE_ACCEPTANCE.md` through PR #8. That documentation-only base was
+incorporated into this experiment with a normal merge. The entire `crates/` tree
+is identical to the tested combined checkpoint, so native checks were not
+repeated for that documentation change. Evidence below remains bound to its
+actual tested SHA rather than being relabeled as a rerun.
+
 The following supersedes the historical watcher failure for the final trial
 branch. The coordinator independently merged PR #7 during final readback. The
 trial incorporated that base in its own branch, reacquired explicit Sable idle
