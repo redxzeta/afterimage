@@ -1,221 +1,141 @@
 # Afterimage integration acceptance
 
-Review date: 2026-10-24 UTC. This is a source-integration receipt for the personal
-fork, not installation, deployment, release, or runtime authority.
+Snapshot: 2026-10-24 UTC. Repository: `redxzeta/afterimage`; development/default
+base: `afterimage-main`. Reviewed source base:
+`f4568cf15e004391f549bc8705112e37502bd3dc`. This receipt grants no installation,
+deployment, release, publishing, runtime, scheduling, or financial authority.
 
-## Bound identities and decisions
+Protected mirror `main` remains
+`cf82f5d7440d9be158e219df1ef256d6359ed1f6`. Upstream intuit/infigraph PRs
+#78/#81/#82/#83/#84 are separate from fork integration; no upstream mutation
+was performed. The provisional advisory trial #10 remains outside this gate.
 
-- Repository/base: `redxzeta/afterimage:afterimage-main`.
-- Starting base: `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`.
-- Reviewed source-integration base: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`.
-- Protected fork mirror `main`: `cf82f5d7440d9be158e219df1ef256d6359ed1f6`,
-  unchanged after the merge. Upstream PRs #78/#81/#82/#83/#84 remain separate
-  from fork acceptance; this review makes no upstream mutations.
+## PR outcomes
 
-| Fork PR/lane | Exact reviewed head | Outcome and remaining condition |
+| Fork PR | Exact reviewed head | Outcome / merge commit |
 | --- | --- | --- |
-| [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
-| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `17a5cc66aae0c3363c07780ebf1f3518a8dad1d1` | HOLD: both selector gaps corrected and independently validated (14 passes). Hosted fixture still dies from SIGSEGV; debugger probe did not run. Local author parity passes 4/4; causal disposition remains unresolved. |
-| [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `51de48ce7ccf9218ff91424f8c312a5c1a10ac38` | MERGED with expected-head guard; merge `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`. Four direct-graph regressions and #6 receipt pass; narrow Linux source integration accepted with explicit residuals below. |
-| Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Delivery stopped at provider usage limit before publishing; final artifacts/review pending. |
-| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `df7a8687e3cc2024172c27bf1a66e1a408c96111` | DRAFT / HOLD: both pre-fix failures reproduced; 8 import + 29 focused library + 6 caller tests pass. Head does not include merged #7; combined checks, final receipts and readiness remain pending. Provider usage limit blocks the author. |
+| [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED: `4d5266fe10c2c39dbaac423c7a43731329601e85` |
+| [#7: watcher freshness](https://github.com/redxzeta/afterimage/pull/7) | `51de48ce7ccf9218ff91424f8c312a5c1a10ac38` | MERGED: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010` |
+| [#8: acceptance checkpoint](https://github.com/redxzeta/afterimage/pull/8) | `83a700968e63d9737eec8461fab8b69ee876d2c6` | MERGED: `de02e762c5581055d2adcefe7efe1a58bc0c7cab` |
+| [#9: relative module imports](https://github.com/redxzeta/afterimage/pull/9) | `78c7c64494661ae906565156b957d648e1820f79` | MERGED: `a5b19badfd4ae496965a803c7be770d2281bc573` |
+| [#11: benchmark harness/evidence](https://github.com/redxzeta/afterimage/pull/11) | `eee27b712d19c745cd2950dc95a7470bab14c3f4` | MERGED: `f4568cf15e004391f549bc8705112e37502bd3dc` |
+| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `f9ffc6f199212c7c2e05d788ef0a8b2c8dfe6603` | HOLD: hosted SIGSEGV cause and new import-suite selection remain open; replacement must include current base and receive fresh review. |
 
-Every remaining delivery must include the current `afterimage-main` base and
-receive a fresh diff/conflict review. Passing one PR does not establish combined
-acceptance of still-unmerged changes. The issue-48 advisory trial (draft fork
-PR #10) is provisional, outside this gate, and has no merge authorization here.
-The benchmark explicitly released native builds at 15:31:58 UTC after its final
-measurement. Clearance was forwarded to the existing lanes; Sable freshness
-checks and the provisional trial coordinate their bounded native work.
+Every merge above used an expected-head guard after independent source/test
+review. #9 included #6/#7 before final combined validation; #11 then integrated
+#9. Merge construction and diff whitespace checks passed. No known new failing
+product test was waived. Missing checks under the inherited main-only CI filter
+are NOT_CONFIGURED, not passes; #5 owns the pending target correction.
 
-PR #8 has no reported checks because the current base CI workflow filters PRs
-to `main`, while this documentation-only PR targets `afterimage-main`. This is
-NOT_CONFIGURED, not a test pass or failure. Its diff is whitespace-checked and
-reviewed; no workflow change or broad native suite is added for this notice.
-PR #5 owns the pending CI target correction.
+## Validation receipts
 
-### External execution blocker
+Author native executions below were independently reviewed, with tested-code
+versus delivery-head equality checked. They were not relabeled as reviewer
+executions. Detailed commands, retained failures and limits are in the linked
+reports. No full workspace or cross-platform matrix is claimed.
 
-Fresh activity readbacks confirm all three Debian lanes stopped with the same
-provider error: **Usage limit reached**, with the provider advising retry at
-**12:53 PM** (timezone not stated in that message). Prior restart attempts hit
-the same limit immediately. No further automatic agent restarts are attempted
-under that condition. This is an execution-capacity blocker, not a code test
-failure or merge approval. Source #5/#9 remain HOLD; no failing tests are waived.
-The benchmark's unpublished delivery commit is reported as
-`c3821423d3eace0131c3aa6c890ee41bf3e9e140`, still on the older delivery base;
-its artifacts have not received final integration review.
+- **#6:** code `e8bb61bf297d28349a055dae4cc7930f8ccac14b`; final commit adds
+  documentation only. **53 focused tests pass:** 6 callers, 2 receipt, 35 CLI
+  index, 4 doctor, 1 diagnose and 5 coverage-reporting tests. Formatting and
+  focused strict Clippy pass. Regression proves a true no-op retains receipt
+  and compiler edge, while unchanged batch rewrites invalidate lost enrichment.
+  [Full receipt and upstream findings](UPSTREAM_PR_READINESS.md).
+- **#7:** tested checkpoint `b65ad6cd086f76124bc6884308c6751f50bf2b3a`;
+  final head changes docs only. Raw receipt source SHA-256 values match the
+  reviewed files. Four direct-graph regressions fail before and pass after:
+  populated directory/symlink/loop, return checkout/edit/removal, hidden ancestors
+  with ignore exclusions/negation, and rule changes before queued-file flush.
+  Return graph is exact in **2.183042707 s**, within the unchanged absolute
+  **12 s** starting before checkout and checked after reads. Outside sentinel
+  preserved; #6 receipt **1/1**; reader/writer **52 correct / 0 errors / 0 wrong**
+  in that run. Strict Clippy/fmt pass. [Full report](PHASE-D-RELIABILITY-FOLLOWUP.md).
+- **#9:** tested checkpoint `bba675c9f6fcfa60c2f2a9ae6ea120ebbed433aa` on
+  base `de02e762`; final commit adds docs only. **8 import + 1 receipt + 4 watcher
+  tests pass**, with focused strict Clippy/fmt. Watcher return is **2.367690088 s**
+  inside the unchanged deadline; five unsuccessful native reads precede valid
+  snapshots. Original missing-import and provisional-edge ordering regressions
+  retain **exit 101** before their fixes. Earlier `df7a8687` has separately pinned
+  8 import + 29 library + 6 caller passes. [Full receipt](TYPESCRIPT_MODULE_IMPORTS.md).
+- **#11:** reviewer independently ran **19/19 synthetic harness tests**, exit 0,
+  **3.805 s**, plus Python compilation and JSON parsing at
+  `7e56fa1342feff9399623487309a0688e29e09ad`. Final delivery only integrates
+  #9 and updates report wording; harness/tests/fixtures/summary bytes match.
+  Runner/truth hashes, binary pins, published aggregate counts, six freshness
+  records per lane, and all **30 CLI/MCP question scores** were checked.
+  Public artifact inspection found no private host paths or credential material;
+  fixed `/bench/home` paths are sandbox namespace constants.
+- **#5:** reviewer independently passed **14 selector + 4 diagnostic tests** at
+  `ffdd27af366140f40116a7bf525aa0063386a0c9`, then **14 + 5** at `f9ffc6f1`.
+  Both selector gaps are corrected: unknown/workspace inputs retain watcher and
+  graph-lock suites, and watcher changes select integrated `watch_new_directory`.
+  Author native receipt at `0eb9e229fcebc0a2d054fcfcaa9706481bae8f81` has
+  **4 CLI parity + 4 watcher tests**, 113.35 s including build; the `ffdd27af`
+  documentation merge leaves relevant source/build/CI files identical.
 
-## Review and validation receipts
+Native work respected the benchmark's explicit release at **15:31:58 UTC** and
+subsequent Sable slot handoff. No measured target apps, hooks or services ran.
+The earlier Debian provider usage-limit interruption is historical: authors
+resumed and completed #9/#11 delivery. It does not waive #5's unresolved failure.
 
-The integration reviewer inspected all changed files, PR descriptions, comments,
-reviews, check summaries, source call paths, and merge construction for #5–#7.
-At the initial reviewed heads there were no submitted reviews or inline/issue
-comments, and all three PRs were mergeable. Diff whitespace checks passed for
-all three. `git merge-tree --write-tree` passed for #6 against the starting base
-and #5/#7 against the advanced base.
-Merge construction is not runtime validation.
+## Remaining CI diagnosis
 
-For #6, production code is commit
-`e8bb61bf297d28349a055dae4cc7930f8ccac14b`; the final commit adds only the
-[readiness report](UPSTREAM_PR_READINESS.md). The reviewer confirmed code,
-manifests, lockfile and tests are unchanged between those commits. Existing
-serial, offline receipts were inspected, not rerun during active benchmark
-timings:
+[Run 40127988676](https://github.com/redxzeta/afterimage/actions/runs/40127988676)
+on `ffdd27af` fails CLI parity **3 passed / 1 failed**: fixture index dies from
+**SIGSEGV 11**, core dumped, no exit code, empty stdout/stderr. Earlier runs
+[40106285931](https://github.com/redxzeta/afterimage/actions/runs/40106285931) and
+[40107320071](https://github.com/redxzeta/afterimage/actions/runs/40107320071)
+retain the same failure. Unreached hosted suites remain NOT_RUN.
 
-| Command/check on #6 code | Result |
-| --- | --- |
-| `cargo test --locked --offline -p infigraph-core --test typescript_callers -- --test-threads=1` | PASS: 6, including unchanged rewrite invalidation and genuine no-op preservation. |
-| `cargo test --locked --offline -p infigraph-core --lib index_status::tests:: -- --test-threads=1` | PASS: 2. |
-| `cargo test --locked --offline -p infigraph-cli --bin infigraph index:: -- --test-threads=1` | PASS: 35. |
-| `cargo test --locked --offline -p infigraph-cli --test doctor -- --test-threads=1` | PASS: 4. |
-| `cargo test --locked --offline -p infigraph-mcp --test diagnose --test coverage_reporting -- --test-threads=1` | PASS: 1 + 5. |
-| Formatting, core library Clippy with `-D warnings`, diff check | PASS in author receipt. Reviewer refreshed diff check. |
+Reported hosted native archive and both header hashes match the passing local
+cache; the native version is 0.21.2. Different downloaded bytes are unsupported
+as the explanation. The probe selected `lldb-dap-21` instead of a debugger CLI,
+so its exit zero supplied **no backtrace**. The reviewer reproduced that
+selection defect; `f9ffc6f1` rejects helpers and its new discovery test passes.
+Corrected hosted diagnosis remains pending. Underlying cause and inherited
+versus environment regression remain **UNDETERMINED**. Production-source equality
+alone does not prove inheritance; no OOM, SIGILL, timeout-only or green claim.
 
-The new regression fails on the previous production implementation and passes
-with the fix. It verifies a stored compiler edge disappears after an unchanged
-batch rewrite, the fingerprint remains equal, and successful enrichment is then
-invalidated. The genuine incremental no-op retains both edge and receipt. The
-fix is a receipt reuse condition; it does not restore edges or run SCIP.
+A combined-base probe also finds that `f9ffc6f1` omits merged #9's
+`typescript_imports` target for core graph, language-query and CI changes when
+the test file itself is unchanged. The owner received the reproducer and a
+request to retain that critical regression with present/absent target tests.
+This coverage gap must be resolved before final #5 acceptance.
 
-For #5, the reviewer independently ran
-`python3 -m unittest discover -s scripts -p test_verify.py -v` in an archived
-snapshot of initial head `019979b5f8bf7cb6b08d290b4786e234faf32050`:
-**PASS, 12 tests, exit 0**. The diagnostic head above independently passed
-**13 selector tests, exit 0**. Current head `17a5cc66` independently passed
-**14 selector tests, exit 0**. A separate initial-head selector probe
-confirmed that future watcher source changes omit #7's `watch_new_directory`
-target once that test has landed; targeted feedback was sent to its owner.
-The diagnostic head now selects this direct-graph regression when its target
-exists, with present/absent test coverage. Another
-probe confirmed CI/selector/unknown-input changes selected `workspace` but omitted
-watcher and graph-lock suites. At `17a5cc66`, conservative workspace expansion
-includes those suites, with its regression passing. Graph/SCIP/process/benchmark
-coverage remains selected; source review, whitespace and merge construction pass.
+## Benchmark and operational limits
 
-[Hosted run 40068158249](https://github.com/redxzeta/afterimage/actions/runs/40068158249)
-on #5's initial head passed formatting, all-target Clippy and CLI/MCP build,
-then failed CLI parity: 2 passed / 1 failed. Fixture indexing failed with empty
-captured stderr; child status/signal/stdout were not recorded. Later suites did
-not run. Cause remains UNKNOWN; local passes do not establish hosted parity.
-The author's earlier 90 integration/683 unit/14 benchmark-harness passes remain
-reported evidence on the documented source, not fresh reviewer executions.
-[Diagnostic run 40106285931](https://github.com/redxzeta/afterimage/actions/runs/40106285931)
-on `d04471dd` failed: **3 passed / 1 failed**. Fixture indexing died from
-**SIGSEGV (signal 11), no exit code, core dumped, empty stdout/stderr**. The
-diagnostic regression passed and assertions remain strict. This establishes a
-native crash, not its inherited-versus-environmental cause; that disposition
-remains unresolved. Later suites did not run.
+[Report](../scripts/benchmark/results/2026-10-23-bce.md) and
+[summary](../scripts/benchmark/results/2026-10-23-bce-summary.json) measure baseline
+`cf82f5d7440d9be158e219df1ef256d6359ed1f6`, candidate
+`1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, runner
+`286faf925590156f30b82372f4c0c94f103f10d4`; both builds use no default features.
+Those measurements predate #6/#7/#9 and do not measure this integration base.
 
-[Run 40107320071](https://github.com/redxzeta/afterimage/actions/runs/40107320071)
-at `17a5cc66` again failed CLI parity: **3 passed / 1 failed**, signal 11,
-core dumped, no exit code, empty stdout/stderr. The 14 selector tests, formatting,
-all-target Clippy and CLI/MCP build passed. The selected integration command now
-includes watcher and graph-lock suites, but execution stopped at CLI parity;
-unreached suites remain NOT_RUN. The failure-only debugger step reported
-`NOT_RUN: built CLI or gdb unavailable`; it supplied no backtrace and did not
-mask the primary failure. The author separately reports **4/4 local CLI parity
-passes** on this exact head (71.05 seconds including compilation, own cache,
-one build job, serial tests after the benchmark release). That is not a fresh
-reviewer native execution. Mutable `latest` prebuilt artifacts in `lbug 0.19.1`
-are an investigation hypothesis, not an established crash cause. The existing
-CI owner's activity also found native version `0.21.2` in the passing local
-cache, so a simple different-release explanation is unsupported. Actual
-artifact bytes/toolchain/ABI remain uncompared. Attempts to resume bounded
-causal diagnosis stopped at the provider usage limit; no duplicate fix was made.
+- Both repository lanes find **68/68 symbols**; positive calls are baseline
+  **39/49**, candidate **46/49**; imports are **0/8** in both. Candidate's **621**
+  unadjudicated calls are not false positives. The smaller IceCouncil fixture
+  reproduces a labelled false edge in both revisions; projection scope matters.
+- Candidate repository index commands still exit **1** for unavailable SCIP;
+  pairs remain **INCOMPLETE_INDEX_PAIR**. Manual matching graph/fingerprint
+  observations do not turn failed index commands into passes. Sampled CPU/RSS
+  bounds and descriptive timings establish **no accepted indexing speedup**.
+- Fixed MCP retrieval questions are deterministic tool checks, not model/agent
+  task A/B. `agent_differential` remains **NOT_RUN**; no token or agent-time
+  improvement is established. Historical default-feature baseline exit 132
+  remains separate from this no-default-feature experiment.
+- Current #9 fixes indexed relative import/re-export cases in synthetic fixtures.
+  Bare workspace exports, aliases, ambiguous alternatives and remote parity stay
+  unsupported/unverified. Full-repository import scores were not rerun. SCIP
+  still writes no Module IMPORTS; duplicate CALLS and unpropagated import-write
+  outcomes remain limitations. #6 fixes batch receipt reuse, not exhaustive
+  compiler coverage or the direct single-file receipt boundary.
+- Scoped watcher hidden-path/return/queued-rule/symlink cases pass. Transient
+  native checkpoint/WAL read errors, delayed-start test cleanup, real crash-WAL
+  recovery and platform coverage remain open. Ignore changes affect queued files
+  and subscriptions, not retroactive graph purge. Successful snapshots within a
+  deadline are not error-free-read or universal freshness proof.
 
-For #7, [the original report](https://github.com/redxzeta/afterimage/blob/1c1fe4ffdf0838f11c61c6a7909a2ca606f23929/docs/PHASE-D-RELIABILITY-FOLLOWUP.md)
-historically records the direct-graph directory regression passing, but lifecycle completion
-returns exit 1 with **28 checks passed / 1 failed**. Return checkout exceeded
-12 seconds and was only later correct at 25.510 seconds. Hidden-ancestor edits
-also reproduced stale graph data. Neither a higher timeout nor eventual
-correctness alone satisfies the follow-up. New direct-graph checks and explicit
-residual-risk disposition are required before a merge decision.
-An additional P2 source finding was sent to the watcher owner: directory
-registration follows symlink directories, and the new existing-file callback
-can queue outside-root source through those links, unlike the initial scanner.
-The final patch skips symlinks during registration and directory events;
-outside-root sentinel and loop regressions now pass.
-
-At final head `51de48ce`, the independent review covered every changed source,
-test and report file and verified their SHA-256 against the local raw receipt
-packet. Code/tests are identical to validated checkpoint
-`b65ad6cd086f76124bc6884308c6751f50bf2b3a`; the final commit changes only docs.
-All four graph cases fail by assertion against the old watcher and pass after:
-populated-directory/symlink/loop, real return checkout plus edit/removal, hidden
-ancestor with nested ignore rules/exclusions, and a changed ignore rule before
-queued-file flush. Return checkout reaches exact graph contents in **2.183042707
-seconds**, inside the unchanged absolute **12-second** deadline starting before
-checkout and checked after reads. Outside sentinel bytes/mtime/content count
-are preserved. #6's unchanged receipt regression passes **1/1**; supporting
-reader/writer test has **52 correct / 0 errors / 0 wrong** in that run. Strict
-focused Clippy, formatting, whitespace and merge construction pass. These are
-author executions with raw receipts independently checked, not reviewer reruns
-during the provisional trial's Sable CPU window.
-
-The integration reviewer accepts the scoped Linux merge with these explicit
-residuals: active native writes can produce unsuccessful checkpoint/WAL-missing
-reads; only later valid exact snapshots inside the same deadline count as fresh.
-The ordinary duplicate-watch control passes, while an injected nine-second
-startup still reproduces the existing five-second cleanup-budget assertion.
-Ignore changes affect subscriptions/queued files, not a retroactive purge of
-already indexed records. No error-free native reads, real crash-WAL recovery,
-full-workspace or cross-platform acceptance is claimed. This is a source GO;
-broader operational acceptance stays HOLD.
-
-For #9, diff/merge construction checks pass. Initial review identified a
-reachable P2 and sent it to the owner: small incremental batches delete every
-changed module, then each per-file insert writes imports using only the modules
-reinserted so far. With `main.ts` importing `./helper.js`, reindexing in order
-`helper.ts`, `main.ts`, `helper.tsx` can create a temporary `main -> helper.ts`
-edge. Final resolution correctly sees ambiguity, but its MERGE-only pass does
-not remove that provisional edge. Resolve batch imports against the final
-module set and add an order-sensitive graph regression. The owner accepted this
-finding and changed small batches to defer IMPORTS until the final set exists,
-with ambiguity and temporary-JavaScript-fallback regressions at `d2e07901`.
-The owner reports the original import regression failing on base `4d5266fe`
-and the ordering regression failing on `32459fd`, both exit 101. At `df7a8687`,
-all **8 import tests** pass, including both batch orders and temporary JavaScript
-fallback, followed by **29 focused resolver/storage/SCIP tests** passing. These
-and the **6 unchanged TypeScript caller tests** passed, including #6's receipt
-regression (caller suite exit 0, 0 ignored, 50.88 seconds runtime). The reviewer
-recovered that completed caller command from the stopped thread's activity;
-these are author executions, not reviewer native reruns. The only change
-since reviewed `d2e07901` shares one immutable fixture registry through OnceLock;
-production code is unchanged. The reviewer confirmed this diff and a clean
-merge construction against current base, but the ancestry check shows #7 is not
-yet included. The existing import thread stopped before reporting its completed
-caller run and finishing combined acceptance on the current base. Restarts hit
-the provider usage limit. Its PR body still describes an obsolete measurement
-hold. Missing hosted
-checks are expected from main-only base CI; no workflow workaround is required.
-
-## Limits and operational decision
-
-- **Import graph:** labelled TypeScript dependencies are missing despite present
-  endpoints. Empty IMPORTS does not establish absence. Pending fixes must test
-  cold and incremental persistence, resolution ambiguity, and excluded paths.
-- **Watcher freshness:** the scoped hidden-ancestor, return-checkout, queued-rule
-  and symlink cases are closed on merged #7 by direct graph checks. This is not
-  universal freshness or error-free-read proof. Search text fallback remains
-  insufficient. Delayed-start duplicate-lock failure is test cleanup timing,
-  not demonstrated duplicate watcher creation; preserve that distinction.
-- **SCIP completeness:** #6 fixes batch receipt reuse only. Direct `index_file`
-  mutation, duplicate stored edges, unpropagated import write errors, unresolved
-  owners and unavailable compiler tools remain limitations. A successful stage
-  receipt is not exhaustive graph or working-tree freshness proof.
-- **Benchmark/agent A/B:** old default-feature baseline exit 132 and candidate
-  partial-index exit 1 remain in the historical report. New no-default-feature
-  measurements are a distinct experiment on pinned old source. No speedup,
-  current-base graph acceptance, compiler completeness, token savings, or agent
-  task differential is established. No fixed-model agent A/B has run.
-- **Broader runtime:** cross-platform/full-workspace, organic OOM, real
-  crash-generated WAL recovery and general native concurrency acceptance remain
-  unverified. Focused Linux checks do not settle them.
-
-**GO:** the reviewed narrow #6 and #7 source integrations.
-**HOLD:** #5 and pending import/benchmark deliveries, remaining combined
-freshness/completeness/performance acceptance, and operational use claims.
-No deployment or activation is authorized or performed. No new service,
-container, schedule, credential, database, monitoring duty, or installation step
-is introduced by this receipt.
+**GO:** reviewed #6/#7/#9 source and #11 harness/evidence integration.
+**HOLD:** #5 merge, blanket graph freshness/completeness/performance acceptance,
+agent A/B acceptance, and operational use claims. No deployment or activation
+was authorized or performed. No new service, container, schedule, credential,
+database, monitoring duty, or installation step is introduced.
