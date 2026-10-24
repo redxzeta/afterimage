@@ -7,7 +7,7 @@ fork, not installation, deployment, release, or runtime authority.
 
 - Repository/base: `redxzeta/afterimage:afterimage-main`.
 - Starting base: `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`.
-- Current integrated base: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`.
+- Reviewed source-integration base: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`.
 - Protected fork mirror `main`: `cf82f5d7440d9be158e219df1ef256d6359ed1f6`,
   unchanged after the merge. Upstream PRs #78/#81/#82/#83/#84 remain separate
   from fork acceptance; this review makes no upstream mutations.
@@ -17,8 +17,8 @@ fork, not installation, deployment, release, or runtime authority.
 | [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
 | [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `17a5cc66aae0c3363c07780ebf1f3518a8dad1d1` | HOLD: both selector gaps corrected and independently validated (14 passes). Hosted fixture still dies from SIGSEGV; debugger probe did not run. Local author parity passes 4/4; causal disposition remains unresolved. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `51de48ce7ccf9218ff91424f8c312a5c1a10ac38` | MERGED with expected-head guard; merge `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`. Four direct-graph regressions and #6 receipt pass; narrow Linux source integration accepted with explicit residuals below. |
-| Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final artifacts/review pending. |
-| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `df7a8687e3cc2024172c27bf1a66e1a408c96111` | DRAFT / HOLD: author reproduced both pre-fix failures and reports 8 import plus 29 focused library passes. Head does not yet include merged #7; caller/combined checks, final receipts and readiness remain pending. |
+| Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Delivery stopped at provider usage limit before publishing; final artifacts/review pending. |
+| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `df7a8687e3cc2024172c27bf1a66e1a408c96111` | DRAFT / HOLD: both pre-fix failures reproduced; 8 import + 29 focused library + 6 caller tests pass. Head does not include merged #7; combined checks, final receipts and readiness remain pending. Provider usage limit blocks the author. |
 
 Every remaining delivery must include the current `afterimage-main` base and
 receive a fresh diff/conflict review. Passing one PR does not establish combined
@@ -33,6 +33,18 @@ to `main`, while this documentation-only PR targets `afterimage-main`. This is
 NOT_CONFIGURED, not a test pass or failure. Its diff is whitespace-checked and
 reviewed; no workflow change or broad native suite is added for this notice.
 PR #5 owns the pending CI target correction.
+
+### External execution blocker
+
+Fresh activity readbacks confirm all three Debian lanes stopped with the same
+provider error: **Usage limit reached**, with the provider advising retry at
+**12:53 PM** (timezone not stated in that message). Prior restart attempts hit
+the same limit immediately. No further automatic agent restarts are attempted
+under that condition. This is an execution-capacity blocker, not a code test
+failure or merge approval. Source #5/#9 remain HOLD; no failing tests are waived.
+The benchmark's unpublished delivery commit is reported as
+`c3821423d3eace0131c3aa6c890ee41bf3e9e140`, still on the older delivery base;
+its artifacts have not received final integration review.
 
 ## Review and validation receipts
 
@@ -107,7 +119,10 @@ passes** on this exact head (71.05 seconds including compilation, own cache,
 one build job, serial tests after the benchmark release). That is not a fresh
 reviewer native execution. Mutable `latest` prebuilt artifacts in `lbug 0.19.1`
 are an investigation hypothesis, not an established crash cause. The existing
-CI owner was resumed for bounded causal diagnosis; no duplicate fix was made.
+CI owner's activity also found native version `0.21.2` in the passing local
+cache, so a simple different-release explanation is unsupported. Actual
+artifact bytes/toolchain/ABI remain uncompared. Attempts to resume bounded
+causal diagnosis stopped at the provider usage limit; no duplicate fix was made.
 
 For #7, [the original report](https://github.com/redxzeta/afterimage/blob/1c1fe4ffdf0838f11c61c6a7909a2ca606f23929/docs/PHASE-D-RELIABILITY-FOLLOWUP.md)
 historically records the direct-graph directory regression passing, but lifecycle completion
@@ -162,13 +177,17 @@ The owner reports the original import regression failing on base `4d5266fe`
 and the ordering regression failing on `32459fd`, both exit 101. At `df7a8687`,
 all **8 import tests** pass, including both batch orders and temporary JavaScript
 fallback, followed by **29 focused resolver/storage/SCIP tests** passing. These
-are author-reported executions, not reviewer native reruns. The only change
+and the **6 unchanged TypeScript caller tests** passed, including #6's receipt
+regression (caller suite exit 0, 0 ignored, 50.88 seconds runtime). The reviewer
+recovered that completed caller command from the stopped thread's activity;
+these are author executions, not reviewer native reruns. The only change
 since reviewed `d2e07901` shares one immutable fixture registry through OnceLock;
 production code is unchanged. The reviewer confirmed this diff and a clean
 merge construction against current base, but the ancestry check shows #7 is not
-yet included. The existing import thread stopped before the remaining caller
-and combined acceptance receipts and was resumed to finish them on the current
-base. Its PR body still describes an obsolete measurement hold. Missing hosted
+yet included. The existing import thread stopped before reporting its completed
+caller run and finishing combined acceptance on the current base. Restarts hit
+the provider usage limit. Its PR body still describes an obsolete measurement
+hold. Missing hosted
 checks are expected from main-only base CI; no workflow workaround is required.
 
 ## Limits and operational decision
