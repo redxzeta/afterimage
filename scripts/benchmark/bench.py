@@ -5,6 +5,7 @@ import fcntl
 import hashlib
 import io
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
@@ -184,11 +185,33 @@ def syntax_available(index):
         return False
 
 
+def process_usage(pid):
+    """Linux descendant RSS/CPU sample, including already reaped child CPU."""
+    rows = {}
+    for path in Path('/proc').glob('[0-9]*/stat'):
+        try:
+            fields = path.read_text().rsplit(')', 1)[1].split()
+            rows[int(path.parent.name)] = (int(fields[1]),
+                sum(int(fields[i]) for i in (11, 12, 13, 14)), max(0, int(fields[21])))
+        except (OSError, ValueError, IndexError):
+            continue
+    descendants = {pid}
+    while True:
+        children = {p for p, (parent, _, _) in rows.items() if parent in descendants}
+        if children <= descendants:
+            break
+        descendants.update(children)
+    ticks = sum(rows[p][1] for p in descendants if p in rows)
+    pages = sum(rows[p][2] for p in descendants if p in rows)
+    return ticks / os.sysconf('SC_CLK_TCK'), pages * os.sysconf('SC_PAGE_SIZE') // 1024
+
+
 class Lane:
-    def __init__(self, root, binary, mcp, timeout, threads, model_dir=None):
+    def __init__(self, root, binary, mcp, timeout, threads, model_dir=None, cpu_seconds=120, memory_mib=4096):
         # Failures such as baseline SIGILL must not leave large memory/core artifacts.
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
         self.root, self.timeout, self.steps = root, timeout, []
+        self.cpu_seconds, self.memory_mib = cpu_seconds, memory_mib
         for name in ["repo", "home/.infigraph", "registry", "state", "cache", "tmp", "bin"]:
             (root / name).mkdir(parents=True, exist_ok=True)
         shutil.copyfile(binary, root / "bin/infigraph")
@@ -240,47 +263,65 @@ class Lane:
                                     start_new_session=True, env={"PATH": "/usr/bin:/bin"})
             timed_out = False
             stopped_after_responses = False
+            budget_exceeded = None
+            cpu_s, peak_tree_rss = 0, 0
             try:
+                try:
+                    if stdin:
+                        proc.stdin.write(stdin.encode())
+                    proc.stdin.close()
+                except BrokenPipeError:
+                    # A crashing/unsupported MCP must be recorded, not abort the pair.
+                    pass
+                deadline = time.monotonic() + self.timeout
+                pending, buffer = set(stop_after_ids or ()), b""
+                while True:
+                    cpu, memory = process_usage(proc.pid)
+                    cpu_s, peak_tree_rss = max(cpu_s, cpu), max(peak_tree_rss, memory)
+                    if cpu_s > self.cpu_seconds or peak_tree_rss > self.memory_mib * 1024:
+                        budget_exceeded = "CPU" if cpu_s > self.cpu_seconds else "RAM"
+                        raise subprocess.TimeoutExpired(command, self.timeout)
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise subprocess.TimeoutExpired(command, self.timeout)
+                    if not stop_after_ids:
+                        try:
+                            proc.wait(timeout=min(0.05, remaining))
+                            break
+                        except subprocess.TimeoutExpired:
+                            continue
+                    if not select.select([proc.stdout], [], [], min(0.05, remaining))[0]:
+                        continue
+                    chunk = os.read(proc.stdout.fileno(), 65536)
+                    if not chunk:
+                        break
+                    out.write(chunk)
+                    buffer += chunk
+                    while b"\n" in buffer:
+                        line, buffer = buffer.split(b"\n", 1)
+                        try:
+                            reply = json.loads(line)
+                            if isinstance(reply, dict):
+                                pending.discard(reply.get("id"))
+                        except (ValueError, TypeError):
+                            pass
+                    if not pending or out.tell() > 2_000_000 or len(buffer) > 2_000_000:
+                        break
                 if stop_after_ids:
                     # MCP is a persistent server. Completion means replies arrived, not
                     # that the server exits on EOF (older versions keep a private UI alive).
-                    proc.stdin.write(stdin.encode())
-                    proc.stdin.close()
-                    pending, buffer = set(stop_after_ids), b""
-                    deadline = time.monotonic() + self.timeout
-                    while pending:
-                        remaining = deadline - time.monotonic()
-                        if remaining <= 0 or not select.select([proc.stdout], [], [], remaining)[0]:
-                            raise subprocess.TimeoutExpired(command, self.timeout)
-                        chunk = os.read(proc.stdout.fileno(), 65536)
-                        if not chunk:
-                            break
-                        out.write(chunk)
-                        buffer += chunk
-                        while b"\n" in buffer:
-                            line, buffer = buffer.split(b"\n", 1)
-                            try:
-                                reply = json.loads(line)
-                                if isinstance(reply, dict):
-                                    pending.discard(reply.get("id"))
-                            except (ValueError, TypeError):
-                                pass
-                        if out.tell() > 2_000_000 or len(buffer) > 2_000_000:
-                            break
                     stopped_after_responses = not pending
                     if proc.poll() is None:
                         os.killpg(proc.pid, signal.SIGKILL)
                     proc.wait()
-                else:
-                    proc.communicate(stdin.encode() if stdin else None, timeout=self.timeout)
             except subprocess.TimeoutExpired:
-                timed_out = True
+                timed_out = budget_exceeded is None
                 os.killpg(proc.pid, signal.SIGKILL)
                 if stop_after_ids:
                     proc.wait()
                     out.write(proc.stdout.read(2_000_001))
                 else:
-                    proc.communicate()
+                    proc.wait()
             finally:
                 if proc.stdout:
                     proc.stdout.close()
@@ -299,9 +340,11 @@ class Lane:
                 peak = int(last[0])
         result = {"name": name, "argv": [executable] + args, "wall_ms": elapsed,
                   "max_rss_kib": peak, "exit_code": proc.returncode,
+                  "sampled_tree_cpu_s": cpu_s, "sampled_peak_tree_rss_kib": peak_tree_rss,
+                  "budget_exceeded": budget_exceeded,
                   "host_builds_at_boundaries": sorted(builders),
                   "stopped_after_responses": stopped_after_responses,
-                  "status": "TIMEOUT" if timed_out else "OK" if proc.returncode == 0 or stopped_after_responses else "FAILED", **logs}
+                  "status": "BUDGET_EXCEEDED" if budget_exceeded else "TIMEOUT" if timed_out else "OK" if proc.returncode == 0 or stopped_after_responses else "FAILED", **logs}
         if result["stdout_truncated"] or result["stderr_truncated"]:
             result["status"] = "OUTPUT_LIMIT"
         if args and args[0] == "index":
@@ -326,6 +369,30 @@ def literal(value):
     return "'" + value + "'"
 
 
+def impact_query(question):
+    return ("MATCH (a:Symbol)-[:CALLS*1.." + str(question["depth"]) + "]->(b:Symbol) WHERE b.id = " +
+            literal(question["target"]) + " RETURN DISTINCT a.id")
+
+
+def import_diagnostics(lane, truth):
+    """Independent id/file queries distinguish label mismatch from missing edges."""
+    labels = truth.get("imports", [])
+    if not labels:
+        return None
+    endpoints = sorted({r[k] for r in labels for k in ("from", "to")})
+    values = ','.join(map(literal, endpoints))
+    modules = parse_rows(lane.query("import_modules",
+        f"MATCH (m:Module) WHERE m.file IN [{values}] RETURN m.id,m.file"), 2, False)
+    sources = ','.join(map(literal, sorted({r['from'] for r in labels})))
+    by_id = parse_rows(lane.query("imports_by_id",
+        f"MATCH (a:Module)-[:IMPORTS]->(b:Module) WHERE a.id IN [{sources}] RETURN a.id,b.id"), 2, False)
+    total = parse_rows(lane.query("import_edge_count",
+        "MATCH (a:Module)-[:IMPORTS]->(b:Module) RETURN count(*)"), symbols=False)
+    return {"module_id_file_rows": modules, "missing_modules": sorted(set(endpoints) - {r[1] for r in modules}) if modules is not None else None,
+            "by_id": score(by_id, [(r['from'], r['to']) for r in labels if r['label'] == 'positive']),
+            "total_edges": int(total[0]) if total and len(total) == 1 and total[0].isdigit() else None}
+
+
 def evaluate(lane, truth, repeats):
     ids = [s["id"] for s in truth["symbols"]]
     values = ",".join(map(literal, ids))
@@ -342,8 +409,7 @@ def evaluate(lane, truth, repeats):
                         [(r["from"], r["to"]) for r in truth["imports"] if r["label"] == "negative"])
     questions = []
     for question in truth["questions"]:
-        cypher = ("MATCH (a:Symbol)-[:CALLS*1.." + str(question["depth"]) + "]->(b:Symbol) WHERE b.id = " +
-                  literal(question["target"]) + " RETURN DISTINCT a.id")
+        cypher = impact_query(question)
         samples = [lane.query(question["id"] + ":" + str(i), cypher) for i in range(repeats)]
         parsed = [parse_rows(s) for s in samples]
         consistent = all(p is not None for p in parsed) and all(set(p) == set(parsed[0]) for p in parsed)
@@ -351,6 +417,47 @@ def evaluate(lane, truth, repeats):
                           "median_wall_ms": statistics.median(s["wall_ms"] for s in samples)
                           if all(s["status"] == "OK" for s in samples) else None})
     return {"symbols": symbols, "calls": calls, "imports": imports, "impact": questions}
+
+
+def tool_questions(lane, truth):
+    """Fixed five-question retrieval protocol, no model or agent claims."""
+    questions = truth['questions'][:5]
+    messages = [
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+            "protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": SCHEMA, "version": "1"}}},
+        {"jsonrpc": "2.0", "method": "notifications/initialized"},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+    ]
+    for i, question in enumerate(questions, 3):
+        messages.append({"jsonrpc": "2.0", "id": i, "method": "tools/call", "params": {
+            "name": "query_graph", "arguments": {"path": "/bench/repo", "cypher": impact_query(question), "detail": True}}})
+    result = lane.run("mcp_questions", ["--mcp"], ''.join(json.dumps(m) + '\n' for m in messages),
+                      "infigraph-mcp", set(range(1, len(questions) + 3)))
+    outcomes = []
+    try:
+        replies = {m['id']: m for m in map(json.loads, result['stdout'].splitlines()) if 'id' in m}
+        handshake = ('result' in replies[1] and any(t['name'] == 'query_graph' for t in replies[2]['result']['tools']))
+    except (ValueError, KeyError, TypeError):
+        replies, handshake = {}, False
+    for i, question in enumerate(questions, 3):
+        reply = replies.get(i, {})
+        content = reply.get('result', {})
+        if not isinstance(content, dict):
+            content = {}
+        blocks = content.get('content', [])
+        if not isinstance(blocks, list):
+            blocks = []
+        text = '\n'.join(b['text'] for b in blocks if isinstance(b, dict) and b.get('type') == 'text' and isinstance(b.get('text'), str))
+        valid = handshake and result['status'] == 'OK' and 'error' not in reply and not content.get('isError', False)
+        rows = parse_rows({'status': 'OK' if valid else 'FAILED', 'stdout': text})
+        outcomes.append({'id': question['id'], 'score': score(rows, question['expected']),
+                         'source_evidence': question['evidence'], 'response_utf8_bytes': len(text.encode())})
+    ok = all(q['score']['status'] != 'UNRESOLVED' for q in outcomes) and bool(outcomes)
+    if result['status'] == 'OK' and not ok:
+        result['status'] = 'FAILED_OUTPUT'
+    return {'status': 'OK' if ok else 'FAILED', 'protocol': 'five manifest questions in manifest order; one query_graph call each; detail=true; no retries',
+            'tool_calls': len(questions), 'questions': outcomes,
+            'timing_scope': 'whole MCP session; no per-request latency or model tokens'}
 
 
 def mcp_smoke(lane):
@@ -412,15 +519,27 @@ def freshness(lane, index_args):
         git(lane.root / "repo", *args)
     outcomes = []
 
+    def metadata():
+        receipt = lane.root / 'repo/.infigraph/index-status.json'
+        try:
+            data = json.loads(receipt.read_text())
+        except (OSError, ValueError):
+            data = {}
+        return {'fixture_path': path.name, 'source_sha256': digest(path) if path.exists() else None,
+                'git_head': git(lane.root / 'repo', 'rev-parse', 'HEAD').decode().strip(),
+                'indexed_file_fingerprint': data.get('indexed_file_fingerprint'), 'run_id': data.get('run_id')}
+
     def check(name, expected):
+        before = metadata()
         indexed = lane.run(name + ":index", index_args)
-        result = lane.query(name + ":query", "MATCH (s:Symbol) WHERE s.file = 'afterimage_benchmark_fixture.ts' RETURN s.id")
+        result = lane.query(name + ":query", "MATCH (s:Symbol) WHERE s.file IN ['afterimage_benchmark_fixture.ts','afterimage_benchmark_renamed.ts'] RETURN s.id")
         actual = parse_rows(result)
-        wanted = {"afterimage_benchmark_fixture.ts::" + s for s in expected}
+        wanted = {path.name + "::" + s for s in expected}
         graph_status = "UNRESOLVED" if actual is None or not syntax_available(indexed) else "PASS" if set(actual) == wanted else "FAIL"
         status = graph_status if indexed["status"] == "OK" or graph_status == "UNRESOLVED" else "PARTIAL_GRAPH_" + ("MATCH" if graph_status == "PASS" else "MISMATCH")
         outcomes.append({"case": name, "status": status, "graph_status": graph_status,
-                         "index_status": indexed["status"], "observed": actual, "expected": sorted(wanted)})
+                         "index_status": indexed["status"], "observed": actual, "expected": sorted(wanted),
+                         "before_reindex": before, "after_reindex": metadata()})
 
     path.write_text("export const branchA = () => 1;\n")
     for args in [["add", "-f", path.name], ["commit", "-qm", "fixture A"], ["branch", "fixture-a"]]:
@@ -434,6 +553,12 @@ def freshness(lane, index_args):
     check("branch_return", ["branchA"])
     path.write_text("export const uncommitted = () => 3;\n")
     check("uncommitted", ["uncommitted"])
+    renamed = path.with_name('afterimage_benchmark_renamed.ts')
+    if renamed.exists():
+        raise ValueError('freshness rename fixture collision')
+    path.rename(renamed)
+    path = renamed
+    check('file_renamed', ['uncommitted'])
     path.unlink()
     check("deleted", [])
     return outcomes
@@ -471,6 +596,8 @@ def run(args):
                            "no_embed": args.no_embed, "timeout_s": args.timeout,
                            "network": "isolated namespace", "scip": "NOT_RUN: external tooling absent from PATH",
                            "core_dumps": False,
+                           "cpu_seconds": args.cpu_seconds, "memory_mib": args.memory_mib,
+                           "budget_enforcement": "50ms Linux descendant CPU/RSS sampling; kills sandbox; RSS is summed, may overshoot between samples",
                            "fixture_scope": args.fixture_scope,
                            "cold": "empty index and HOME; OS page cache is NOT flushed",
                            "query_latency": "CLI process + graph open + traversal; no LLM",
@@ -482,7 +609,7 @@ def run(args):
         work = Path(temporary)
         for label in args.order.split(","):
             binary, revision, mcp = getattr(args, label), getattr(args, label + "_revision"), getattr(args, label + "_mcp")
-            lane = Lane(work / label, binary, mcp, args.timeout, args.threads, args.model_dir)
+            lane = Lane(work / label, binary, mcp, args.timeout, args.threads, args.model_dir, args.cpu_seconds, args.memory_mib)
             paths = {a["path"] for a in truth["anchors"]} if args.fixture_scope == "truth-files" else None
             files = export(args.repo, args.commit, lane.root / "repo", paths)
             record = {"label": label, "revision": revision, "revision_provenance": "operator supplied; verify build manifest separately",
@@ -493,8 +620,10 @@ def run(args):
             cold = lane.run("cold_index", index_args)
             record["index_disposition"] = "COMPLETE_COMMAND" if cold["status"] == "OK" else "PARTIAL_SYNTAX_GRAPH" if syntax_available(cold) else "UNAVAILABLE"
             if syntax_available(cold):
+                record["import_diagnostics"] = import_diagnostics(lane, truth)
                 lane.run("warm_index", index_args)
                 record["quality"] = evaluate(lane, truth, args.repeats)
+                record["tool_questions"] = tool_questions(lane, truth) if args.tool_questions and mcp else {"status": "NOT_RUN"}
                 # Change an actual tracked TS file, without executing it or creating a new file.
                 change = lane.root / "repo" / truth["anchors"][0]["path"]
                 original = change.read_bytes()
@@ -613,6 +742,9 @@ def main():
     bench.add_argument("--model-dir", type=Path, help="offline potion-base-8M assets, identical in both lanes")
     bench.add_argument("--freshness", action="store_true")
     bench.add_argument("--test-context", action="store_true", help="probe CLI and direct-worker MCP test-context; preserve crashes as failures")
+    bench.add_argument("--tool-questions", action="store_true", help="fixed five-question MCP retrieval protocol; no model/agent execution")
+    bench.add_argument("--cpu-seconds", type=float, default=120)
+    bench.add_argument("--memory-mib", type=int, default=4096)
     bench.add_argument("--fixture-scope", choices=["repository", "truth-files"], default="repository",
                        help="repository source projection or only exact files with source-truth anchors; never an implicit fallback")
     bench.add_argument("--timeout", type=float, default=120)
@@ -624,8 +756,10 @@ def main():
         if args.command == "verify":
             print(canonical(verify_truth(args.repo, json.loads(args.truth.read_text()))), end="")
             return 0
-        if args.timeout <= 0 or getattr(args, "threads", 1) < 1 or getattr(args, "repeats", 1) < 1:
-            raise ValueError("timeout, threads and repeats must be positive")
+        if (not math.isfinite(args.timeout) or args.timeout <= 0 or getattr(args, "threads", 1) < 1
+                or getattr(args, "repeats", 1) < 1 or not math.isfinite(getattr(args, "cpu_seconds", 1))
+                or getattr(args, "cpu_seconds", 1) <= 0 or getattr(args, "memory_mib", 1) < 1):
+            raise ValueError("budgets, timeout, threads and repeats must be finite and positive")
         # All harness invocations by this user share this nonblocking host lock, even across temp roots.
         with open(Path(tempfile.gettempdir()) / f"afterimage-benchmark-{os.getuid()}.lock", "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
