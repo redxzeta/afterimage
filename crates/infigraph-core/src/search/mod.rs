@@ -143,34 +143,47 @@ impl BM25Index {
         let avg_doc_len = f32::from_le_bytes(data[1..5].try_into().unwrap());
         let doc_count = u32::from_le_bytes(data[5..9].try_into().unwrap()) as usize;
         let mut pos = 9usize;
+        // Every length and count comes from disk. Bound reads and reservations
+        // by the remaining payload before slicing or allocating.
+        let take = |pos: &mut usize, len: usize| -> Result<&[u8]> {
+            let bytes = data
+                .get(*pos..)
+                .and_then(|tail| tail.get(..len))
+                .ok_or_else(|| anyhow::anyhow!("truncated bm25 cache"))?;
+            *pos += len;
+            Ok(bytes)
+        };
+        let read_u32 = |pos: &mut usize| -> Result<usize> {
+            Ok(u32::from_le_bytes(take(pos, 4)?.try_into().unwrap()) as usize)
+        };
+        anyhow::ensure!(
+            doc_count <= (data.len() - pos) / 8,
+            "invalid bm25 document count"
+        );
         let mut docs = Vec::with_capacity(doc_count);
         for _ in 0..doc_count {
-            let id_len = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-            pos += 4;
-            let id = String::from_utf8_lossy(&data[pos..pos + id_len]).into_owned();
-            pos += id_len;
-            let text_len = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-            pos += 4;
-            let text = String::from_utf8_lossy(&data[pos..pos + text_len]).into_owned();
-            pos += text_len;
+            let id_len = read_u32(&mut pos)?;
+            let id = String::from_utf8_lossy(take(&mut pos, id_len)?).into_owned();
+            let text_len = read_u32(&mut pos)?;
+            let text = String::from_utf8_lossy(take(&mut pos, text_len)?).into_owned();
             docs.push((id, text));
         }
-        let term_count = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
+        let term_count = read_u32(&mut pos)?;
+        anyhow::ensure!(
+            term_count <= (data.len() - pos) / 8,
+            "invalid bm25 term count"
+        );
         let mut inverted = HashMap::with_capacity(term_count);
         for _ in 0..term_count {
-            let tl = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-            pos += 4;
-            let term = String::from_utf8_lossy(&data[pos..pos + tl]).into_owned();
-            pos += tl;
-            let pc = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-            pos += 4;
+            let tl = read_u32(&mut pos)?;
+            let term = String::from_utf8_lossy(take(&mut pos, tl)?).into_owned();
+            let pc = read_u32(&mut pos)?;
+            anyhow::ensure!(pc <= (data.len() - pos) / 8, "invalid bm25 posting count");
             let mut postings = Vec::with_capacity(pc);
             for _ in 0..pc {
-                let doc_idx = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-                pos += 4;
-                let tf = f32::from_le_bytes(data[pos..pos + 4].try_into().unwrap());
-                pos += 4;
+                let doc_idx = read_u32(&mut pos)?;
+                anyhow::ensure!(doc_idx < docs.len(), "invalid bm25 posting document index");
+                let tf = f32::from_le_bytes(take(&mut pos, 4)?.try_into().unwrap());
                 postings.push((doc_idx, tf));
             }
             inverted.insert(term, postings);

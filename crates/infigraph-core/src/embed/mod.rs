@@ -396,19 +396,19 @@ pub fn load_embeddings(path: &Path) -> Result<Vec<(String, Vec<f32>)>> {
     let mut pos = 4usize;
 
     for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
+        anyhow::ensure!(data.len() - pos >= 4, "truncated embeddings file");
         let id_len = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
         pos += 4;
-        anyhow::ensure!(pos + id_len <= data.len(), "truncated embeddings file");
+        anyhow::ensure!(id_len <= data.len() - pos, "truncated embeddings file");
         let id = std::str::from_utf8(&data[pos..pos + id_len])
             .context("invalid utf8 in embedding id")?
             .to_string();
         pos += id_len;
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
+        anyhow::ensure!(data.len() - pos >= 4, "truncated embeddings file");
         let dim = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
         pos += 4;
+        anyhow::ensure!(dim <= (data.len() - pos) / 4, "truncated embeddings file");
         let float_bytes = dim * 4;
-        anyhow::ensure!(pos + float_bytes <= data.len(), "truncated embeddings file");
         let vec: Vec<f32> = data[pos..pos + float_bytes]
             .as_chunks::<4>()
             .0
@@ -773,13 +773,14 @@ fn read_sidecar(bytes: &[u8]) -> Result<SidecarData> {
     let count = u32::from_le_bytes(bytes[1..5].try_into().unwrap()) as usize;
     let dim = u32::from_le_bytes(bytes[5..9].try_into().unwrap()) as usize;
     let emb_mtime_secs = u64::from_le_bytes(bytes[9..17].try_into().unwrap());
+    anyhow::ensure!(count <= (bytes.len() - 17) / 4, "invalid sidecar id count");
     let mut ids = Vec::with_capacity(count);
     let mut pos = 17usize;
     for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= bytes.len(), "truncated sidecar");
+        anyhow::ensure!(bytes.len() - pos >= 4, "truncated sidecar");
         let id_len = u32::from_le_bytes(bytes[pos..pos + 4].try_into().unwrap()) as usize;
         pos += 4;
-        anyhow::ensure!(pos + id_len <= bytes.len(), "truncated sidecar id");
+        anyhow::ensure!(id_len <= bytes.len() - pos, "truncated sidecar id");
         let id = String::from_utf8_lossy(&bytes[pos..pos + id_len]).into_owned();
         pos += id_len;
         ids.push(id);

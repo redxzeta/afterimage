@@ -23,6 +23,38 @@ const GRAPH_WRITE_ROLE: &str = "graph-write";
 /// are short; 30s of waiting means something is wedged — surface it.
 const GRAPH_WRITE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
+/// lbug exposes open failures as text rather than typed error variants.
+pub fn is_lock_contention_error(err: &anyhow::Error) -> bool {
+    err.chain()
+        .any(|cause| cause.to_string().contains("Could not set lock on file"))
+}
+
+/// Busy and incompatible stores must not enter automatic wipe/rebuild paths.
+pub fn open_failure_is_not_corruption(err: &anyhow::Error) -> bool {
+    is_lock_contention_error(err)
+        || err.chain().any(|cause| {
+            cause
+                .to_string()
+                .contains("Trying to read a database file with a different version")
+        })
+}
+
+pub fn non_corruption_open_context(err: &anyhow::Error, path: &Path) -> String {
+    if is_lock_contention_error(err) {
+        format!(
+            "{} is locked by another process and was left untouched; try again after the writer finishes",
+            path.display()
+        )
+    } else {
+        format!(
+            "{} uses a different lbug storage version than this build ({}); left untouched. \
+             Use a compatible infigraph build to read this store",
+            path.display(),
+            kuzu::get_storage_version()
+        )
+    }
+}
+
 impl WriteLock {
     fn acquire(lock_path: &Path) -> Result<Self> {
         Self::acquire_with_timeout(lock_path, GRAPH_WRITE_TIMEOUT)

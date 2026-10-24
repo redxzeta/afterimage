@@ -411,6 +411,11 @@ pub fn combined_doc_search(
         .and_then(|store| hybrid_doc_search_in_dir(query, &store, &artifact_dir, limit, alpha))
     {
         Ok(results) => Ok(results),
+        Err(err) if infigraph_core::graph::store::open_failure_is_not_corruption(&err) => {
+            let context =
+                infigraph_core::graph::store::non_corruption_open_context(&err, &store_path);
+            Err(err.context(context))
+        }
         Err(first_err) => {
             eprintln!(
                 "[combined-docs] search failed for group '{group_name}' ({first_err}), \
@@ -437,6 +442,9 @@ pub fn combined_doc_query(group_name: &str, cypher: &str) -> Result<Vec<Vec<Stri
     });
     match result {
         Ok(rows) => Ok(rows),
+        Err(err) if infigraph_core::graph::store::open_failure_is_not_corruption(&err) => {
+            Err(err.context("combined document store busy or incompatible; left untouched"))
+        }
         Err(first_err) if has_combined_docs(group_name) => {
             eprintln!(
                 "[combined-docs] query failed for group '{group_name}' ({first_err}), \

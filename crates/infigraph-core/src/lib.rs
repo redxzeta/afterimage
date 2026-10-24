@@ -43,6 +43,9 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use rayon::prelude::*;
 
+use graph::store::{
+    is_lock_contention_error, non_corruption_open_context, open_failure_is_not_corruption,
+};
 use graph::GraphStore;
 use lang::LanguageRegistry;
 use model::FileExtraction;
@@ -56,18 +59,6 @@ pub(crate) fn escape_str(s: &str) -> String {
 /// lock-file identity payloads so stale-binary holders are identifiable.
 pub fn build_hash() -> &'static str {
     env!("INFIGRAPH_BUILD_HASH")
-}
-
-/// Kuzu's IO-layer error for "another process holds this database's lock"
-/// (see docs.ladybugdb.com/concurrency) is lock contention, not corruption.
-/// `GraphStore::open` collapses the underlying Kuzu error into a stringified
-/// `anyhow::Error` before it reaches `Infigraph::init`, so there's no
-/// structured error variant to match on here -- only Kuzu's own error text.
-/// This was previously indistinguishable from genuine corruption, so a
-/// second `infigraph` process opening a graph while a watcher already had
-/// it open would trigger `wipe_graph`, destroying the watcher's live data.
-fn is_lock_contention_error(err: &anyhow::Error) -> bool {
-    err.to_string().contains("Could not set lock on file")
 }
 
 /// Open the Kùzu graph, retrying briefly on lock contention (AIF3X-331 #36).
@@ -174,15 +165,11 @@ impl Infigraph {
                     self.backend_kind = BackendKind::Kuzu(kb);
                     Ok(())
                 }
-                Err(first_err) if is_lock_contention_error(&first_err) => {
-                    // Another live process (e.g. a running `infigraph watch`) holds
-                    // this database open -- not corruption. Wiping here would destroy
-                    // a perfectly good graph out from under that process.
-                    Err(first_err).with_context(|| {
-                        "graph is locked by another infigraph process (e.g. a running \
-                         `infigraph watch`) -- not corrupted, so it was left untouched. \
-                         Run `infigraph watch-status` or try again in a moment."
-                    })
+                Err(first_err) if open_failure_is_not_corruption(&first_err) => {
+                    // A live lock or incompatible storage version does not
+                    // establish corruption. Preserve the existing graph.
+                    let context = non_corruption_open_context(&first_err, &self.db_path);
+                    Err(first_err).context(context)
                 }
                 Err(first_err) => {
                     // Some Kuzu IO errors (e.g. a short read while a concurrent
@@ -202,16 +189,11 @@ impl Infigraph {
                                 recovered = Some(kb);
                                 break;
                             }
-                            Err(e) if is_lock_contention_error(&e) => {
-                                // Now unambiguously another live process holding the
-                                // db open, not a transient checkpoint race -- stop
-                                // retrying and report it as such.
-                                return Err(e).with_context(|| {
-                                    "graph is locked by another infigraph process (e.g. a \
-                                     running `infigraph watch`) -- not corrupted, so it was \
-                                     left untouched. Run `infigraph watch-status` or try \
-                                     again in a moment."
-                                });
+                            Err(e) if open_failure_is_not_corruption(&e) => {
+                                // Refuse even if a lock or version mismatch
+                                // only appears after the first open attempt.
+                                let context = non_corruption_open_context(&e, &self.db_path);
+                                return Err(e).context(context);
                             }
                             Err(e) => last_err = e,
                         }

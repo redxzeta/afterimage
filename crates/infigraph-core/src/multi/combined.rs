@@ -946,6 +946,10 @@ pub fn open_combined_graph(group_name: &str) -> Result<GraphStore> {
     }
     match GraphStore::open(&path) {
         Ok(store) => Ok(store),
+        Err(err) if crate::graph::store::open_failure_is_not_corruption(&err) => {
+            let context = crate::graph::store::non_corruption_open_context(&err, &path);
+            Err(err.context(context))
+        }
         Err(first_err) => {
             eprintln!(
                 "[combined-graph] open failed for group '{group_name}' ({first_err}), \

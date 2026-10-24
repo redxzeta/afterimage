@@ -87,6 +87,11 @@ impl DocIndex {
                 self.store = Some(Box::new(store));
                 Ok(())
             }
+            Err(err) if infigraph_core::graph::store::open_failure_is_not_corruption(&err) => {
+                let context =
+                    infigraph_core::graph::store::non_corruption_open_context(&err, &self.db_path);
+                Err(err.context(context))
+            }
             Err(first_err) => {
                 eprintln!(
                     "[docs] open failed ({first_err}), wiping corrupt doc index and rebuilding..."
