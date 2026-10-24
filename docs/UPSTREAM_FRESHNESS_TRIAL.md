@@ -72,55 +72,190 @@ Rejected alternatives:
 4. Change watcher startup or add strict query waiting: overlaps #7 ownership and
    changes runtime behavior beyond a conservative advisory trial.
 
-## Validation evidence and blocker
+## Native validation and exact results
 
-The benchmark coordinator explicitly required no native build/test overlap and
-has not released the timing window. The request for a quiet two-job validation
-window was acknowledged; clearance is still pending. No native command was
-started, and no existing test was disabled or weakened. The local cached Rust
-toolchain is available; this is coordination-blocked, not a missing-toolchain
-failure. This draft is not ready for merge or runtime adoption.
+The benchmark hold was explicitly released at 15:31:58 UTC on October 24.
+The PR #7 owner subsequently handed over an idle Sable slot. All native work
+ran serially in that slot, on CPU 0/1, with two Cargo/Rayon jobs, offline Cargo,
+disposable HOME/registry/fixtures, core dumps disabled, per-command timeouts and
+an 8 GiB sampled process-group RSS cap. No toolchain/application installation was
+performed. Cached artifacts were copied into this worktree; no shared build cache
+was mutated. Cargo naturally rebuilt artifacts invalidated by relocated paths.
+The slot was explicitly released after native work; no owned native processes
+remain. Formatting, Git checks and report edits followed.
 
-Executed in the experiment worktree:
+Production-code checkpoint: `603d955318eecb16e442e2db46e91b31c42e9286`.
+Final regression checkpoint: `502909f979ac03d3f1175ec5ef9f8e356f1045b9` (test-only
+optimization; production code unchanged). Rust/Cargo: 1.99.1, Linux x86_64.
+Native defaults were used with `--no-default-features`; optional compression and
+remote backends, cross-platform suites and the full workspace remain unverified.
 
-| Command/check | Exact result |
-| --- | --- |
-| `cargo fmt --all -- --check` | PASS, exit 0; latest recorded wall time 0.715 s |
-| `git diff --check` | PASS, exit 0 |
-| Targeted `rustfmt --edition 2021 --check` on changed Rust modules/tests | PASS, exit 0 |
-| `git rev-list --left-right --count refs/experiment/upstream-main...refs/experiment/upstream-freshness` | PASS, exit 0; `82 2` |
-| Protected-path diff inspection | No edits to core, watcher, CLI, dependencies, CI, or operational configuration |
-
-Written regression coverage: **two tests; zero executed**. The integration
-scenario covers all four tools with matching/changing HEAD, uncommitted edits,
-deletion, new nested paths, subdirectory root resolution, subset indexing, return
-checkout with stale graph content, pending/busy/poisoned watcher state, malformed
-registry, non-Git state, unchanged registry/coverage bytes, and repeated MCP
-responses. A second test explicitly exercises long-reference compression and
-seen-result replacement while retaining the advisory.
-
-Required bounded validation after explicit window release (all currently
-**BLOCKED / UNRUN**, with no pass/fail count):
+### Build and lint commands
 
 ```sh
-# Run in an isolated HOME, registry, cache and target; offline; two build/Rayon jobs.
 cargo test --locked --offline --no-default-features -p infigraph-mcp \
-  --test freshness_tools --test coverage_reporting --test diagnose \
-  --test tool_dispatch -- --test-threads=1
+  --lib --bin infigraph-mcp --test freshness_tools --test coverage_reporting \
+  --test diagnose --test tool_dispatch --no-run --message-format=json
+cargo test --locked --offline --no-default-features -p infigraph-mcp \
+  --test freshness_tools --no-run --message-format=json
+cargo test --manifest-path target/freshness-trial/base/Cargo.toml \
+  --locked --offline --no-default-features -p infigraph-mcp \
+  --test freshness_tools --no-run --message-format=json
 cargo clippy --locked --offline --no-default-features -p infigraph-mcp \
   --lib --bin infigraph-mcp --test freshness_tools -- -D warnings
 cargo build --locked --offline --no-default-features \
   -p infigraph-cli -p infigraph-mcp --bin infigraph --bin infigraph-mcp
+cargo fmt --all -- --check
+git diff --check
 ```
 
-Copy the new regression test into a disposable archive of exact base
-`4d5266fe10c2c39dbaac423c7a43731329601e85`, without production changes,
-to establish red-on-base/green-on-candidate behavior. This has **not been done**.
-Native CLI/MCP smoke, actual running-watcher branch-switch/deletion/new-directory
-checks, candidate Clippy/type checking, and cross-platform/full-feature suites
-remain unrun. Do not substitute prior PR #7 receipts or old native binaries for
-validation of this candidate. No A/B functionality or performance was measured;
-there is no speedup, query-accuracy, or watcher-convergence claim.
+| Build/check | Result | Wall seconds |
+| --- | --- | ---: |
+| Initial candidate test build | PASS, exit 0 | 216.522 |
+| Optimized regression rebuild | PASS, exit 0 | 7.013 |
+| Exact-base archive regression build | PASS, exit 0 | 15.590 |
+| Strict focused Clippy | PASS, exit 0 | 119.378 |
+| CLI/MCP native build | PASS, exit 0 | 138.259 |
+| Formatting/whitespace | PASS, exit 0 | Final formatting 0.761 |
+
+Do not compare these build times as speedups: cache state and selected targets
+were different. Highest sampled build RSS was 8,215,166,976 bytes, below the
+8 GiB cap; no command hit the RSS cap.
+
+### Executed test commands and counts
+
+To avoid CWD-ancestor configuration/dedup discovery and the known hidden-ancestor
+watcher issue, Cargo compiled test executables without running them. The resulting
+executables were then run from a visible disposable CWD with isolated HOME and
+registry. Before the CLI was built, existing graph dispatch tests used the normal
+inline index path; no fake CLI, automatic SCIP installation, test disabling or
+weakened assertion was used.
+
+Each executable below is under `target/freshness-trial/native/debug/deps/`:
+
+```sh
+freshness_tools-c36c7fd8b8ff5520 --test-threads=1
+coverage_reporting-1171ed4747198ffc --test-threads=1
+diagnose-8febb214a51cf608 --test-threads=1
+tool_dispatch-08f51234d74dcd9f --test-threads=1
+infigraph_mcp-09eb49583889d21c --test-threads=1
+infigraph_mcp-0a435b910c151ead compress::tests --test-threads=1
+infigraph_mcp-0a435b910c151ead session_context::tests --test-threads=1
+```
+
+| Test | Result | Process wall seconds |
+| --- | --- | ---: |
+| Final candidate freshness regressions | 2 passed, 0 failed; exit 0 | 117.139 |
+| Same final regressions copied into exact base `4d5266f` archive | 0 passed, 2 failed; expected exit 101 | 7.092 |
+| Existing coverage reporting | 1 passed, 0 failed | 28.421 |
+| Existing diagnostics/protocol | 5 passed, 0 failed | 0.110 |
+| Existing graph-tool dispatch | 1 passed, 0 failed | 97.838 |
+| MCP binary units | 7 passed, 0 failed | 0.109 |
+| Compression units | 61 passed, 0 failed; 63 unrelated tests filtered | 0.541 |
+| Session units | 28 passed, 0 failed; 96 unrelated tests filtered | 0.109 |
+
+Total final candidate focused tests: **105 passed, 0 failed**. This does not mean
+all validation is green: the watcher probe below still fails on both base and
+candidate.
+
+The base failures are substantive: ordinary structural output lacks the freshness
+advisory, and reference compression removes an appended advisory. Candidate tests
+cover all four routes for populated/empty and changed-HEAD results, plus edits,
+deletions, nested additions, subdirectory resolution, subset indexing, return
+checkout with stale graph data, pending/busy/poisoned state, malformed registry,
+non-Git state, unchanged registry/coverage bytes, repeated MCP responses and
+long-result compression/deduplication.
+
+### Native CLI/MCP and watcher evidence
+
+The local disposable Python harness executed real binaries with these CLI
+commands in synthetic Lua repositories:
+
+```sh
+infigraph --help
+infigraph index --no-embed
+infigraph doctor --json
+infigraph symbols app.lua
+infigraph-mcp --mcp
+```
+
+It sent MCP `initialize`, `tools/list`, structural queries, `get_symbols_in_file`
+and explicit `watch_project` requests. CLI help, seed indexing, doctor JSON,
+discovery, real caller edges and EOF exit checks passed. Lua has no SCIP installer
+path. Update-check cache state belonged to the disposable HOME.
+
+The A/B phase held only the disposable MCP instance lock so both servers used
+the existing secondary-instance read path, preventing auto-watch from mutating
+the frozen graph. Body parity passed in **nine comparisons**: all four tools on
+the clean fixture, plus `trace_callers` across dirty, changed-commit, return,
+deleted-file and new-nested-file states. The candidate showed advisory evidence;
+the base did not. Offline caller additions remained absent from the frozen graph
+in both versions: the improvement is visible uncertainty, not graph repair.
+
+The actual-primary watcher phase used the unchanged core watcher with real
+filesystem/Git events and an absolute 12-second acceptance budget. A native call
+straddling the deadline could finish later, but could not count as a pass.
+
+| Watcher observation | Candidate | Exact-base control |
+| --- | --- | --- |
+| Existing-file edit converged | PASS, 3.190 s | PASS, 3.134 s |
+| Populated nested-directory checkout converged within 12 s | **FAIL**; still absent at last observation, 13.583 s | **FAIL**; still absent at last observation, 13.446 s |
+| File deletion converged | PASS, 3.201 s | PASS, 3.158 s |
+| Exact return-checkout graph | PASS, 6.471 s | PASS, 6.317 s |
+| Explicit native read errors in this sample | 0 | 0 |
+
+Candidate A/B plus watcher harness: **67 checks passed, 1 failed**, exit 1,
+187.944 s, no outer timeout. Baseline watcher-only control: **13 passed, 1 failed**,
+exit 1, 50.383 s. The shared failure corresponds to unchanged core
+`watch/mod.rs:245-249`, owned by separate PR #7. No #7 code was imported, and no
+native WAL repair or deadline increase was attempted. These small samples do not
+establish general error-free native reads; the #7 owner separately reported
+transient WAL/checkpoint errors in their own tests.
+
+### Retained unsuccessful attempts
+
+- Initial regression fixture: outer 180-second limit reached, exit 124 at
+  180.048 s, before a final test result. The fixture redundantly opened all four
+  native graphs for every shared-evidence case. Commit `502909f` retained all-four
+  populated/empty/changed-HEAD routing checks and used one route for the remaining
+  shared helper evidence. It passed in 117.139 s under the **same 180-second bound**.
+  No production code, existing test, or watcher acceptance deadline changed.
+- First baseline-only harness attempt: exit 1 at 7.296 s due to cleanup of a nested
+  directory that this reduced mode never created. It stopped before watcher
+  startup. The harness was corrected, the failed receipt retained, and the final
+  control reproduced the shared watcher failure. This was a harness error, not
+  application evidence.
+
+Raw commands, stdout/stderr, Cargo artifact records, sampled-resource receipts,
+fixture scripts and A/B samples remain locally under the ignored
+`target/freshness-trial/` directory. No binary, database, private machine path,
+credential or transcript is included in the PR.
+
+## Measured A/B latency and output size
+
+One disposable Lua file, two functions, CPU 0/1, persistent MCP secondary workers,
+compression/dedup disabled for body comparison, three timed requests per tool
+and variant after an initial request. The clean-fixture order was base then
+candidate; this is a small descriptive sample, not a controlled speedup study.
+
+| Tool | Base median ms | Candidate median ms | Observed difference ms |
+| --- | ---: | ---: | ---: |
+| `trace_callers` | 3150.031 | 3163.054 | 13.024 |
+| `trace_callees` | 3126.583 | 3188.716 | 62.133 |
+| `transitive_impact` | 3134.265 | 3173.459 | 39.194 |
+| `find_all_references` | 3128.165 | 3186.330 | 58.165 |
+
+Each candidate response added **455 UTF-8 bytes** of advisory on the clean fixture;
+its existing body remained byte-identical. The observed median differences were
+13-62 ms (approximately 0.4-2.0%); do not interpret them as stable causal overhead
+or extrapolate to large repositories. There is **no speedup or graph-accuracy
+improvement claim**. Large-repository Git-status cost remains unmeasured.
+
+Binary SHA-256 values for the actual smoke inputs:
+
+- `cli`: `7c65a7020f2bdbeb98f6c05abdb76e96974f5c7be334f8e38d4b34f18de94800`
+- `candidate_mcp`: `40cde425bda9a747f4c29a503c52d5d319b4a97600c1b9528883dc329a396585`
+- `base_mcp`: `ee891c4b8110b2ace8aae99251e5b608a7a7cd305f034b3e84830e403a9d9aef`
 
 ## Self-review findings and fixes
 
@@ -135,9 +270,10 @@ there is no speedup, query-accuracy, or watcher-convergence claim.
   state instead. The regression includes busy and poisoned pending locks.
 - **Preservation check:** existing read-only query paths and caller coverage
   prefixes remain; no watcher/core or #7-owned code was changed.
-- **Unresolved verification gap:** source review and rustfmt do not establish Rust
-  type correctness or runtime behavior. Native checks are mandatory before
-  recommending adoption. No independent second-agent review was requested/run.
+- **Verification completed:** compilation, strict focused Clippy, 105 candidate
+  tests and exact-base red regressions ran. The populated-directory failure is
+  reproduced in the baseline control and remains unresolved outside this scope.
+  No independent second-agent review was requested/run.
 
 ## Operational and security limits
 
@@ -155,7 +291,9 @@ does not fix hidden-ancestor watcher omissions, offline edits, event loss,
 branch-switch convergence, ignored-file freshness, or incomplete SCIP enrichment.
 Only four named MCP tools gain the advisory; this is partial issue #48 coverage.
 
-Recommendation: review only the narrow experimental adaptation after validation;
-do not merge the full upstream branch or infer operational readiness. Confirm the
-intended source branch before treating this provisional trial as the requested
-upstream adoption.
+Recommendation: the narrow advisory adaptation is supported for source review and
+isolated trial; reject a wholesale import of the upstream branch. Keep the PR
+experimental/draft and separate from the coordinator's acceptance gate. Confirm
+the intended source branch, review the final diff, and retest the combined base
+if/when PR #7 lands before claiming broader freshness acceptance. No merge,
+installation, deployment or runtime authority is granted by these results.
