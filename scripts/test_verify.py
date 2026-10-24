@@ -84,6 +84,16 @@ class CoverageTests(unittest.TestCase):
                          "write_lock", "write_lock_wiring"]:
                 self.assertTrue(any(name in cmd for cmd in plan), name)
 
+    def test_unknown_workspace_expansion_keeps_watcher_and_graph_lock_regressions(self):
+        for paths in [{".github/workflows/ci.yml"}, {"scripts/verify.py"},
+                      {"unknown-build-input"}, None]:
+            with self.subTest(paths=paths):
+                plan = verify.commands(paths)
+                for name in ["watcher_concurrency", "watcher_reindex", "parent_dir_search",
+                             "concurrent_writer_reader", "graph_queries", "lockfile",
+                             "write_lock", "write_lock_edge_cases", "write_lock_wiring"]:
+                    self.assertTrue(any(name in cmd for cmd in plan), name)
+
     def test_new_directory_watcher_target_tracks_integrated_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -94,10 +94,10 @@ def commands(paths, full=False, comparison=None):
             targets.add("typescript_callers")
         if "cross-repo" in suites:
             targets.update(CORE_TESTS)
-        shared_build = paths is None or any(
+        shared_build = "workspace" in crates or any(
             p in {"Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml"}
             or p.endswith("/Cargo.toml") or p.startswith((".cargo/", "patches/"))
-            for p in paths)
+            for p in paths or [])
         if shared_build or any(p.startswith("crates/") and "watch" in p for p in paths or []):
             targets.update({"watcher_concurrency", "watcher_reindex", "parent_dir_search", "concurrent_writer_reader"})
             # PR #7 adds this direct-graph regression. Keep later watch/build
