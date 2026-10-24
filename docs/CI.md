@@ -91,6 +91,13 @@ a 90-second bound. It never installs tools or rebuilds. Missing tools, timeout,
 or a non-reproducing probe are incomplete diagnostic evidence; the original
 verification failure remains fatal. Build metadata can include stale candidates;
 its source label alone does not prove which bytes were linked or establish cause.
+The failure step also records archive/bridge object compiler tags and, when both
+GCC 13 and 15 are already installed and one native directory is recorded, builds
+one tiny C++ constructor/formatting fixture with each compiler against the same
+archive/header/configuration. Each compile has a 30-second bound and each run
+10 seconds, with separate disposable databases, core dumps disabled and process
+groups killed on timeout. These are synthetic causal controls, not CLI test
+passes. No compiler/environment pin is inferred automatically from their result.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed

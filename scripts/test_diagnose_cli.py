@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 spec = importlib.util.spec_from_file_location("diagnose_cli", Path(__file__).with_name("diagnose_cli.py"))
 diagnose = importlib.util.module_from_spec(spec)
@@ -16,6 +16,65 @@ spec.loader.exec_module(diagnose)
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_compiler_comparison_holds_source_archive_and_configuration_constant(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            library = Path(tmp) / "native"
+            library.mkdir()
+            for name in ["lbug.hpp", "liblbug.a"]:
+                (library / name).write_text("synthetic fixture")
+            seen = []
+            def command(argv, timeout):
+                seen.append(argv)
+                if "--version" in argv:
+                    return subprocess.CompletedProcess(argv, 0, "fixture compiler", "")
+                if "-o" in argv:
+                    self.assertEqual(Path(argv[argv.index("-I") + 1]), library)
+                    self.assertIn(str(library / "liblbug.a"), argv)
+                    source = Path(argv[argv.index("-I") + 2]).read_text()
+                    self.assertIn("std::format", source)
+                    self.assertIn("lbug::main::Database db(argv[1]);", source)
+                    self.assertEqual(timeout, 30)
+                    return subprocess.CompletedProcess(argv, 0, "", "")
+                self.assertEqual(timeout, 10)
+                status = 0 if Path(argv[0]).name == "g++-13" else -11
+                return subprocess.CompletedProcess(argv, status, "fixture stdout", "fixture stderr")
+            receipt = io.StringIO()
+            with patch.object(diagnose, "lbug_builds", return_value=[
+                    (Path(tmp), {"LBUG_PRECOMPILED_LIBRARY_DIR": str(library)})]), \
+                    patch.object(diagnose.shutil, "which", side_effect=lambda name: "/fixture/" + name), \
+                    patch.object(diagnose, "bounded_command", side_effect=command), \
+                    contextlib.redirect_stdout(receipt):
+                diagnose.compare_compilers(Path(tmp))
+            builds = [argv for argv in seen if "-o" in argv]
+            self.assertEqual(len(builds), 2)
+            self.assertEqual(builds[0][1:-1], builds[1][1:-1])
+            self.assertIn("g++-13 run_exit=0 signal=None", receipt.getvalue())
+            self.assertIn("g++-15 run_exit=-11 signal=11", receipt.getvalue())
+            self.assertIn("not a CLI test pass", receipt.getvalue())
+
+    def test_compiler_comparison_refuses_missing_tools_and_ambiguous_native_directory(self):
+        for compiler, libraries in [(None, ["one"]), ("installed", ["one", "two"])]:
+            receipt = io.StringIO()
+            with patch.object(diagnose.shutil, "which", return_value=compiler), \
+                    patch.object(diagnose, "lbug_builds", return_value=[
+                        (Path("fixture"), {"LBUG_PRECOMPILED_LIBRARY_DIR": library}) for library in libraries]), \
+                    patch.object(diagnose, "bounded_command") as run, contextlib.redirect_stdout(receipt):
+                diagnose.compare_compilers(Path("fixture"))
+            run.assert_not_called()
+            self.assertIn("COMPILER_COMPARISON NOT_RUN", receipt.getvalue())
+
+    def test_compiler_timeout_kills_process_group_before_reporting_incomplete(self):
+        process = Mock(pid=12345)
+        process.communicate.side_effect = [subprocess.TimeoutExpired("fixture", 1), ("", "")]
+        with patch.object(diagnose.subprocess, "Popen", return_value=process) as spawn, \
+                patch.object(diagnose.os, "killpg", create=True) as kill, \
+                patch.object(diagnose.signal, "SIGKILL", 9, create=True):
+            with self.assertRaises(subprocess.TimeoutExpired):
+                diagnose.bounded_command(["fixture"], 1)
+        self.assertTrue(spawn.call_args.kwargs["start_new_session"])
+        kill.assert_called_once_with(12345, 9)
+        self.assertEqual(process.communicate.call_count, 2)
+
     def test_version_success_from_lldb_helpers_does_not_select_them_as_debugger(self):
         # Reproduce the hosted listing/order: all helpers returned --version 0
         # and lldb-dap was previously selected, yielding no launch/backtrace.
