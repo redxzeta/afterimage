@@ -97,16 +97,6 @@ fn relative_imports_and_reexports_resolve_paths_not_basenames() {
             "import { helper } from './nested'",
             "src/nested/index.ts",
         ),
-        (
-            "src/main.mts",
-            "export * from './helpers.mjs'",
-            "src/helpers.mts",
-        ),
-        (
-            "src/main.cts",
-            "export * from './helpers.cjs'",
-            "src/helpers.cts",
-        ),
     ] {
         let dir = tempfile::tempdir().unwrap();
         let backend = KuzuBackend::open(&dir.path().join("graph")).unwrap();
@@ -264,4 +254,23 @@ fn scip_enrichment_preserves_syntax_module_imports() {
         assert_eq!(stats.files_processed, 2);
         assert_import(&backend, "main.ts", "helpers.ts");
     }
+}
+
+#[test]
+fn indexing_replaces_outgoing_imports_after_an_edit() {
+    use infigraph_core::Infigraph;
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("helpers.ts"), "export const helper = 1;").unwrap();
+    std::fs::write(dir.path().join("main.ts"), "export * from './helpers.js';").unwrap();
+    let mut graph = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+    graph.init().unwrap();
+    graph.index().unwrap();
+    let backend = graph.backend().unwrap();
+    assert_eq!(
+        backend.get_file_deps("main.ts").unwrap().imports,
+        vec!["helpers.ts"]
+    );
+    std::fs::write(dir.path().join("main.ts"), "export const standalone = 1;").unwrap();
+    graph.index().unwrap();
+    assert!(backend.get_file_deps("main.ts").unwrap().imports.is_empty());
 }

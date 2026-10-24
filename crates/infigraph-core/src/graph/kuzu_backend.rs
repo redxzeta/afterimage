@@ -464,17 +464,20 @@ impl GraphBackend for KuzuBackend {
                 .context("failed to commit index transaction")?;
         }
 
-        let files = super::imports::module_files(&conn)?;
-        let modules = super::imports::ModuleImports::new(files.iter().map(String::as_str));
         let mut imports = inbound;
-        for extraction in extractions {
-            for rel in &extraction.relations {
-                if matches!(
-                    rel.kind,
-                    crate::model::RelationKind::Imports | crate::model::RelationKind::ImportedBy
-                ) {
-                    if let Some(target) = modules.resolve(&rel.source_id, &rel.target_id) {
-                        imports.push((rel.source_id.clone(), target.to_string()));
+        if !use_csv {
+            let files = super::imports::module_files(&conn)?;
+            let modules = super::imports::ModuleImports::new(files.iter().map(String::as_str));
+            for extraction in extractions {
+                for rel in &extraction.relations {
+                    if matches!(
+                        rel.kind,
+                        crate::model::RelationKind::Imports
+                            | crate::model::RelationKind::ImportedBy
+                    ) {
+                        if let Some(target) = modules.resolve(&rel.source_id, &rel.target_id) {
+                            imports.push((rel.source_id.clone(), target.to_string()));
+                        }
                     }
                 }
             }
