@@ -15,10 +15,10 @@ fork, not installation, deployment, release, or runtime authority.
 | Fork PR/lane | Exact reviewed head | Outcome and remaining condition |
 | --- | --- | --- |
 | [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
-| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `d04471dd64c062178057e1b20cc0e45738f7b5c3` | HOLD: incorporates #6 and child-process diagnostics; hosted root-cause disposition pending. Future watcher target selection corrected; broader fallback correction remains unpublished. |
+| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `d04471dd64c062178057e1b20cc0e45738f7b5c3` | HOLD: incorporates #6 and child-process diagnostics; hosted index dies from SIGSEGV, underlying cause unresolved. Future watcher target selection corrected; broader fallback correction remains unpublished. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `1c1fe4ffdf0838f11c61c6a7909a2ca606f23929` | HOLD: follow-up for hidden ancestors and return-checkout latency in progress. Original direct-graph regression passes; lifecycle receipt retains a failed case. |
 | Three-repository benchmark follow-up | No delivery PR yet | Measurements active; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final evidence/review pending. |
-| TypeScript import follow-up | No delivery PR yet | Reproduced missing IMPORTS with both Module endpoints present. Relative-path and incremental-write fixes/tests in progress; no merge decision. |
+| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `32459fd2aeb24469afb874744b5294821567157e` | DRAFT / HOLD: source review found order-dependent provisional imports in small incremental batches; native regression replay held for benchmark timings. Base includes #6. |
 
 Every remaining delivery must include the current `afterimage-main` base and
 receive a fresh diff/conflict review. Passing one PR does not establish combined
@@ -78,9 +78,11 @@ not run. Cause remains UNKNOWN; local passes do not establish hosted parity.
 The author's earlier 90 integration/683 unit/14 benchmark-harness passes remain
 reported evidence on the documented source, not fresh reviewer executions.
 [Diagnostic run 40106285931](https://github.com/redxzeta/afterimage/actions/runs/40106285931)
-on `d04471dd` is pending. The diagnostic patch preserves assertions and reports
-child status/signal/both streams; it does not fix or classify the underlying
-index failure.
+on `d04471dd` failed: **3 passed / 1 failed**. Fixture indexing died from
+**SIGSEGV (signal 11), no exit code, core dumped, empty stdout/stderr**. The
+diagnostic regression passed and assertions remain strict. This establishes a
+native crash, not its inherited-versus-environmental cause; that disposition
+remains unresolved. Later suites did not run.
 
 For #7, [the original report](https://github.com/redxzeta/afterimage/blob/1c1fe4ffdf0838f11c61c6a7909a2ca606f23929/docs/PHASE-D-RELIABILITY-FOLLOWUP.md)
 records the direct-graph directory regression passing, but lifecycle completion
@@ -89,6 +91,16 @@ returns exit 1 with **28 checks passed / 1 failed**. Return checkout exceeded
 also reproduced stale graph data. Neither a higher timeout nor eventual
 correctness alone satisfies the follow-up. New direct-graph checks and explicit
 residual-risk disposition are required before a merge decision.
+
+For #9, diff/merge construction checks pass; native tests have not run. A
+reachable P2 was sent to its owner: small incremental batches delete every
+changed module, then each per-file insert writes imports using only the modules
+reinserted so far. With `main.ts` importing `./helper.js`, reindexing in order
+`helper.ts`, `main.ts`, `helper.tsx` can create a temporary `main -> helper.ts`
+edge. Final resolution correctly sees ambiguity, but its MERGE-only pass does
+not remove that provisional edge. Resolve batch imports against the final
+module set and add an order-sensitive graph regression. This is a source-review
+finding; runtime reproduction is pending the timing-window release.
 
 ## Limits and operational decision
 
