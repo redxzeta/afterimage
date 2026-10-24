@@ -3,9 +3,10 @@ use std::collections::HashMap;
 use anyhow::{Context, Result};
 use kuzu::Connection;
 
+use super::imports::ModuleImports;
 use super::schema::ensure_custom_edge_table;
 use super::store::GraphStore;
-use super::store_util::{escape, file_stem, import_stem, resolve_import_candidate};
+use super::store_util::escape;
 use crate::model::{FileExtraction, RelationKind};
 
 impl GraphStore {
@@ -112,23 +113,7 @@ impl GraphStore {
             ));
         }
 
-        // Map module-basename (no extension) -> Module file-id, so IMPORTS
-        // targets (which are captured as bare module NAMES like "helpers", not
-        // file paths) can be resolved to the actual Module node id (its file
-        // path). Without this, the IMPORTS write below matched b.id against a
-        // "{file}::{module}" string that no Module node ever has, so zero
-        // Module->Module edges were created and get_file_deps was always empty
-        // (AIF3X-331 #20b). Built from the current batch — on a full index that
-        // is every file; incremental single-file re-index can't resolve a
-        // cross-file import target here, which is acceptable (get_file_deps is
-        // computed against the persisted full graph).
-        let mut module_by_stem: HashMap<String, Vec<&str>> = HashMap::new();
-        for e in extractions {
-            module_by_stem
-                .entry(file_stem(&e.file))
-                .or_default()
-                .push(e.file.as_str());
-        }
+        let modules = ModuleImports::new(extractions.iter().map(|e| e.file.as_str()));
 
         // 6. All relation edges grouped by type
         let mut calls_pairs: Vec<String> = Vec::new();
@@ -159,25 +144,12 @@ impl GraphStore {
                         escape(&rel.target_id)
                     )),
                     RelationKind::Imports | RelationKind::ImportedBy => {
-                        // target_id is "{file}::{module_name}"; resolve the bare
-                        // module name to the imported file's Module id. Skip
-                        // external/unresolvable imports (e.g. "fastapi") — they
-                        // have no Module node in this project.
-                        let module_name =
-                            rel.target_id.rsplit("::").next().unwrap_or(&rel.target_id);
-                        let stem = import_stem(module_name);
-                        if let Some(candidates) = module_by_stem.get(stem.as_str()) {
-                            if let Some(target_file) =
-                                resolve_import_candidate(module_name, candidates)
-                            {
-                                if target_file != rel.source_id {
-                                    imports_pairs.push(format!(
-                                        "{{a: '{}', b: '{}'}}",
-                                        escape(&rel.source_id),
-                                        escape(target_file)
-                                    ));
-                                }
-                            }
+                        if let Some(target_file) = modules.resolve(&rel.source_id, &rel.target_id) {
+                            imports_pairs.push(format!(
+                                "{{a: '{}', b: '{}'}}",
+                                escape(&rel.source_id),
+                                escape(target_file)
+                            ));
                         }
                     }
                     RelationKind::Reads => reads_pairs.push(format!(
@@ -217,7 +189,7 @@ impl GraphStore {
         }
         for chunk in imports_pairs.chunks(SYM_CHUNK) {
             let _ = conn.query(&format!(
-                "UNWIND [{}] AS p MATCH (a:Module), (b:Module) WHERE a.id = p.a AND b.id = p.b CREATE (a)-[:IMPORTS]->(b)",
+                "UNWIND [{}] AS p MATCH (a:Module), (b:Module) WHERE a.id = p.a AND b.id = p.b MERGE (a)-[:IMPORTS]->(b)",
                 chunk.join(", ")
             ));
         }

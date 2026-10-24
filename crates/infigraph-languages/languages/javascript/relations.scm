@@ -10,6 +10,10 @@
     object: (_) @call.receiver
     property: (property_identifier) @call.func)) @call.site
 
+; Re-exports are module dependencies too.
+(export_statement
+  source: (string) @import.module)
+
 ; Import statements
 (import_statement
   source: (string) @import.module)
