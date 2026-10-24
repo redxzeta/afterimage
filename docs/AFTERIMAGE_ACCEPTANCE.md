@@ -91,6 +91,11 @@ returns exit 1 with **28 checks passed / 1 failed**. Return checkout exceeded
 also reproduced stale graph data. Neither a higher timeout nor eventual
 correctness alone satisfies the follow-up. New direct-graph checks and explicit
 residual-risk disposition are required before a merge decision.
+An additional P2 source finding was sent to the watcher owner: directory
+registration follows symlink directories, and the new existing-file callback
+can queue outside-root source through those links, unlike the initial scanner.
+Skip symlinks during registration and directory events, and validate with an
+outside-root sentinel and loop fixture before merging. Native replay is pending.
 
 For #9, diff/merge construction checks pass; native tests have not run. A
 reachable P2 was sent to its owner: small incremental batches delete every
