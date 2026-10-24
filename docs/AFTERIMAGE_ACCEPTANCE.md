@@ -148,8 +148,8 @@ already indexed records. No error-free native reads, real crash-WAL recovery,
 full-workspace or cross-platform acceptance is claimed. This is a source GO;
 broader operational acceptance stays HOLD.
 
-For #9, diff/merge construction checks pass. The initial review found a
-reachable P2 was sent to its owner: small incremental batches delete every
+For #9, diff/merge construction checks pass. Initial review identified a
+reachable P2 and sent it to the owner: small incremental batches delete every
 changed module, then each per-file insert writes imports using only the modules
 reinserted so far. With `main.ts` importing `./helper.js`, reindexing in order
 `helper.ts`, `main.ts`, `helper.tsx` can create a temporary `main -> helper.ts`
