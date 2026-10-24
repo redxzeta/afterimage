@@ -7,7 +7,7 @@ fork, not installation, deployment, release, or runtime authority.
 
 - Repository/base: `redxzeta/afterimage:afterimage-main`.
 - Starting base: `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`.
-- Current integrated base: `4d5266fe10c2c39dbaac423c7a43731329601e85`.
+- Current integrated base: `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`.
 - Protected fork mirror `main`: `cf82f5d7440d9be158e219df1ef256d6359ed1f6`,
   unchanged after the merge. Upstream PRs #78/#81/#82/#83/#84 remain separate
   from fork acceptance; this review makes no upstream mutations.
@@ -16,7 +16,7 @@ fork, not installation, deployment, release, or runtime authority.
 | --- | --- | --- |
 | [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
 | [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `17a5cc66aae0c3363c07780ebf1f3518a8dad1d1` | HOLD: both selector gaps corrected and independently validated (14 passes). Hosted fixture still dies from SIGSEGV; debugger probe did not run. Local author parity passes 4/4; causal disposition remains unresolved. |
-| [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `1c1fe4ffdf0838f11c61c6a7909a2ca606f23929` | HOLD: follow-up for hidden ancestors and return-checkout latency in progress. Original direct-graph regression passes; lifecycle receipt retains a failed case. |
+| [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `51de48ce7ccf9218ff91424f8c312a5c1a10ac38` | MERGED with expected-head guard; merge `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`. Four direct-graph regressions and #6 receipt pass; narrow Linux source integration accepted with explicit residuals below. |
 | Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final artifacts/review pending. |
 | [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `d2e0790155d1cc7e97aaca9d986af978df1b0a52` | DRAFT / HOLD: order-dependent provisional imports identified at `32459fd` are corrected in source with regression fixtures; native red/green replay and final acceptance remain pending. Base includes #6. |
 
@@ -27,6 +27,12 @@ PR #10) is provisional, outside this gate, and has no merge authorization here.
 The benchmark explicitly released native builds at 15:31:58 UTC after its final
 measurement. Clearance was forwarded to the existing lanes; Sable freshness
 checks and the provisional trial coordinate their bounded native work.
+
+PR #8 has no reported checks because the current base CI workflow filters PRs
+to `main`, while this documentation-only PR targets `afterimage-main`. This is
+NOT_CONFIGURED, not a test pass or failure. Its diff is whitespace-checked and
+reviewed; no workflow change or broad native suite is added for this notice.
+PR #5 owns the pending CI target correction.
 
 ## Review and validation receipts
 
@@ -104,7 +110,7 @@ are an investigation hypothesis, not an established crash cause. The existing
 CI owner was resumed for bounded causal diagnosis; no duplicate fix was made.
 
 For #7, [the original report](https://github.com/redxzeta/afterimage/blob/1c1fe4ffdf0838f11c61c6a7909a2ca606f23929/docs/PHASE-D-RELIABILITY-FOLLOWUP.md)
-records the direct-graph directory regression passing, but lifecycle completion
+historically records the direct-graph directory regression passing, but lifecycle completion
 returns exit 1 with **28 checks passed / 1 failed**. Return checkout exceeded
 12 seconds and was only later correct at 25.510 seconds. Hidden-ancestor edits
 also reproduced stale graph data. Neither a higher timeout nor eventual
@@ -113,8 +119,34 @@ residual-risk disposition are required before a merge decision.
 An additional P2 source finding was sent to the watcher owner: directory
 registration follows symlink directories, and the new existing-file callback
 can queue outside-root source through those links, unlike the initial scanner.
-Skip symlinks during registration and directory events, and validate with an
-outside-root sentinel and loop fixture before merging. Native replay is pending.
+The final patch skips symlinks during registration and directory events;
+outside-root sentinel and loop regressions now pass.
+
+At final head `51de48ce`, the independent review covered every changed source,
+test and report file and verified their SHA-256 against the local raw receipt
+packet. Code/tests are identical to validated checkpoint
+`b65ad6cd086f76124bc6884308c6751f50bf2b3a`; the final commit changes only docs.
+All four graph cases fail by assertion against the old watcher and pass after:
+populated-directory/symlink/loop, real return checkout plus edit/removal, hidden
+ancestor with nested ignore rules/exclusions, and a changed ignore rule before
+queued-file flush. Return checkout reaches exact graph contents in **2.183042707
+seconds**, inside the unchanged absolute **12-second** deadline starting before
+checkout and checked after reads. Outside sentinel bytes/mtime/content count
+are preserved. #6's unchanged receipt regression passes **1/1**; supporting
+reader/writer test has **52 correct / 0 errors / 0 wrong** in that run. Strict
+focused Clippy, formatting, whitespace and merge construction pass. These are
+author executions with raw receipts independently checked, not reviewer reruns
+during the provisional trial's Sable CPU window.
+
+The integration reviewer accepts the scoped Linux merge with these explicit
+residuals: active native writes can produce unsuccessful checkpoint/WAL-missing
+reads; only later valid exact snapshots inside the same deadline count as fresh.
+The ordinary duplicate-watch control passes, while an injected nine-second
+startup still reproduces the existing five-second cleanup-budget assertion.
+Ignore changes affect subscriptions/queued files, not a retroactive purge of
+already indexed records. No error-free native reads, real crash-WAL recovery,
+full-workspace or cross-platform acceptance is claimed. This is a source GO;
+broader operational acceptance stays HOLD.
 
 For #9, diff/merge construction checks pass; native tests have not run. A
 reachable P2 was sent to its owner: small incremental batches delete every
@@ -126,18 +158,18 @@ not remove that provisional edge. Resolve batch imports against the final
 module set and add an order-sensitive graph regression. The owner accepted this
 finding and changed small batches to defer IMPORTS until the final set exists,
 with ambiguity and temporary-JavaScript-fallback regressions at `d2e07901`.
-Runtime failing-before/passing-after replay remains pending the timing release.
+Runtime failing-before/passing-after replay remains pending final validation.
 
 ## Limits and operational decision
 
 - **Import graph:** labelled TypeScript dependencies are missing despite present
   endpoints. Empty IMPORTS does not establish absence. Pending fixes must test
   cold and incremental persistence, resolution ambiguity, and excluded paths.
-- **Watcher freshness:** original hidden-ancestor staleness and return-checkout
-  latency remain open until the replacement is validated. Search text fallback
-  is insufficient; assert actual graph state. Delayed-start duplicate-lock
-  failure was classified as test cleanup timing, not demonstrated duplicate
-  watcher creation; preserve that distinction.
+- **Watcher freshness:** the scoped hidden-ancestor, return-checkout, queued-rule
+  and symlink cases are closed on merged #7 by direct graph checks. This is not
+  universal freshness or error-free-read proof. Search text fallback remains
+  insufficient. Delayed-start duplicate-lock failure is test cleanup timing,
+  not demonstrated duplicate watcher creation; preserve that distinction.
 - **SCIP completeness:** #6 fixes batch receipt reuse only. Direct `index_file`
   mutation, duplicate stored edges, unpropagated import write errors, unresolved
   owners and unavailable compiler tools remain limitations. A successful stage
@@ -151,8 +183,8 @@ Runtime failing-before/passing-after replay remains pending the timing release.
   crash-generated WAL recovery and general native concurrency acceptance remain
   unverified. Focused Linux checks do not settle them.
 
-**GO:** the reviewed narrow #6 source integration.
-**HOLD:** #5/#7 follow-up merges, pending import/benchmark deliveries, combined
+**GO:** the reviewed narrow #6 and #7 source integrations.
+**HOLD:** #5 and pending import/benchmark deliveries, remaining combined
 freshness/completeness/performance acceptance, and operational use claims.
 No deployment or activation is authorized or performed. No new service,
 container, schedule, credential, database, monitoring duty, or installation step
