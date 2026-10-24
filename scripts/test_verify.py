@@ -29,8 +29,11 @@ class CoverageTests(unittest.TestCase):
             with self.subTest(path=path):
                 plan = verify.commands({path})
                 for name in verify.CORE_TESTS + ["doctor", "diagnose", "typescript_callers",
-                                                "coverage_reporting", "scip::tests"]:
+                                                "coverage_reporting"]:
                     self.assertTrue(any(name in cmd for cmd in plan), name)
+                self.assertTrue(any("scip::tests" in cmd for cmd in plan) or
+                                any("--lib" in cmd and ("--workspace" in cmd or "infigraph-core" in cmd)
+                                    for cmd in plan))
 
     def test_missing_base_expands_coverage(self):
         self.assertEqual(verify.selection(None), (verify.ALL, {"workspace"}))
@@ -53,6 +56,13 @@ class CoverageTests(unittest.TestCase):
     def test_full_retains_workspace_integration_and_doc_tests(self):
         plan = verify.commands(set(), full=True)
         self.assertIn(["cargo", "test", "--locked", "--workspace", "--", "--test-threads=1"], plan)
+
+    def test_selected_integration_targets_are_batched_without_duplicates(self):
+        plan = verify.commands({"crates/infigraph-core/tests/typescript_callers.rs"})
+        integration = [cmd for cmd in plan if "--test" in cmd]
+        self.assertEqual(len(integration), 1)
+        self.assertIn("--workspace", integration[0])
+        self.assertEqual(integration[0].count("typescript_callers"), 1)
 
     def test_changed_integration_target_is_not_lost(self):
         target = "crates/infigraph-mcp/tests/memory_context.rs"

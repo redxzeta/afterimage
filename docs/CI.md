@@ -16,6 +16,8 @@ pinned comparison, `--dry-run` for the selected commands, and `--full` for all
 default-feature workspace unit, integration and doc tests. Each command prints
 its duration and stops on failure. Run application tests serially to avoid
 embedded-database resource contention.
+Selected integration targets run in one workspace invocation to unify features
+and avoid rebuilding shared crates between package-specific commands.
 
 ## Shared contract and coverage
 

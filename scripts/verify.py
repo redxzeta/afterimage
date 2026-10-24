@@ -87,11 +87,35 @@ def commands(paths, full=False):
     if full:
         result.append(["cargo", "test", "--locked", "--workspace", "--", "--test-threads=1"])
     else:
-        result += [
-            test_command("infigraph-core", ["embedding_format"]),
-            test_command("infigraph-cli", ["cli_parity"]),
-            test_command("infigraph-mcp", ["tool_parity"]),
-        ]
+        targets = {"embedding_format", "cli_parity", "tool_parity"}
+        if "interfaces" in suites:
+            targets.update({"doctor", "diagnose", "coverage_reporting"})
+        if "core" in suites:
+            targets.add("typescript_callers")
+        if "cross-repo" in suites:
+            targets.update(CORE_TESTS)
+        shared_build = paths is None or any(
+            p in {"Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml"}
+            or p.endswith("/Cargo.toml") or p.startswith((".cargo/", "patches/"))
+            for p in paths)
+        if shared_build or any(p.startswith("crates/") and "watch" in p for p in paths or []):
+            targets.update({"watcher_concurrency", "watcher_reindex", "parent_dir_search", "concurrent_writer_reader"})
+        if shared_build or any(p.startswith("crates/infigraph-core/src/") and
+                               any(part in p for part in ["graph/", "lockfile", "index", "watch"])
+                               for p in paths or []):
+            targets.update({"graph_queries", "lockfile", "write_lock", "write_lock_edge_cases", "write_lock_wiring"})
+        # A newly added/changed integration target must not get lost in a fixed list.
+        for path in paths or []:
+            parts = Path(path).parts
+            if (len(parts) == 4 and parts[0] == "crates" and parts[2] == "tests"
+                    and path.endswith(".rs") and (ROOT / path).exists()):
+                targets.add(Path(path).stem)
+        # Select targets together to unify workspace features once, rather than
+        # recompiling common dependencies for each package/test invocation.
+        integration = ["cargo", "test", "--locked", "--workspace"]
+        for target in sorted(targets):
+            integration += ["--test", target]
+        result.append(integration + ["--", "--test-threads=1"])
         if "workspace" in crates:
             result.append(["cargo", "test", "--locked", "--workspace", "--lib", "--bins", "--", "--test-threads=1"])
         else:
@@ -99,37 +123,11 @@ def commands(paths, full=False):
                 unit_targets = ["--lib", "--bins"] if (ROOT / "crates" / crate / "src/lib.rs").exists() else ["--bins"]
                 result.append(["cargo", "test", "--locked", "-p", crate,
                                *unit_targets, "--", "--test-threads=1"])
-        if "interfaces" in suites:
-            result += [test_command("infigraph-cli", ["doctor"]),
-                       test_command("infigraph-mcp", ["diagnose", "coverage_reporting"]),
-                       test_command("infigraph-mcp", unit_filter="web::tests::")]
-        if "core" in suites:
-            result.append(test_command("infigraph-core", ["typescript_callers"]))
+        if "interfaces" in suites and not ({"workspace", "infigraph-mcp"} & crates):
+            result.append(test_command("infigraph-mcp", unit_filter="web::tests::"))
+        if "core" in suites and not ({"workspace", "infigraph-core"} & crates):
             for group in ["diagnostics::tests", "index_status::tests", "scip::tests"]:
                 result.append(test_command("infigraph-core", unit_filter=group))
-        if "cross-repo" in suites:
-            result.append(test_command("infigraph-core", CORE_TESTS))
-        shared_build = paths is None or any(
-            p in {"Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml"}
-            or p.endswith("/Cargo.toml") or p.startswith((".cargo/", "patches/"))
-            for p in paths)
-        if shared_build or any(p.startswith("crates/") and "watch" in p for p in paths or []):
-            result.append(test_command("infigraph-mcp", [
-                "watcher_concurrency", "watcher_reindex", "parent_dir_search", "concurrent_writer_reader"]))
-        if shared_build or any(p.startswith("crates/infigraph-core/src/") and
-                               any(part in p for part in ["graph/", "lockfile", "index", "watch"])
-                               for p in paths or []):
-            result.append(test_command("infigraph-core", [
-                "graph_queries", "lockfile", "write_lock", "write_lock_edge_cases", "write_lock_wiring"]))
-        # Changed integration targets outside the fixed contract lists must run.
-        for path in sorted(paths or []):
-            parts = Path(path).parts
-            if (len(parts) == 4 and parts[0] == "crates" and parts[2] == "tests"
-                    and path.endswith(".rs") and (ROOT / path).exists()):
-                cmd = test_command(parts[1], [Path(path).stem])
-                if not any("--test" in existing and parts[1] in existing
-                           and Path(path).stem in existing for existing in result):
-                    result.append(cmd)
     if full or "benchmark" in suites:
         # Harness isolation needs Linux + Bubblewrap; it never runs target apps.
         if sys.platform == "linux":
