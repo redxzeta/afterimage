@@ -19,7 +19,7 @@ was performed. The provisional advisory trial #10 remains outside this gate.
 | [#8: acceptance checkpoint](https://github.com/redxzeta/afterimage/pull/8) | `83a700968e63d9737eec8461fab8b69ee876d2c6` | MERGED: `de02e762c5581055d2adcefe7efe1a58bc0c7cab` |
 | [#9: relative module imports](https://github.com/redxzeta/afterimage/pull/9) | `78c7c64494661ae906565156b957d648e1820f79` | MERGED: `a5b19badfd4ae496965a803c7be770d2281bc573` |
 | [#11: benchmark harness/evidence](https://github.com/redxzeta/afterimage/pull/11) | `eee27b712d19c745cd2950dc95a7470bab14c3f4` | MERGED: `f4568cf15e004391f549bc8705112e37502bd3dc` |
-| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `f9ffc6f199212c7c2e05d788ef0a8b2c8dfe6603` | HOLD: hosted fixture SIGSEGV cause unresolved; replacement must include current base and receive fresh review. |
+| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `f9ffc6f199212c7c2e05d788ef0a8b2c8dfe6603` | HOLD: hosted SIGSEGV cause and new import-suite selection remain open; replacement must include current base and receive fresh review. |
 
 Every merge above used an expected-head guard after independent source/test
 review. #9 included #6/#7 before final combined validation; #11 then integrated
@@ -94,6 +94,12 @@ selection defect; `f9ffc6f1` rejects helpers and its new discovery test passes.
 Corrected hosted diagnosis remains pending. Underlying cause and inherited
 versus environment regression remain **UNDETERMINED**. Production-source equality
 alone does not prove inheritance; no OOM, SIGILL, timeout-only or green claim.
+
+A combined-base probe also finds that `f9ffc6f1` omits merged #9's
+`typescript_imports` target for core graph, language-query and CI changes when
+the test file itself is unchanged. The owner received the reproducer and a
+request to retain that critical regression with present/absent target tests.
+This coverage gap must be resolved before final #5 acceptance.
 
 ## Benchmark and operational limits
 
