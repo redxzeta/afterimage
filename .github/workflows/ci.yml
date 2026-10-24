@@ -60,3 +60,31 @@ jobs:
           VERIFY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           VERIFY_FULL: ${{ inputs.full == true && '1' || '0' }}
         run: python3 scripts/verify.py
+      - name: Diagnose failed CLI fixture without rebuilding
+        if: failure() && runner.os == 'Linux'
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import shutil
+          import subprocess
+          import tempfile
+
+          cli = pathlib.Path('target/debug/infigraph').resolve()
+          if not cli.is_file() or not shutil.which('gdb'):
+              raise SystemExit('NOT_RUN: built CLI or gdb unavailable; original verification failure retained')
+          with tempfile.TemporaryDirectory(prefix='.tmp-cli-parity-') as fixture:
+              root = pathlib.Path(fixture)
+              (root / 'src').mkdir()
+              (root / 'src/calculator.py').write_text('def add(left, right):\n    return left + right\n')
+              command = ['gdb', '--batch', '--nx', '--return-child-result',
+                         '-ex', 'set pagination off', '-ex', 'set disable-randomization off',
+                         '-ex', 'run', '-ex', 'bt 30', '-ex', 'thread apply all bt 8',
+                         '--args', str(cli), '--root', fixture, 'index', '--no-embed']
+              print('Failure-only fresh-fixture native backtrace; primary assertions remain fatal.', flush=True)
+              try:
+                  result = subprocess.run(command, timeout=90, check=False)
+              except subprocess.TimeoutExpired:
+                  raise SystemExit('Diagnostic timed out; original verification failure retained')
+              print(f'Debugger return code: {result.returncode}', flush=True)
+              raise SystemExit(result.returncode)
+          PY
