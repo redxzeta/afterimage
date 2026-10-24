@@ -13,10 +13,15 @@ thread_local! {
 
 /// Run compress + dedup, recovering to raw output on panic (task 2.9).
 pub fn compress_pipeline_safe(raw: &str, tool_name: &str, args: &Value) -> String {
-    let raw_owned = raw.to_string();
+    // Keep freshness evidence visible even when the result is compressed or
+    // replaced by a seen-result placeholder. Preserve the existing body pipeline.
+    let (body, notice) = raw
+        .rsplit_once(crate::tools::freshness::NOTICE_PREFIX)
+        .unwrap_or((raw, ""));
+    let raw_owned = body.to_string();
     let tool = tool_name.to_string();
     let args_c = args.clone();
-    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    let output = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         if FORCE_COMPRESS_PANIC.with(|c| c.get()) {
             panic!("forced compress panic");
         }
@@ -34,8 +39,13 @@ pub fn compress_pipeline_safe(raw: &str, tool_name: &str, args: &Value) -> Strin
             };
             eprintln!("[compress] PANIC tool={tool_name}: {msg} — returning raw output");
             session_context::record_compress_failure();
-            raw.to_string()
+            body.to_string()
         }
+    };
+    if notice.is_empty() {
+        output
+    } else {
+        format!("{output}{}{notice}", crate::tools::freshness::NOTICE_PREFIX)
     }
 }
 

@@ -1,6 +1,7 @@
 pub mod analysis;
 pub mod diagnostics;
 pub mod docs;
+pub(crate) mod freshness;
 pub mod graph;
 pub mod groups;
 pub mod helpers;

@@ -308,14 +308,17 @@ pub fn tool_find_all_references(args: &Value) -> Result<String> {
 
     let refs = backend.find_all_references(symbol_id)?;
     if refs.is_empty() {
-        return Ok(format!("No references found for '{}'", symbol_id));
+        return Ok(super::freshness::append_freshness_notice(
+            prism.root(),
+            format!("No references found for '{}'", symbol_id),
+        ));
     }
 
     let mut out = format!("References to '{}' ({} total):\n\n", symbol_id, refs.len());
     for r in &refs {
         out.push_str(&format!("  {}:{} — in {}\n", r.file, r.line, r.caller_name));
     }
-    Ok(out)
+    Ok(super::freshness::append_freshness_notice(prism.root(), out))
 }
 
 pub fn tool_get_api_surface(args: &Value) -> Result<String> {

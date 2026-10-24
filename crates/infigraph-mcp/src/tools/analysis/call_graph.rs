@@ -3,6 +3,7 @@ use infigraph_core::graph::{filter_dead_code_candidates, GraphBackend};
 use serde_json::Value;
 use std::path::Path;
 
+use super::super::freshness::append_freshness_notice;
 use super::super::helpers::{open_prism, open_prism_read_only, save_analysis};
 
 /// Names referenced anywhere in a `.xaml` file's markup — command bindings
@@ -90,7 +91,10 @@ pub fn tool_trace_callers(args: &Value) -> Result<String> {
     let prism = open_prism_read_only(args)?;
     let coverage = prism.coverage_notice();
     let output = tool_trace_callers_body(args, &prism)?;
-    Ok(format!("{coverage}{output}"))
+    Ok(append_freshness_notice(
+        prism.root(),
+        format!("{coverage}{output}"),
+    ))
 }
 
 fn tool_trace_callers_body(args: &Value, prism: &infigraph_core::Infigraph) -> Result<String> {
@@ -163,7 +167,10 @@ pub fn tool_trace_callees(args: &Value) -> Result<String> {
     let prism = open_prism_read_only(args)?;
     let coverage = prism.coverage_notice();
     let output = tool_trace_callees_body(args, &prism)?;
-    Ok(format!("{coverage}{output}"))
+    Ok(append_freshness_notice(
+        prism.root(),
+        format!("{coverage}{output}"),
+    ))
 }
 
 fn tool_trace_callees_body(args: &Value, prism: &infigraph_core::Infigraph) -> Result<String> {
@@ -199,7 +206,10 @@ pub fn tool_transitive_impact(args: &Value) -> Result<String> {
     let prism = open_prism_read_only(args)?;
     let coverage = prism.coverage_notice();
     let output = tool_transitive_impact_body(args, &prism)?;
-    Ok(format!("{coverage}{output}"))
+    Ok(append_freshness_notice(
+        prism.root(),
+        format!("{coverage}{output}"),
+    ))
 }
 
 fn tool_transitive_impact_body(args: &Value, prism: &infigraph_core::Infigraph) -> Result<String> {
