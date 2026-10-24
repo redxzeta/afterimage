@@ -16,6 +16,25 @@ spec.loader.exec_module(diagnose)
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_version_success_from_lldb_helpers_does_not_select_them_as_debugger(self):
+        # Reproduce the hosted listing/order: all helpers returned --version 0
+        # and lldb-dap was previously selected, yielding no launch/backtrace.
+        helpers = [Path("/fixture") / name for name in
+                   ["lldb-dap-21", "lldb-instr-21", "lldb-server-21", "lldb-argdumper-21"]]
+        cli = Path("/fixture/lldb-21")
+        def glob(root, pattern):
+            return helpers + [cli] if pattern.startswith("usr/bin/lldb-") else []
+        receipt = io.StringIO()
+        with patch.object(diagnose.shutil, "which", return_value=None), \
+                patch.object(diagnose.Path, "glob", glob), \
+                patch.object(diagnose.os, "access", return_value=True), \
+                patch.object(diagnose.subprocess, "run", return_value=subprocess.CompletedProcess(
+                    [], 0, "lldb version 21.1.8\n", "")) as run, contextlib.redirect_stdout(receipt):
+            self.assertEqual(diagnose.debugger(), str(cli))
+        run.assert_called_once_with([str(cli), "--version"], capture_output=True,
+                                    text=True, timeout=5, check=False)
+        self.assertIn("Selected debugger CLI: lldb-21", receipt.getvalue())
+
     def test_recorded_build_source_and_library_bytes_are_reported(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp)

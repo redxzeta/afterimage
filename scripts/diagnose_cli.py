@@ -55,13 +55,17 @@ def inspect(target):
 
 def debugger():
     candidates = [shutil.which("gdb"), shutil.which("lldb")]
-    candidates += [str(p) for pattern in ["/usr/bin/lldb-*", "/usr/lib/llvm-*/bin/lldb",
+    candidates += [str(p) for pattern in ["/usr/bin/lldb-[0-9]*", "/usr/lib/llvm-*/bin/lldb",
                                           "/usr/share/swift/usr/bin/lldb",
                                           "/usr/local/swift/usr/bin/lldb", "/opt/swift/usr/bin/lldb"]
-                   for p in Path("/").glob(pattern.lstrip("/"))]
+                   for p in sorted(Path("/").glob(pattern.lstrip("/")))]
     available = []
     for candidate in dict.fromkeys(candidates):
-        if candidate and os.access(candidate, os.X_OK):
+        # lldb-dap/server/instr/argdumper also accept --version and may return
+        # success while ignoring batch commands. Only the debugger CLI can run
+        # this probe; a helper's exit zero is not a backtrace receipt.
+        if (candidate and re.fullmatch(r"gdb|lldb(?:-[0-9]+)?", Path(candidate).name)
+                and os.access(candidate, os.X_OK)):
             try:
                 result = subprocess.run([candidate, "--version"], capture_output=True,
                                         text=True, timeout=5, check=False)
@@ -72,7 +76,9 @@ def debugger():
             except (OSError, subprocess.TimeoutExpired) as error:
                 print(f"Debugger {Path(candidate).name}: {type(error).__name__}", flush=True)
     print(f"Usable debugger count: {len(available)}; no installation attempted", flush=True)
-    return available[0] if available else None
+    selected = available[0] if available else None
+    print(f"Selected debugger CLI: {Path(selected).name if selected else 'NONE'}", flush=True)
+    return selected
 
 
 def main():
