@@ -253,6 +253,12 @@ comparative-performance and full-acceptance claims. No speedup is established.
 See [matched no-default-feature evidence](results/2026-10-23-bce.md) and its
 [summary](results/2026-10-23-bce-summary.json). It supplements the historical
 default-feature crash runs above; source revisions and build features differ.
+The follow-on has 19 focused harness tests. Its three repository projections
+recover 46/49 candidate positive calls versus baseline 39/49, with 0/8 imports
+in both lanes. Candidate indexing still exits 1 for unavailable SCIP tooling;
+all pairs remain incomplete. The separately repeated eight-file IceCouncil
+diagnostic reproduces the historical 11/12 candidate calls and labelled false
+edge. Neither that subset nor the unadjudicated counts establish full precision.
 
 `run --tool-questions` adds a deterministic, bounded MCP retrieval protocol:
 initialize, list tools, then one `query_graph(detail=true)` for each of the first

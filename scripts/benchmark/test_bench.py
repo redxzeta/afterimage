@@ -167,6 +167,7 @@ class IsolationTests(unittest.TestCase):
         lane = bench.Lane(self.root / "lane", self.binary, None, 0.15, 1)
         result = lane.run("bounded", ["sleep"])
         self.assertEqual(result["status"], "TIMEOUT")
+        self.assertLess(result["wall_ms"], 5000)
 
     def test_cpu_and_ram_budgets_kill_descendants(self):
         for kind, child in [('CPU', 'while True: pass'), ('RAM', 'import time; x=bytearray(64*1024*1024); time.sleep(30)')]:
