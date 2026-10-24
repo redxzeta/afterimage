@@ -432,6 +432,11 @@ impl GraphBackend for KuzuBackend {
 
         let _write_lock = self.store.write_lock()?;
 
+        let conn = self.store.connection()?;
+        // Deleting a Module also removes inbound edges from unchanged files.
+        let changed: std::collections::HashSet<_> =
+            extractions.iter().map(|e| e.file.as_str()).collect();
+        let inbound = super::imports::inbound_imports(&conn, &changed)?;
         let use_csv = existing_hashes_empty || extractions.len() > 100;
 
         if use_csv {
@@ -459,6 +464,22 @@ impl GraphBackend for KuzuBackend {
                 .context("failed to commit index transaction")?;
         }
 
+        let files = super::imports::module_files(&conn)?;
+        let modules = super::imports::ModuleImports::new(files.iter().map(String::as_str));
+        let mut imports = inbound;
+        for extraction in extractions {
+            for rel in &extraction.relations {
+                if matches!(
+                    rel.kind,
+                    crate::model::RelationKind::Imports | crate::model::RelationKind::ImportedBy
+                ) {
+                    if let Some(target) = modules.resolve(&rel.source_id, &rel.target_id) {
+                        imports.push((rel.source_id.clone(), target.to_string()));
+                    }
+                }
+            }
+        }
+        super::imports::merge_imports(&conn, &imports)?;
         // Upsert folder hierarchy
         let file_paths: Vec<&str> = extractions.iter().map(|e| e.file.as_str()).collect();
         let conn = self.store.connection()?;

@@ -23,6 +23,10 @@ impl GraphStore {
         conn: &Connection<'_>,
         extraction: &FileExtraction,
     ) -> Result<()> {
+        let inbound = super::imports::inbound_imports(
+            conn,
+            &std::collections::HashSet::from([extraction.file.as_str()]),
+        )?;
         // Remove old symbols for this file
         let _ = conn.query(&format!(
             "MATCH (s:Symbol) WHERE s.file = '{}' DETACH DELETE s",
@@ -36,7 +40,8 @@ impl GraphStore {
             "MATCH (f:File) WHERE f.id = '{}' DETACH DELETE f",
             escape(&extraction.file)
         ));
-        self.upsert_file_conn_no_delete(conn, extraction)
+        self.upsert_file_conn_no_delete(conn, extraction)?;
+        super::imports::merge_imports(conn, &inbound)
     }
 
     /// Caller must hold WriteLock.
@@ -140,6 +145,8 @@ impl GraphStore {
         let mut inherits_pairs: Vec<(&str, &str)> = Vec::new();
         let mut tested_by_pairs: Vec<(&str, &str)> = Vec::new();
         let mut imports_pairs: Vec<(&str, &str)> = Vec::new();
+        let module_files = super::imports::module_files(conn)?;
+        let modules = super::imports::ModuleImports::new(module_files.iter().map(String::as_str));
         let mut reads_pairs: Vec<(&str, &str)> = Vec::new();
         let mut writes_pairs: Vec<(&str, &str)> = Vec::new();
         let mut custom_pairs: HashMap<String, Vec<(&str, &str)>> = HashMap::new();
@@ -155,7 +162,9 @@ impl GraphStore {
                     tested_by_pairs.push((&rel.source_id, &rel.target_id))
                 }
                 RelationKind::Imports | RelationKind::ImportedBy => {
-                    imports_pairs.push((&rel.source_id, &rel.target_id))
+                    if let Some(target) = modules.resolve(&rel.source_id, &rel.target_id) {
+                        imports_pairs.push((&rel.source_id, target));
+                    }
                 }
                 RelationKind::Reads => reads_pairs.push((&rel.source_id, &rel.target_id)),
                 RelationKind::Writes => writes_pairs.push((&rel.source_id, &rel.target_id)),
@@ -195,7 +204,7 @@ impl GraphStore {
                 .map(|(a, b)| format!("{{a: '{}', b: '{}'}}", escape(a), escape(b)))
                 .collect();
             let _ = conn.query(&format!(
-                "UNWIND [{}] AS p MATCH (a:Module), (b:Module) WHERE a.id = p.a AND b.id = p.b CREATE (a)-[:IMPORTS]->(b)",
+                "UNWIND [{}] AS p MATCH (a:Module), (b:Module) WHERE a.id = p.a AND b.id = p.b MERGE (a)-[:IMPORTS]->(b)",
                 pair_list.join(", ")
             ));
         }
