@@ -39,7 +39,8 @@ These behaviors remain supported and their tests are not obsolete.
   In particular, `group_build_steps` retains the unchanged-consumer/changed-
   producer regression. The actual local graph/contract tests run, not substitutes.
 - CLI/MCP changes: affected library tests, CLI `doctor`, MCP `diagnose` and
-  `coverage_reporting`, and MCP `web::tests::`. MCP changes also run the Linux
+  `coverage_reporting`, MCP `web::tests::`, and the cross-repo tests listed above.
+  MCP changes also run the Linux
   synthetic supervisor process regressions. Other workspace crates run their
   library tests plus core/interface compatibility checks.
 - Changed Rust integration-test files are also selected directly. Manifests,
@@ -67,6 +68,8 @@ job; manual full validation uses Linux/macOS/Windows with fail-fast disabled.
 Only superseded PR runs are cancelled. Cache writes are limited to pushes on
 the fork development branch; PRs can restore dependencies but do not save them.
 Build profiles omit debug symbols and native build parallelism is bounded.
+The local command applies the same defaults, respects explicit environment
+overrides and rejects a different Rust version or missing required Bubblewrap.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed

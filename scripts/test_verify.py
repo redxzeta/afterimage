@@ -40,6 +40,7 @@ class CoverageTests(unittest.TestCase):
             plan = verify.commands({"crates/infigraph-mcp/src/main.rs"})
         self.assertIn(["python3", "scripts/test-mcp-supervisor.py"], plan)
         self.assertTrue(any("diagnose" in cmd for cmd in plan))
+        self.assertTrue(any("group_build_steps" in cmd for cmd in plan))
 
     def test_benchmark_checks_do_not_execute_real_benchmarks(self):
         with patch.object(verify.sys, "platform", "linux"):

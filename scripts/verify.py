@@ -48,7 +48,7 @@ def selection(paths):
                          "infigraph-grammar-plugin", "infigraph-pipeline-plugin"}:
                 suites.update({"core", "cross-repo", "interfaces"})
             elif crate in {"infigraph-cli", "infigraph-mcp"}:
-                suites.add("interfaces")
+                suites.update({"interfaces", "cross-repo"})
                 if crate == "infigraph-mcp":
                     suites.add("supervisor")
             else:
