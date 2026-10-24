@@ -82,6 +82,24 @@ the fork development branch; PRs can restore dependencies but do not save them.
 Build profiles omit debug symbols and native build parallelism is bounded.
 The local command applies the same defaults, respects explicit environment
 overrides and rejects a different Rust version or missing required Bubblewrap.
+Linux CI explicitly requires the already-installed `g++-13` and exports it as
+`CXX` before build/cache steps; it never installs or silently substitutes a
+compiler. The Linux cache key includes this choice. Local verification respects
+`CXX`; use the same compiler when reproducing hosted results. Existing local
+GCC14 receipts remain local GCC14 evidence.
+
+This is validated for the actual CLI context by
+[run40131432398](https://github.com/redxzeta/afterimage/actions/runs/40131432398)
+at `02cd75f3`: the preserved original unfiltered parity test repeated SIGSEGV
+with the GCC15.2 build (3/1, exit101, 4.99s), then passed 4/4 (exit0, 17.06s)
+after the same integration context was rebuilt with CXX=GCC13.4 (57.52s).
+Native archive/headers, Cargo features and linked libstdc++ hashes stayed equal.
+This establishes controlled C++ compiler-input sensitivity, not a generic GCC15
+failure or an isolated lbug/ABI mechanism: cxx, usearch, esaxx and other native
+dependents also rebuilt. Both earlier standalone controls passed. The old CI
+never reached this test, so historical inherited-versus-changed failure provenance
+remains unproved. Standard relevant verification must run with this selection;
+the earlier failed job is not relabeled green.
 
 After a Linux verification failure, `scripts/diagnose_cli.py` reports the built
 CLI's size/hash, recorded lbug source and candidate native archive/header hashes,
@@ -99,8 +117,8 @@ archive/header/configuration. Each compile has a 30-second bound and each run
 groups killed on timeout. These are synthetic causal controls, not CLI test
 passes. No compiler/environment pin is inferred automatically from their result.
 Both standalone controls passed on hosted head `06fe48d`; they did not reproduce
-the real CLI failure or validate a compiler pin. The standard failure follow-up
-now preserves/hashes the original CLI and parity executable inside the job,
+the real CLI failure or validate a compiler pin. The one-off actual-CLI follow-up
+`scripts/diagnose_cli_compiler.py` preserved/hashed the original CLI and parity executable inside the job,
 confirms that unchanged parity still reports index SIGSEGV (60 seconds), then
 uses installed GCC13 to rebuild the same integration target context offline
 (`--no-run`, 180-second bound). It runs the preserved, unchanged parity executable
@@ -109,7 +127,10 @@ Native archive/header hashes, Cargo feature sets and linked libstdc++ hash are
 compared before/after; drift is incomplete causal evidence even if tests pass.
 No fresh target/dependency build or artifact/database upload is performed; the
 original primary verification failure remains fatal. Copied original binaries
-last until runner disposal; only logged evidence is durable.
+last until runner disposal; only logged evidence is durable. This comparison is
+no longer run automatically in CI after the controlled result; its scripts and
+unit guards are retained temporarily while the normal Linux verification is
+assessed. Diagnostic commits/logs preserve the receipts for later trimming.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed
