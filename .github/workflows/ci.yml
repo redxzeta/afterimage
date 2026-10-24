@@ -67,4 +67,5 @@ jobs:
         if: failure() && runner.os == 'Linux'
         env:
           VERIFY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          VERIFY_FULL: ${{ inputs.full == true && '1' || '0' }}
         run: python3 scripts/diagnose_cli_compiler.py

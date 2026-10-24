@@ -24,7 +24,7 @@ def compile_command(plan):
 def integration_compile_command():
     import verify
     paths = verify.changed_paths(os.environ.get("VERIFY_BASE") or "origin/afterimage-main")
-    return compile_command(verify.commands(paths))
+    return compile_command(verify.commands(paths, full=os.environ.get("VERIFY_FULL") == "1"))
 
 
 def feature_signature(target):
