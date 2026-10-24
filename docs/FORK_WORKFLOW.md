@@ -60,9 +60,11 @@ for application probes. SCIP enrichment can need separately installed tools;
 `--no-embed` alone does not guarantee offline indexing. The benchmark harness
 uses isolated copies; never benchmark against original source directories.
 
-The inherited Actions filters still target `main`; hosted CI is not an
-acceptance gate for this personal experimental integration. Local focused
-checks are not full-suite acceptance. Known watcher failures (hidden ancestor
+Fork PR CI now targets `afterimage-main`; use `python3 scripts/verify.py` for
+the normal local/CI entry point and see [CI coverage](CI.md) for targeted
+compatibility checks and manual full cross-platform validation. The commands
+above remain useful for reproducing the integration's bounded checks. Local
+focused checks are not full-suite acceptance. Known watcher failures (hidden ancestor
 paths and duplicate watch locks), native WAL/transaction gaps, and incomplete
 SCIP/full-repository graphs remain open. See [reliability evidence](PHASE-D-RELIABILITY.md)
 and [benchmark evidence](../scripts/benchmark/results/2026-10-23.md).
