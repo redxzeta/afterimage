@@ -19,9 +19,12 @@ cargo fmt --all
 cargo clippy --all-targets -- -D warnings
 ```
 
-Requires `cmake`. CI runs fmt-check, clippy, and the full test suite across macOS/Linux/Windows — match locally before pushing.
+Requires `cmake`. For this Afterimage fork, run `python3 scripts/verify.py`
+(Rust 1.98.1); PR CI runs on Linux with targeted compatibility checks. The full
+workspace suite across macOS/Linux/Windows remains available manually. See
+`docs/CI.md` for the current validation contract and release limitations.
 
-**Change-safety workflow**: check blast radius before editing a shared/foundational path (e.g. via cross-file reference lookups) — a change in `infigraph-core` can silently break the CLI/MCP crates on top of it. Run targeted tests for the area you touched first, then `cargo test --all` before considering it done — this repo has real process-level integration tests (e.g. under `infigraph-mcp/tests/`), not just unit tests, so `--all` matters. The pre-commit hook enforces fmt/clippy across the whole workspace, not just changed files — pre-existing unrelated drift elsewhere can block an otherwise-clean change; worth checking `cargo fmt --all -- --check` and `cargo clippy --all-targets -- -D warnings` once at the start of a session to know your baseline.
+**Change-safety workflow**: check blast radius before editing a shared/foundational path (e.g. via cross-file reference lookups) — a change in `infigraph-core` can silently break the CLI/MCP crates on top of it. Run targeted tests for the area you touched, then `python3 scripts/verify.py`; add `--full` for broad acceptance/release evidence. This repo has real process-level integration tests (e.g. under `infigraph-mcp/tests/`), not just unit tests: retain the relevant ones when interfaces change. Workspace fmt/Clippy still apply to all targets; pre-existing drift can block an otherwise-clean change.
 
 Release process: `./release.sh <version>` (see README's release section). Windows has a few build quirks around the graph DB's static-lib size and CRT linkage — see root `Cargo.toml` comments.
 
@@ -57,7 +60,7 @@ For deeper detail on any of these, see the matching skill/rule (`code-indexing-p
 
 ### CI / toolchain gotchas
 
-- CI's `dtolnay/rust-toolchain@stable` floats to whatever "stable" resolves to at run time — a newer clippy than your local toolchain can fail on lints your local run never sees. If local and CI disagree on fmt/clippy, suspect this before assuming a bug — confirm by installing CI's exact version locally (`rustup show active-toolchain` with a temporary `rust-toolchain.toml` override) rather than guessing.
+- CI and `scripts/verify.py` require Rust 1.98.1. The inherited floating `stable` workflow encountered new Clippy lints before tests ran. Review toolchain upgrades explicitly and update the workflow, verification version check and contributor docs together; compare exact local/CI compiler versions when diagnosing lint differences.
 - If a PR gets merged into `main` directly *and* separately into a feature branch, GitHub's synthetic PR-merge-commit computation can silently duplicate content (e.g. two copies of the same test module) even when neither branch alone shows a problem — this only appears in the merge commit itself. Rebase the feature branch onto current `main` to fix it for real, rather than trying to resolve it in a synthetic merge.
 - Local test runs under high parallelism (`--test-threads` default) can produce resource-contention failures (e.g. mmap/buffer-manager exhaustion from multiple embedded-DB test processes) that aren't real bugs — always confirm a suspected regression with `--test-threads=1` before treating it as one.
 

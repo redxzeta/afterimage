@@ -21,18 +21,32 @@ cargo build --release -p infigraph-cli -p infigraph-mcp
 
 ## Running Tests
 
+For the Afterimage fork, use Rust **1.98.1** and the same entry point as PR CI:
+
 ```bash
-cargo test --all
+python3 scripts/verify.py
+```
+
+This runs formatting, locked workspace Clippy/typechecking, a CLI/MCP build,
+small smoke tests, and compatibility tests selected from changes against
+`origin/afterimage-main` (including local changes). See [CI coverage](docs/CI.md)
+for prerequisites, path rules, timings and the retained broad validation.
+Use `--base <commit>` to reproduce an exact comparison and `--dry-run` to inspect it.
+Missing base history expands checks. The complete default-feature suite remains:
+
+```bash
+python3 scripts/verify.py --full
 ```
 
 ## Code Style
 
 ```bash
 cargo fmt --all
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --locked --workspace --all-targets -- -D warnings
 ```
 
-Both are enforced in CI. Please run them before pushing.
+Both are enforced in CI. Optional remote/kompress features need separate checks
+when changed; default-feature tests do not establish their runtime compatibility.
 
 ## Adding a Language
 
@@ -44,9 +58,9 @@ Both are enforced in CI. Please run them before pushing.
 
 ## Submitting a PR
 
-1. Fork the repo and create a branch from `main`
+1. For Afterimage, branch from and target `afterimage-main`; `main` is the upstream mirror (see [fork workflow](docs/FORK_WORKFLOW.md))
 2. Write tests for your change
-3. Ensure `cargo test --all`, `cargo fmt --all`, and `cargo clippy` all pass
+3. Run `python3 scripts/verify.py` and any additional checks needed for the changed behavior
 4. Submit a pull request — the template will guide you through the checklist
 
 ## Reporting Bugs
