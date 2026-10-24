@@ -458,7 +458,8 @@ impl GraphBackend for KuzuBackend {
                 .context("failed to begin index transaction")?;
             self.delete_files_data(&conn, extractions)?;
             for extraction in extractions {
-                self.store.upsert_file_conn_no_delete(&conn, extraction)?;
+                self.store
+                    .upsert_file_conn_no_delete_with_imports(&conn, extraction, false)?;
             }
             conn.query("COMMIT")
                 .context("failed to commit index transaction")?;

@@ -46,7 +46,10 @@ currently index `.mts`/`.cts`). Multiple source alternatives remain unresolved. 
 re-exports now produce module dependencies using the same path.
 
 Cold Parquet, bulk UNWIND, and single-file embedded writes share this lookup.
-Small incremental batches resolve after all Module nodes exist. Updating a
+Small incremental batches defer per-file import writes and resolve only after all
+Module nodes exist. An order-sensitive regression covers both an ambiguous
+`.ts`/`.tsx` set and a temporary `.js` fallback; early provisional edges must
+never survive final resolution. Updating a
 module preserves incoming imports from unchanged files; changing an importer
 replaces its outgoing imports. MERGE prevents duplicate module edges from
 repeated import/re-export statements. Query changes invalidate the affected

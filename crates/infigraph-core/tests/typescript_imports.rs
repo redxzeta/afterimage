@@ -274,3 +274,38 @@ fn indexing_replaces_outgoing_imports_after_an_edit() {
     graph.index().unwrap();
     assert!(backend.get_file_deps("main.ts").unwrap().imports.is_empty());
 }
+
+#[test]
+fn incremental_batches_never_keep_imports_from_a_partial_module_set() {
+    for alternative in ["helper.tsx", "helper.js"] {
+        let dir = tempfile::tempdir().unwrap();
+        let backend = KuzuBackend::open(&dir.path().join("graph")).unwrap();
+        let main = extract("main.ts", "import { helper } from './helper.js';");
+        let ts = extract("helper.ts", "export const helper = 1;");
+        let other = extract(alternative, "export const helper = 2;");
+        let files = [main.clone(), ts.clone(), other.clone()];
+        backend.upsert_files_bulk(&files, true).unwrap();
+        for ordered in [
+            vec![ts.clone(), main.clone(), other.clone()],
+            vec![other.clone(), main.clone(), ts.clone()],
+        ] {
+            backend.upsert_files_bulk(&ordered, false).unwrap();
+            let rows = backend
+                .raw_query("MATCH (a:Module)-[:IMPORTS]->(b:Module) RETURN a.id, b.id")
+                .unwrap();
+            if alternative == "helper.tsx" {
+                assert!(
+                    rows.is_empty(),
+                    "ambiguous final source set acquired a provisional edge: {rows:?}"
+                );
+            } else {
+                assert_eq!(
+                    rows,
+                    vec![vec!["main.ts", "helper.ts"]],
+                    "temporary JS fallback persisted"
+                );
+                assert_import(&backend, "main.ts", "helper.ts");
+            }
+        }
+    }
+}

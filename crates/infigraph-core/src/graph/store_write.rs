@@ -50,6 +50,17 @@ impl GraphStore {
         conn: &Connection<'_>,
         extraction: &FileExtraction,
     ) -> Result<()> {
+        self.upsert_file_conn_no_delete_with_imports(conn, extraction, true)
+    }
+
+    /// Batch callers defer import resolution until every changed Module exists.
+    /// Caller must hold WriteLock.
+    pub(crate) fn upsert_file_conn_no_delete_with_imports(
+        &self,
+        conn: &Connection<'_>,
+        extraction: &FileExtraction,
+        write_imports: bool,
+    ) -> Result<()> {
         // Insert module node
         let module_id = &extraction.file;
         let module_name = extraction
@@ -145,10 +156,11 @@ impl GraphStore {
         let mut inherits_pairs: Vec<(&str, &str)> = Vec::new();
         let mut tested_by_pairs: Vec<(&str, &str)> = Vec::new();
         let mut imports_pairs: Vec<(&str, &str)> = Vec::new();
-        let module_files = if extraction
-            .relations
-            .iter()
-            .any(|rel| matches!(rel.kind, RelationKind::Imports | RelationKind::ImportedBy))
+        let module_files = if write_imports
+            && extraction
+                .relations
+                .iter()
+                .any(|rel| matches!(rel.kind, RelationKind::Imports | RelationKind::ImportedBy))
         {
             super::imports::module_files(conn)?
         } else {
