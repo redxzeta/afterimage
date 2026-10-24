@@ -3,7 +3,7 @@
 use std::path::Path;
 
 /// Wipe code graph and document index artifacts under `root/.infigraph/`.
-/// Used by SIGSEGV auto-reindex so both stores are rebuilt by `infigraph index`.
+/// Explicit destructive helper; the supervisor uses normal project indexing instead.
 pub fn wipe_code_and_docs(root: &Path) {
     let ig = root.join(".infigraph");
     if !ig.exists() {
