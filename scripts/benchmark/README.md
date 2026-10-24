@@ -142,7 +142,9 @@ known text format matches, otherwise `null`; warm is not assumed to be a no-op.
 Cold does not mean a cold OS page cache. Each impact query is repeated serially;
 its median includes CLI startup, graph open, and traversal. Default per-command
 limits are 120 CPU seconds and 4096 MiB summed descendant RSS, adjustable with `--cpu-seconds` and `--memory-mib`; `--timeout` caps wall time.
-The Linux `/proc` monitor samples every 50 ms and kills the private sandbox on a
+`--threads` also constrains inherited CPU affinity for the entire sandbox,
+including native graph workers; Rayon/OpenMP environment hints alone cannot
+enforce this. The Linux `/proc` monitor samples every 50 ms and kills the private sandbox on a
 breach (`BUDGET_EXCEEDED`), including MCP commands. These are sampled limits,
 not a cgroup allocation cap: short-lived children and between-sample peaks can
 be missed, and shared pages can be counted more than once. Sampled CPU and peak

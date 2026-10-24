@@ -85,6 +85,7 @@ import json,os,socket,sys,time
 from pathlib import Path
 assert os.environ['HOME']=='/bench/home'
 assert os.environ['PATH']=='/bench/bin'
+assert len(os.sched_getaffinity(0))==1
 assert 'INFIGRAPH_BACKEND' not in os.environ
 assert not Path('/home').exists()
 if sys.argv[0].endswith('-mcp'):

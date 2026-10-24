@@ -212,6 +212,10 @@ class Lane:
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
         self.root, self.timeout, self.steps = root, timeout, []
         self.cpu_seconds, self.memory_mib = cpu_seconds, memory_mib
+        allowed = sorted(os.sched_getaffinity(0))
+        if threads > len(allowed):
+            raise ValueError('requested threads exceed available CPU affinity')
+        self.cpus = set(allowed[:threads])
         for name in ["repo", "home/.infigraph", "registry", "state", "cache", "tmp", "bin"]:
             (root / name).mkdir(parents=True, exist_ok=True)
         shutil.copyfile(binary, root / "bin/infigraph")
@@ -260,7 +264,8 @@ class Lane:
         with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
             proc = subprocess.Popen(self.sandbox(command), stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE if stop_after_ids else out, stderr=err,
-                                    start_new_session=True, env={"PATH": "/usr/bin:/bin"})
+                                    start_new_session=True, env={"PATH": "/usr/bin:/bin"},
+                                    preexec_fn=lambda: os.sched_setaffinity(0, self.cpus))
             timed_out = False
             stopped_after_responses = False
             budget_exceeded = None
@@ -597,6 +602,7 @@ def run(args):
                            "network": "isolated namespace", "scip": "NOT_RUN: external tooling absent from PATH",
                            "core_dumps": False,
                            "cpu_seconds": args.cpu_seconds, "memory_mib": args.memory_mib,
+                           "cpu_affinity": "first threads CPUs in inherited allowed set; all sandbox descendants inherit",
                            "budget_enforcement": "50ms Linux descendant CPU/RSS sampling; kills sandbox; RSS is summed, may overshoot between samples",
                            "fixture_scope": args.fixture_scope,
                            "cold": "empty index and HOME; OS page cache is NOT flushed",
