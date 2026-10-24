@@ -18,7 +18,7 @@ fork, not installation, deployment, release, or runtime authority.
 | [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `17a5cc66aae0c3363c07780ebf1f3518a8dad1d1` | HOLD: both selector gaps corrected and independently validated (14 passes). Hosted fixture still dies from SIGSEGV; debugger probe did not run. Local author parity passes 4/4; causal disposition remains unresolved. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `51de48ce7ccf9218ff91424f8c312a5c1a10ac38` | MERGED with expected-head guard; merge `585fd5d9221ced25a8bc2307c0b0e5fd9ff49010`. Four direct-graph regressions and #6 receipt pass; narrow Linux source integration accepted with explicit residuals below. |
 | Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final artifacts/review pending. |
-| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `d2e0790155d1cc7e97aaca9d986af978df1b0a52` | DRAFT / HOLD: order-dependent provisional imports identified at `32459fd` are corrected in source with regression fixtures; native red/green replay and final acceptance remain pending. Base includes #6. |
+| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `df7a8687e3cc2024172c27bf1a66e1a408c96111` | DRAFT / HOLD: author reproduced both pre-fix failures and reports 8 import plus 29 focused library passes. Head does not yet include merged #7; caller/combined checks, final receipts and readiness remain pending. |
 
 Every remaining delivery must include the current `afterimage-main` base and
 receive a fresh diff/conflict review. Passing one PR does not establish combined
@@ -148,7 +148,7 @@ already indexed records. No error-free native reads, real crash-WAL recovery,
 full-workspace or cross-platform acceptance is claimed. This is a source GO;
 broader operational acceptance stays HOLD.
 
-For #9, diff/merge construction checks pass; native tests have not run. A
+For #9, diff/merge construction checks pass. The initial review found a
 reachable P2 was sent to its owner: small incremental batches delete every
 changed module, then each per-file insert writes imports using only the modules
 reinserted so far. With `main.ts` importing `./helper.js`, reindexing in order
@@ -158,7 +158,18 @@ not remove that provisional edge. Resolve batch imports against the final
 module set and add an order-sensitive graph regression. The owner accepted this
 finding and changed small batches to defer IMPORTS until the final set exists,
 with ambiguity and temporary-JavaScript-fallback regressions at `d2e07901`.
-Runtime failing-before/passing-after replay remains pending final validation.
+The owner reports the original import regression failing on base `4d5266fe`
+and the ordering regression failing on `32459fd`, both exit 101. At `df7a8687`,
+all **8 import tests** pass, including both batch orders and temporary JavaScript
+fallback, followed by **29 focused resolver/storage/SCIP tests** passing. These
+are author-reported executions, not reviewer native reruns. The only change
+since reviewed `d2e07901` shares one immutable fixture registry through OnceLock;
+production code is unchanged. The reviewer confirmed this diff and a clean
+merge construction against current base, but the ancestry check shows #7 is not
+yet included. The existing import thread stopped before the remaining caller
+and combined acceptance receipts and was resumed to finish them on the current
+base. Its PR body still describes an obsolete measurement hold. Missing hosted
+checks are expected from main-only base CI; no workflow workaround is required.
 
 ## Limits and operational decision
 
