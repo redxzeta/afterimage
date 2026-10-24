@@ -79,6 +79,7 @@ def commands(paths, full=False, comparison=None):
     suites, crates = selection(paths)
     result = [
         ["python3", "-m", "unittest", "discover", "-s", "scripts", "-p", "test_verify.py"],
+        ["python3", "-m", "unittest", "discover", "-s", "scripts", "-p", "test_diagnose_cli.py"],
         ["cargo", "fmt", "--all", "--", "--check"],
         ["cargo", "clippy", "--locked", "--workspace", "--all-targets", "--", "-D", "warnings"],
         ["cargo", "build", "--locked", "-p", "infigraph-cli", "-p", "infigraph-mcp",

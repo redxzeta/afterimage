@@ -29,7 +29,7 @@ agree. Cross-repository groups rely on a complete contract replacement and
 rescanning unchanged consumers when another repository's producer changes.
 These behaviors remain supported and their tests are not obsolete.
 
-- Every PR: classifier regression tests, `cargo fmt --all -- --check`, locked
+- Every PR: classifier and synthetic diagnostic regression tests, `cargo fmt --all -- --check`, locked
   workspace Clippy with **all targets** and warnings denied (also typechecks
   tests), build the actual CLI and MCP binaries, `embedding_format`, `cli_parity`
   (includes the process-level test-context regression), `tool_parity`, and
@@ -51,7 +51,9 @@ These behaviors remain supported and their tests are not obsolete.
 - Watcher paths additionally select real MCP watcher/reindex, parent-directory
   search and concurrent reader/writer process tests. Core graph/index/lock/watch
   paths select graph-query and lock/wiring regressions. Cargo manifests/lockfiles,
-  native patches/config and unavailable history select both of these groups.
+  native patches/config, CI/selector/unknown inputs and unavailable history select
+  both of these groups. Watcher/shared-build coverage includes the integrated
+  `watch_new_directory` direct-graph regression (guarded by target existence).
   Known watcher failures remain visible in these checks and the full suite;
   they are not disabled or reclassified as obsolete.
 - Benchmark paths: compile the harness Python sources and run its synthetic
@@ -78,6 +80,15 @@ the fork development branch; PRs can restore dependencies but do not save them.
 Build profiles omit debug symbols and native build parallelism is bounded.
 The local command applies the same defaults, respects explicit environment
 overrides and rejects a different Rust version or missing required Bubblewrap.
+
+After a Linux verification failure, `scripts/diagnose_cli.py` reports the built
+CLI's size/hash, recorded lbug source and candidate native archive/header hashes,
+and separate CLI/debugger availability. It uses an already installed gdb or LLDB
+(including the runner image's Swift toolchain) for one fresh parity fixture with
+a 90-second bound. It never installs tools or rebuilds. Missing tools, timeout,
+or a non-reproducing probe are incomplete diagnostic evidence; the original
+verification failure remains fatal. Build metadata can include stale candidates;
+its source label alone does not prove which bytes were linked or establish cause.
 
 The inherited broad cleanup (including Docker image pruning) is removed from
 PR CI; native builds still need adequate disk. No browser/e2e browser job existed
