@@ -1,6 +1,56 @@
 use std::collections::HashSet;
 use std::fs;
-use std::process::Command;
+use std::process::{Command, Output};
+
+fn process_diagnostics(command: &str, output: &Output) -> String {
+    #[cfg(unix)]
+    let platform_status = {
+        use std::os::unix::process::ExitStatusExt;
+        format!(
+            "unix_signal: {:?}\ncore_dumped: {}\n",
+            output.status.signal(),
+            output.status.core_dumped()
+        )
+    };
+    #[cfg(not(unix))]
+    let platform_status = "";
+
+    format!(
+        "command: {command}\nstatus: {}\nexit_code: {:?}\n{platform_status}stdout:\n{}\nstderr:\n{}",
+        output.status,
+        output.status.code(),
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    )
+}
+
+#[cfg(unix)]
+#[test]
+fn failed_process_diagnostics_preserve_status_signal_and_both_streams() {
+    use std::os::unix::process::ExitStatusExt;
+    use std::process::ExitStatus;
+
+    let mut output = Output {
+        status: ExitStatus::from_raw(7 << 8),
+        stdout: b"fixture stdout".to_vec(),
+        stderr: b"fixture stderr".to_vec(),
+    };
+    let failure = process_diagnostics("fixture command", &output);
+    for expected in [
+        "command: fixture command",
+        "exit_code: Some(7)",
+        "unix_signal: None",
+        "stdout:\nfixture stdout",
+        "stderr:\nfixture stderr",
+    ] {
+        assert!(failure.contains(expected), "{failure}");
+    }
+
+    output.status = ExitStatus::from_raw(4);
+    let signal = process_diagnostics("fixture command", &output);
+    assert!(signal.contains("exit_code: None"), "{signal}");
+    assert!(signal.contains("unix_signal: Some(4)"), "{signal}");
+}
 
 fn get_cli_subcommands() -> HashSet<String> {
     let output = Command::new(env!("CARGO_BIN_EXE_infigraph"))
@@ -118,8 +168,8 @@ fn test_context_runs_in_the_cli_process() {
         .expect("run index");
     assert!(
         index.status.success(),
-        "index failed: {}",
-        String::from_utf8_lossy(&index.stderr)
+        "index failed:\n{}",
+        process_diagnostics("infigraph --root <fixture> index --no-embed", &index)
     );
 
     let test_context = Command::new(cli)
@@ -136,12 +186,18 @@ fn test_context_runs_in_the_cli_process() {
         .expect("run test-context");
     assert!(
         test_context.status.success(),
-        "test-context failed: {}",
-        String::from_utf8_lossy(&test_context.stderr)
+        "test-context failed:\n{}",
+        process_diagnostics(
+            "infigraph --root <fixture> test-context --file src/calculator.py --limit 1",
+            &test_context
+        )
     );
     assert!(
         String::from_utf8_lossy(&test_context.stdout).contains("Test Generation Context"),
-        "unexpected test-context output: {}",
-        String::from_utf8_lossy(&test_context.stdout)
+        "unexpected test-context output:\n{}",
+        process_diagnostics(
+            "infigraph --root <fixture> test-context --file src/calculator.py --limit 1",
+            &test_context
+        )
     );
 }

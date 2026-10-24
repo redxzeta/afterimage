@@ -100,6 +100,10 @@ def commands(paths, full=False, comparison=None):
             for p in paths)
         if shared_build or any(p.startswith("crates/") and "watch" in p for p in paths or []):
             targets.update({"watcher_concurrency", "watcher_reindex", "parent_dir_search", "concurrent_writer_reader"})
+            # PR #7 adds this direct-graph regression. Keep later watch/build
+            # changes covered without selecting a nonexistent target pre-merge.
+            if (ROOT / "crates/infigraph-mcp/tests/watch_new_directory.rs").is_file():
+                targets.add("watch_new_directory")
         if shared_build or any(p.startswith("crates/infigraph-core/src/") and
                                any(part in p for part in ["graph/", "lockfile", "index", "watch"])
                                for p in paths or []):

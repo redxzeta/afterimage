@@ -84,6 +84,18 @@ class CoverageTests(unittest.TestCase):
                          "write_lock", "write_lock_wiring"]:
                 self.assertTrue(any(name in cmd for cmd in plan), name)
 
+    def test_new_directory_watcher_target_tracks_integrated_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            regression = root / "crates/infigraph-mcp/tests/watch_new_directory.rs"
+            for paths in [{"crates/infigraph-core/src/watch/mod.rs"}, {"Cargo.lock"}, None]:
+                with self.subTest(paths=paths), patch.object(verify, "ROOT", root):
+                    self.assertFalse(any("watch_new_directory" in cmd for cmd in verify.commands(paths)))
+                    regression.parent.mkdir(parents=True, exist_ok=True)
+                    regression.write_text("// integrated regression target")
+                    self.assertTrue(any("watch_new_directory" in cmd for cmd in verify.commands(paths)))
+                    regression.unlink()
+
     def test_git_diff_includes_deleted_renamed_and_untracked_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
