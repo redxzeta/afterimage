@@ -18,12 +18,12 @@ fork, not installation, deployment, release, or runtime authority.
 | [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `d04471dd64c062178057e1b20cc0e45738f7b5c3` | HOLD: incorporates #6 and child-process diagnostics; hosted index dies from SIGSEGV, underlying cause unresolved. Future watcher target selection corrected; broader fallback correction remains unpublished. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `1c1fe4ffdf0838f11c61c6a7909a2ca606f23929` | HOLD: follow-up for hidden ancestors and return-checkout latency in progress. Original direct-graph regression passes; lifecycle receipt retains a failed case. |
 | Three-repository benchmark follow-up | No delivery PR yet | Measurements active; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final evidence/review pending. |
-| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `32459fd2aeb24469afb874744b5294821567157e` | DRAFT / HOLD: source review found order-dependent provisional imports in small incremental batches; native regression replay held for benchmark timings. Base includes #6. |
+| [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `d2e0790155d1cc7e97aaca9d986af978df1b0a52` | DRAFT / HOLD: order-dependent provisional imports identified at `32459fd` are corrected in source with regression fixtures; native red/green replay and final acceptance remain pending. Base includes #6. |
 
 Every remaining delivery must include the current `afterimage-main` base and
 receive a fresh diff/conflict review. Passing one PR does not establish combined
-acceptance of still-unmerged changes. The issue-48 advisory trial is provisional,
-outside this gate, and has no merge authorization here.
+acceptance of still-unmerged changes. The issue-48 advisory trial (draft fork
+PR #10) is provisional, outside this gate, and has no merge authorization here.
 
 ## Review and validation receipts
 
@@ -99,8 +99,10 @@ reinserted so far. With `main.ts` importing `./helper.js`, reindexing in order
 `helper.ts`, `main.ts`, `helper.tsx` can create a temporary `main -> helper.ts`
 edge. Final resolution correctly sees ambiguity, but its MERGE-only pass does
 not remove that provisional edge. Resolve batch imports against the final
-module set and add an order-sensitive graph regression. This is a source-review
-finding; runtime reproduction is pending the timing-window release.
+module set and add an order-sensitive graph regression. The owner accepted this
+finding and changed small batches to defer IMPORTS until the final set exists,
+with ambiguity and temporary-JavaScript-fallback regressions at `d2e07901`.
+Runtime failing-before/passing-after replay remains pending the timing release.
 
 ## Limits and operational decision
 
