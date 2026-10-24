@@ -64,6 +64,10 @@ class CoverageTests(unittest.TestCase):
         self.assertIn("--workspace", integration[0])
         self.assertEqual(integration[0].count("typescript_callers"), 1)
 
+    def test_whitespace_check_covers_committed_pr_changes(self):
+        self.assertEqual(verify.commands(set(), comparison="base-sha")[-1],
+                         ["git", "diff", "--check", "base-sha"])
+
     def test_changed_integration_target_is_not_lost(self):
         target = "crates/infigraph-mcp/tests/memory_context.rs"
         plan = verify.commands({target})

@@ -75,7 +75,7 @@ def test_command(package, targets=(), unit_filter=None):
     return cmd + ["--", "--test-threads=1"]
 
 
-def commands(paths, full=False):
+def commands(paths, full=False, comparison=None):
     suites, crates = selection(paths)
     result = [
         ["python3", "-m", "unittest", "discover", "-s", "scripts", "-p", "test_verify.py"],
@@ -136,7 +136,7 @@ def commands(paths, full=False):
                        ["python3", "-m", "unittest", "discover", "-s", "scripts/benchmark", "-p", "test_*.py"]]
     if (full or "supervisor" in suites) and sys.platform == "linux":
         result.append(["python3", "scripts/test-mcp-supervisor.py"])
-    result.append(["git", "diff", "--check"])
+    result.append(["git", "diff", "--check"] + ([comparison] if comparison else []))
     return result
 
 
@@ -152,6 +152,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     paths = changed_paths(args.base)
+    comparison = None if paths is None else git("merge-base", args.base, "HEAD").decode().strip()
     suites, _ = selection(paths)
     print("Verification: " + ("full workspace" if args.full else "focused + " + ", ".join(sorted(suites))), flush=True)
     if paths is None:
@@ -163,7 +164,7 @@ def main():
             parser.error("verification requires Rust 1.98.1, matching CI; use a Rustup override")
         if sys.platform == "linux" and (args.full or "benchmark" in suites) and not shutil.which("bwrap"):
             parser.error("selected benchmark isolation checks require Bubblewrap (bwrap)")
-    for cmd in commands(paths, args.full):
+    for cmd in commands(paths, args.full, comparison):
         print("+ " + shlex.join(cmd), flush=True)
         if not args.dry_run:
             start = time.monotonic()
