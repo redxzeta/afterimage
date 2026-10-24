@@ -5,6 +5,7 @@ use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
 use anyhow::Result;
+use ignore::{IncrementalIgnore, WalkBuilder};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 
 use crate::Infigraph;
@@ -110,8 +111,10 @@ where
         ".tox",
     ];
 
-    // Build a registry once for file-extension filtering (no DB needed).
-    let filter_registry = make_registry()?;
+    // Reuse immutable language metadata across batches and removals. Graph
+    // connections remain transient; rebuilding all grammars per removal can
+    // otherwise delay the add-file events from a return checkout for seconds.
+    let filter_registry = Arc::new(make_registry()?);
 
     let mut changes_since_periodic: usize = 0;
     let mut last_periodic = std::time::Instant::now();
@@ -133,7 +136,13 @@ where
             let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
             let config = Config::default().with_poll_interval(Duration::from_millis(debounce_ms));
             let mut watcher = RecommendedWatcher::new(tx, config)?;
-            register_watch_dirs(&mut watcher, root, ignore_dirs)?;
+            register_watch_dirs(
+                &mut watcher,
+                root,
+                ignore_dirs,
+                &mut ignore_matcher(root),
+                &mut |_| {},
+            )?;
             Ok((watcher, rx))
         };
 
@@ -155,7 +164,7 @@ where
             && last_periodic.elapsed() >= Duration::from_secs(periodic_secs)
         {
             if let Some(ref cb) = on_periodic {
-                if let Ok(prism) = open_transient(root, &make_registry) {
+                if let Ok(prism) = open_transient(root, Arc::clone(&filter_registry)) {
                     match prism.index() {
                         Ok(result) => {
                             if !result.extractions.is_empty() {
@@ -172,11 +181,21 @@ where
 
         // Flush the batch when the window has closed
         if !batch.is_empty() && batch.is_ready() {
-            let paths = batch.drain();
+            // Read current rules again before a queued file can be indexed;
+            // checkout may have changed an ignore file since its source event.
+            let mut ignores = ignore_matcher(root);
+            let paths: Vec<_> = batch
+                .drain()
+                .into_iter()
+                .filter(|path| !should_ignore(path, ignore_dirs, &mut ignores))
+                .collect();
+            if paths.is_empty() {
+                continue;
+            }
             let count = paths.len();
             eprintln!("[watch] batch indexing {count} files");
 
-            if let Ok(prism) = open_transient(root, &make_registry) {
+            if let Ok(prism) = open_transient(root, Arc::clone(&filter_registry)) {
                 match prism.index_files(&paths) {
                     Ok(result) => {
                         changes_since_periodic += result.indexed_files;
@@ -218,8 +237,31 @@ where
                     _ => continue,
                 };
 
+                // Match only within this project. The existing ignore crate
+                // handles nested rules, negations and hidden source entries.
+                // A fresh per-event snapshot also observes changed ignore files.
+                let mut ignores = ignore_matcher(root);
                 for path in event.paths {
-                    if should_ignore(&path, ignore_dirs) {
+                    if path.starts_with(root)
+                        && path.file_name().is_some_and(|name| {
+                            matches!(
+                                name.to_str(),
+                                Some(".gitignore" | ".ignore" | ".infigraphignore")
+                            )
+                        })
+                    {
+                        // Newly unignored directories need subscriptions too;
+                        // don't eagerly index the project on a rule change.
+                        let _ = register_watch_dirs(
+                            &mut watcher,
+                            root,
+                            ignore_dirs,
+                            &mut ignores,
+                            &mut |_| {},
+                        );
+                        continue;
+                    }
+                    if should_ignore(&path, ignore_dirs, &mut ignores) {
                         continue;
                     }
 
@@ -230,7 +272,7 @@ where
 
                     match watch_kind {
                         WatchEventKind::Removed => {
-                            if let Ok(prism) = open_transient(root, &make_registry) {
+                            if let Ok(prism) = open_transient(root, Arc::clone(&filter_registry)) {
                                 let _ = prism.remove_file(&path);
                                 // Also remove files under this path (handles directory removal)
                                 let _ = prism.remove_files_by_prefix(&path);
@@ -243,8 +285,29 @@ where
                             });
                         }
                         WatchEventKind::Created | WatchEventKind::Modified => {
-                            if path.is_dir() {
-                                register_subdirs(&mut watcher, &path, ignore_dirs);
+                            if path
+                                .symlink_metadata()
+                                .is_ok_and(|meta| meta.file_type().is_dir())
+                            {
+                                // A checkout can populate a directory before we
+                                // see its event. Watch it as well as its children,
+                                // then queue files whose create events we missed.
+                                let _ = register_watch_dirs(
+                                    &mut watcher,
+                                    &path,
+                                    ignore_dirs,
+                                    &mut ignores,
+                                    &mut |file| {
+                                        if let Ok(rel) = file.strip_prefix(root) {
+                                            if filter_registry
+                                                .for_file(&rel.to_string_lossy())
+                                                .is_some()
+                                            {
+                                                batch.add(file);
+                                            }
+                                        }
+                                    },
+                                );
                             } else if filter_registry.for_file(&rel).is_some() {
                                 batch.add(path);
                             }
@@ -418,12 +481,8 @@ where
 }
 
 /// Open a short-lived Infigraph instance for batch work.
-fn open_transient<MR>(root: &Path, make_registry: &MR) -> Result<Infigraph>
-where
-    MR: Fn() -> Result<crate::lang::LanguageRegistry>,
-{
-    let registry = make_registry()?;
-    let mut prism = Infigraph::open(root, registry)?;
+fn open_transient(root: &Path, registry: Arc<crate::lang::LanguageRegistry>) -> Result<Infigraph> {
+    let mut prism = Infigraph::open_shared(root, registry)?;
     prism.init()?;
     Ok(prism)
 }
@@ -493,40 +552,69 @@ fn has_cross_file_calls(prism: &Infigraph, rel_path: &str) -> bool {
     false
 }
 
-fn should_ignore(path: &Path, ignore_dirs: &[&str]) -> bool {
-    path.components().any(|c| {
-        let s = c.as_os_str().to_string_lossy();
-        ignore_dirs.contains(&s.as_ref()) || s.starts_with('.')
-    })
+fn ignore_matcher(root: &Path) -> IncrementalIgnore {
+    // Keep the scanner's ignore-file policy, including its default .ignore,
+    // git exclude/global rules and custom .infigraphignore name.
+    WalkBuilder::new(root)
+        .hidden(true)
+        .add_custom_ignore_filename(".infigraphignore")
+        .git_ignore(true)
+        .build_matchers()
+        .remove(0)
+}
+
+fn should_ignore(path: &Path, ignore_dirs: &[&str], ignores: &mut IncrementalIgnore) -> bool {
+    let Ok(relative) = path.strip_prefix(ignores.root()) else {
+        return true;
+    };
+    let file_type = path.symlink_metadata().ok().map(|meta| meta.file_type());
+    file_type.is_some_and(|kind| kind.is_symlink())
+        || relative.components().any(|c| {
+            let s = c.as_os_str().to_string_lossy();
+            ignore_dirs.contains(&s.as_ref()) || s.starts_with('.')
+        })
+        || ignores
+            .matched(relative, file_type.is_some_and(|kind| kind.is_dir()))
+            .is_ignore()
 }
 
 fn register_watch_dirs(
     watcher: &mut RecommendedWatcher,
     root: &Path,
     ignore_dirs: &[&str],
+    ignores: &mut IncrementalIgnore,
+    on_file: &mut dyn FnMut(PathBuf),
 ) -> Result<()> {
     watcher.watch(root, RecursiveMode::NonRecursive)?;
-    register_subdirs(watcher, root, ignore_dirs);
+    register_subdirs(watcher, root, ignore_dirs, ignores, on_file);
     Ok(())
 }
 
-fn register_subdirs(watcher: &mut RecommendedWatcher, dir: &Path, ignore_dirs: &[&str]) {
+fn register_subdirs(
+    watcher: &mut RecommendedWatcher,
+    dir: &Path,
+    ignore_dirs: &[&str],
+    ignores: &mut IncrementalIgnore,
+    on_file: &mut dyn FnMut(PathBuf),
+) {
     let entries = match std::fs::read_dir(dir) {
         Ok(e) => e,
         Err(_) => return,
     };
     for entry in entries.flatten() {
         let path = entry.path();
-        if !path.is_dir() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        if file_type.is_symlink() || should_ignore(&path, ignore_dirs, ignores) {
             continue;
         }
-        let name = entry.file_name();
-        let name_str = name.to_string_lossy();
-        if ignore_dirs.contains(&name_str.as_ref()) || name_str.starts_with('.') {
-            continue;
+        if file_type.is_dir() {
+            let _ = watcher.watch(&path, RecursiveMode::NonRecursive);
+            register_subdirs(watcher, &path, ignore_dirs, ignores, on_file);
+        } else if file_type.is_file() {
+            on_file(path);
         }
-        let _ = watcher.watch(&path, RecursiveMode::NonRecursive);
-        register_subdirs(watcher, &path, ignore_dirs);
     }
 }
 
