@@ -15,7 +15,7 @@ fork, not installation, deployment, release, or runtime authority.
 | Fork PR/lane | Exact reviewed head | Outcome and remaining condition |
 | --- | --- | --- |
 | [#6: SCIP receipts](https://github.com/redxzeta/afterimage/pull/6) | `f85d9efa55447de4fa46af3bdd97b5fd6b3a7f01` | MERGED with expected-head guard; merge `4d5266fe10c2c39dbaac423c7a43731329601e85`. Independent source/test review passed; 53 focused test receipts remain applicable. |
-| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `d04471dd64c062178057e1b20cc0e45738f7b5c3` | HOLD: incorporates #6 and child-process diagnostics; hosted index dies from SIGSEGV, underlying cause unresolved. Future watcher target selection corrected; broader fallback correction remains unpublished. |
+| [#5: focused CI](https://github.com/redxzeta/afterimage/pull/5) | `17a5cc66aae0c3363c07780ebf1f3518a8dad1d1` | HOLD: both selector gaps corrected and independently validated (14 passes). Hosted fixture still dies from SIGSEGV; debugger probe did not run. Local author parity passes 4/4; causal disposition remains unresolved. |
 | [#7: watcher directories](https://github.com/redxzeta/afterimage/pull/7) | `1c1fe4ffdf0838f11c61c6a7909a2ca606f23929` | HOLD: follow-up for hidden ancestors and return-checkout latency in progress. Original direct-graph regression passes; lifecycle receipt retains a failed case. |
 | Three-repository benchmark follow-up | No delivery PR yet | Measurements finished; candidate pinned to `1a59c728ae3284f0af3b5c781e14a9e2736df6e0`, baseline `cf82f5d7440d9be158e219df1ef256d6359ed1f6`, harness `286faf925590156f30b82372f4c0c94f103f10d4`; both binaries use no default features. Final artifacts/review pending. |
 | [#9: TypeScript imports](https://github.com/redxzeta/afterimage/pull/9) | `d2e0790155d1cc7e97aaca9d986af978df1b0a52` | DRAFT / HOLD: order-dependent provisional imports identified at `32459fd` are corrected in source with regression fixtures; native red/green replay and final acceptance remain pending. Base includes #6. |
@@ -64,14 +64,16 @@ For #5, the reviewer independently ran
 `python3 -m unittest discover -s scripts -p test_verify.py -v` in an archived
 snapshot of initial head `019979b5f8bf7cb6b08d290b4786e234faf32050`:
 **PASS, 12 tests, exit 0**. The diagnostic head above independently passed
-**13 selector tests, exit 0**. A separate initial-head selector probe
+**13 selector tests, exit 0**. Current head `17a5cc66` independently passed
+**14 selector tests, exit 0**. A separate initial-head selector probe
 confirmed that future watcher source changes omit #7's `watch_new_directory`
 target once that test has landed; targeted feedback was sent to its owner.
 The diagnostic head now selects this direct-graph regression when its target
 exists, with present/absent test coverage. Another
-probe confirmed CI/selector/unknown-input changes select `workspace` but omit
-watcher and graph-lock suites; conservative expansion and its regression remain
-unpublished at this checkpoint. Graph/SCIP/process/benchmark coverage must remain.
+probe confirmed CI/selector/unknown-input changes selected `workspace` but omitted
+watcher and graph-lock suites. At `17a5cc66`, conservative workspace expansion
+includes those suites, with its regression passing. Graph/SCIP/process/benchmark
+coverage remains selected; source review, whitespace and merge construction pass.
 
 [Hosted run 40068158249](https://github.com/redxzeta/afterimage/actions/runs/40068158249)
 on #5's initial head passed formatting, all-target Clippy and CLI/MCP build,
@@ -86,6 +88,20 @@ on `d04471dd` failed: **3 passed / 1 failed**. Fixture indexing died from
 diagnostic regression passed and assertions remain strict. This establishes a
 native crash, not its inherited-versus-environmental cause; that disposition
 remains unresolved. Later suites did not run.
+
+[Run 40107320071](https://github.com/redxzeta/afterimage/actions/runs/40107320071)
+at `17a5cc66` again failed CLI parity: **3 passed / 1 failed**, signal 11,
+core dumped, no exit code, empty stdout/stderr. The 14 selector tests, formatting,
+all-target Clippy and CLI/MCP build passed. The selected integration command now
+includes watcher and graph-lock suites, but execution stopped at CLI parity;
+unreached suites remain NOT_RUN. The failure-only debugger step reported
+`NOT_RUN: built CLI or gdb unavailable`; it supplied no backtrace and did not
+mask the primary failure. The author separately reports **4/4 local CLI parity
+passes** on this exact head (71.05 seconds including compilation, own cache,
+one build job, serial tests after the benchmark release). That is not a fresh
+reviewer native execution. Mutable `latest` prebuilt artifacts in `lbug 0.19.1`
+are an investigation hypothesis, not an established crash cause. The existing
+CI owner was resumed for bounded causal diagnosis; no duplicate fix was made.
 
 For #7, [the original report](https://github.com/redxzeta/afterimage/blob/1c1fe4ffdf0838f11c61c6a7909a2ca606f23929/docs/PHASE-D-RELIABILITY-FOLLOWUP.md)
 records the direct-graph directory regression passing, but lifecycle completion
