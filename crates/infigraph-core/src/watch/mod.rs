@@ -133,7 +133,7 @@ where
             let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
             let config = Config::default().with_poll_interval(Duration::from_millis(debounce_ms));
             let mut watcher = RecommendedWatcher::new(tx, config)?;
-            register_watch_dirs(&mut watcher, root, ignore_dirs)?;
+            register_watch_dirs(&mut watcher, root, ignore_dirs, &mut |_| {})?;
             Ok((watcher, rx))
         };
 
@@ -244,7 +244,24 @@ where
                         }
                         WatchEventKind::Created | WatchEventKind::Modified => {
                             if path.is_dir() {
-                                register_subdirs(&mut watcher, &path, ignore_dirs);
+                                // A checkout can populate a directory before we
+                                // see its event. Watch it as well as its children,
+                                // then queue files whose create events we missed.
+                                let _ = register_watch_dirs(
+                                    &mut watcher,
+                                    &path,
+                                    ignore_dirs,
+                                    &mut |file| {
+                                        if let Ok(rel) = file.strip_prefix(root) {
+                                            if filter_registry
+                                                .for_file(&rel.to_string_lossy())
+                                                .is_some()
+                                            {
+                                                batch.add(file);
+                                            }
+                                        }
+                                    },
+                                );
                             } else if filter_registry.for_file(&rel).is_some() {
                                 batch.add(path);
                             }
@@ -504,29 +521,36 @@ fn register_watch_dirs(
     watcher: &mut RecommendedWatcher,
     root: &Path,
     ignore_dirs: &[&str],
+    on_file: &mut dyn FnMut(PathBuf),
 ) -> Result<()> {
     watcher.watch(root, RecursiveMode::NonRecursive)?;
-    register_subdirs(watcher, root, ignore_dirs);
+    register_subdirs(watcher, root, ignore_dirs, on_file);
     Ok(())
 }
 
-fn register_subdirs(watcher: &mut RecommendedWatcher, dir: &Path, ignore_dirs: &[&str]) {
+fn register_subdirs(
+    watcher: &mut RecommendedWatcher,
+    dir: &Path,
+    ignore_dirs: &[&str],
+    on_file: &mut dyn FnMut(PathBuf),
+) {
     let entries = match std::fs::read_dir(dir) {
         Ok(e) => e,
         Err(_) => return,
     };
     for entry in entries.flatten() {
         let path = entry.path();
-        if !path.is_dir() {
-            continue;
-        }
         let name = entry.file_name();
         let name_str = name.to_string_lossy();
         if ignore_dirs.contains(&name_str.as_ref()) || name_str.starts_with('.') {
             continue;
         }
-        let _ = watcher.watch(&path, RecursiveMode::NonRecursive);
-        register_subdirs(watcher, &path, ignore_dirs);
+        if path.is_dir() {
+            let _ = watcher.watch(&path, RecursiveMode::NonRecursive);
+            register_subdirs(watcher, &path, ignore_dirs, on_file);
+        } else if entry.file_type().is_ok_and(|kind| kind.is_file()) {
+            on_file(path);
+        }
     }
 }
 
