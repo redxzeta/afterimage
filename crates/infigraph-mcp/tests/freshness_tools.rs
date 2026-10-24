@@ -26,16 +26,22 @@ fn git(root: &Path, args: &[&str]) -> String {
 
 fn assert_notice(args: &Value, evidence: &str) {
     for tool in TOOLS {
-        let output = dispatch_tool(tool, args).unwrap();
-        assert!(
-            output.contains("⚠ Graph freshness unverified:"),
-            "{tool}: {output}"
-        );
-        assert!(output.contains(evidence), "{tool}: {output}");
-        assert!(output.contains("Results may be stale"), "{tool}: {output}");
+        assert_tool_notice(tool, args, evidence);
     }
 }
 
+fn assert_tool_notice(tool: &str, args: &Value, evidence: &str) {
+    let output = dispatch_tool(tool, args).unwrap();
+    assert!(
+        output.contains("⚠ Graph freshness unverified:"),
+        "{tool}: {output}"
+    );
+    assert!(output.contains(evidence), "{tool}: {output}");
+    assert!(output.contains("Results may be stale"), "{tool}: {output}");
+}
+
+// All four routes are checked for populated/empty and changed-HEAD results.
+// Shared evidence cases use one route to avoid redundant native database opens.
 // One process-local scenario keeps registry and watcher mutations serial. The
 // registry is redirected to this test's disposable home before any indexing.
 #[test]
@@ -96,20 +102,21 @@ fn advisory_covers_branch_edits_deletion_pending_and_protocol_without_claiming_f
     assert_eq!(std::fs::read(&status_file).unwrap(), status_before);
 
     std::fs::write(root.join("lib.py"), "def changed(): return 2\n").unwrap();
-    assert_notice(&args, "uncommitted changes");
+    assert_tool_notice("trace_callers", &args, "uncommitted changes");
     git(&root, &["checkout", "--", "lib.py"]);
     std::fs::remove_file(root.join("lib.py")).unwrap();
-    assert_notice(&args, "uncommitted changes");
+    assert_tool_notice("trace_callers", &args, "uncommitted changes");
     git(&root, &["checkout", "--", "lib.py"]);
     std::fs::create_dir_all(root.join("new/nested")).unwrap();
     std::fs::write(root.join("new/nested/new.py"), "def added(): pass\n").unwrap();
-    assert_notice(&args, "uncommitted changes");
+    assert_tool_notice("trace_callers", &args, "uncommitted changes");
     git(&root, &["checkout", "-qb", "other"]);
     git(&root, &["add", "new"]);
     git(&root, &["commit", "-qm", "nested file"]);
     let other = git(&root, &["rev-parse", "HEAD"]);
     assert_notice(&args, "branch/commit changed");
-    assert_notice(
+    assert_tool_notice(
+        "trace_callers",
         &json!({"path":root.join("new/nested"), "symbol_id":"lib.py::helper"}),
         "branch/commit changed",
     );
@@ -122,9 +129,9 @@ fn advisory_covers_branch_edits_deletion_pending_and_protocol_without_claiming_f
         .index_files(&[root.join("new/nested/new.py")])
         .unwrap();
     drop(prism);
-    assert_notice(&args, "branch/commit changed");
+    assert_tool_notice("trace_callers", &args, "branch/commit changed");
     git(&root, &["checkout", "-q", "main"]);
-    assert_notice(&args, "revision matches");
+    assert_tool_notice("trace_callers", &args, "revision matches");
     assert!(!root.join("new/nested/new.py").exists());
     let stale = dispatch_tool(
         "get_symbols_in_file",
@@ -151,10 +158,18 @@ fn advisory_covers_branch_edits_deletion_pending_and_protocol_without_claiming_f
                 pending_reindex: pending.clone(),
             },
         );
-    assert_notice(&args, "pending cross-file reindex entries=1");
+    assert_tool_notice(
+        "trace_callers",
+        &args,
+        "pending cross-file reindex entries=1",
+    );
     {
         let _busy = pending.lock().unwrap();
-        assert_notice(&args, "pending cross-file reindex state unavailable");
+        assert_tool_notice(
+            "trace_callers",
+            &args,
+            "pending cross-file reindex state unavailable",
+        );
     }
     let poison = std::thread::spawn(move || {
         let _guard = pending.lock().unwrap();
@@ -162,14 +177,18 @@ fn advisory_covers_branch_edits_deletion_pending_and_protocol_without_claiming_f
     })
     .join();
     assert!(poison.is_err(), "fixture should poison the pending lock");
-    assert_notice(&args, "pending cross-file reindex state unavailable");
+    assert_tool_notice(
+        "trace_callers",
+        &args,
+        "pending cross-file reindex state unavailable",
+    );
     WATCHERS.lock().unwrap().as_mut().unwrap().remove("fixture");
 
     std::fs::write(&registry_file, "not json").unwrap();
-    assert_notice(&args, "Git/index revision unavailable");
+    assert_tool_notice("trace_callers", &args, "Git/index revision unavailable");
     std::fs::write(&registry_file, registry_before).unwrap();
     std::fs::remove_dir_all(root.join(".git")).unwrap();
-    assert_notice(&args, "working-tree status unavailable");
+    assert_tool_notice("trace_callers", &args, "working-tree status unavailable");
     // Repeated protocol responses retain the warning through compression/dedup.
     for tool in TOOLS {
         for _ in 0..2 {
