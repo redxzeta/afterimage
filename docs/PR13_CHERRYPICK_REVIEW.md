@@ -2,9 +2,11 @@
 
 Review date: 2026-10-26 (America/Los_Angeles).
 
-**Disposition: HOLD / awaiting replacement PR.** This is a source audit and an
-acceptance checklist, not approval of an implementation that has not yet been
-published. No replacement-head native tests or CI results are established here.
+**Disposition: HOLD / replacement CI failed.** Independent source review of
+[PR #16](https://github.com/redxzeta/afterimage/pull/16) at
+`662b24515fd94e5f0cd28fc2e63bdb95ce85263a` found no concrete blocking product
+defect, but its overall hosted check is red. The passing integration results
+below do not establish a complete focused-CI pass or implementation approval.
 The reviewer may coordinate an expected-head guarded merge only after the gates
 below pass. Old draft [PR #13](https://github.com/redxzeta/afterimage/pull/13)
 must remain open until the replacement is independently validated and merged.
@@ -25,8 +27,9 @@ must remain open until the replacement is independently validated and merged.
   executable, installer, hook, daemon, or application test was executed.
 - Independent branch: `review/afterimage-source-cherrypicks-20261026`.
   This report owns only this file; implementation and benchmark paths have
-  separate owners. The Debian native lane is reserved for the benchmark owner
-  until explicit release. Reviewer native builds/tests: **NOT_RUN**.
+  separate owners. The benchmark owner explicitly released the Debian native
+  lane after its dc45de6e work. Reviewer native builds/tests: **NOT_RUN**;
+  exact-head hosted logs were used instead of duplicating native builds.
 
 The complete source branch has 1,095 commits absent from the review base and a
 634-file tree diff (185,455 insertions, 29,708 deletions). Those counts describe
@@ -103,14 +106,68 @@ from an author name or remove model notices because no model files changed.
 
 ## Validation and guarded integration gates
 
+### Exact-head review of replacement #16
+
+Reviewed base `dc45de6e5769c1d86116167dcb1660d9561736c8` through head
+`662b24515fd94e5f0cd28fc2e63bdb95ce85263a`, including each attributed pick,
+the separate integration edits, retained old fixtures, and conflict receipt.
+Automated Git-object comparison confirmed original author/email/date, complete
+original message/coauthors and full `-x` trailer for all four mappings:
+
+| Original | Replacement commit |
+| --- | --- |
+| e4257a1 | e119b69748b009ba76af02716e9342de51636ac8 |
+| de33d9c | ba76d6fcb7cbf3a9d79bf2906ef3950b32e657c9 |
+| 7908e29 | 0a24b918134e081cfea0d71312bc0d4ab1fe1009 |
+| 106184a | e83fe4f9ecd6577205b81662fe8738e5d842f064 |
+
+ByteReader and the historical old report are byte-identical to their original
+blobs. The current headerless embedding pairs/API and HNSW formats are retained;
+the absent docs-cache loader and source-only daemon/WAL/lock-probe dependencies
+are excluded. Checked BM25 reads/posting indices, initial/retry version refusals,
+all five caller boundaries, cause-chain classification and owned child cleanup
+were inspected. Old hardening fixtures remain with additive coverage. Honest
+redxzeta integration commits add fixtures/cause-chain compatibility and restore
+an existing embedding diagnostic without changing its assertion. No concrete
+reachable P1/P2 product defect was identified in this reviewed range.
+
+The report-only final commit leaves product/tests identical to the author's
+tested `fa98356a296d49f4a268db88e13247e5c609fccc` tree. Manifests, lockfile,
+workflows, scripts, installer, import resolution, language and MCP implementation
+paths are unchanged from the base. Replacement `git diff --check` passed.
+
+[CI run 40441950687, job 121984120369](https://github.com/redxzeta/afterimage/actions/runs/40441950687/job/121984120369)
+is a completed **FAILURE** with run head equal to the reviewed head. Its log
+establishes 20 script tests, fmt, strict workspace/all-target Clippy, CLI/MCP
+build and the entire selected integration batch passed. The batch has 23 result
+blocks totaling 217 passed tests, including core hardening 9, docs hardening 5,
+docs version 1, combined graph 14, embedding format 2, TypeScript imports 8
+(including synthetic SCIP preservation), and all 9 tool-parity cases. These
+are hosted results, distinct from the author's 74-case local consumer receipt.
+
+The next command, `cargo test --locked -p infigraph-core --lib --bins --
+--test-threads=1`, failed while compiling lbug 0.19.1: **could not find native
+static library `lbug`, perhaps an -L flag is missing?** Exit was 101. Core units
+and later selected crate-unit commands therefore have no passing receipt from
+this run. This is a build/validation blocker, not a demonstrated parser defect.
+An [actionable HOLD comment](https://github.com/redxzeta/afterimage/pull/16#issuecomment-6432780518)
+asks the implementation owner to diagnose archive/search-path/cache or feature
+provenance and obtain green focused CI without dropping required tests.
+
+Selected watcher/concurrent-reader/supervisor results remain **author-reported**;
+the reviewer did not rerun them. The benchmark owner's separate results remain
+pinned to dc45de6e and cannot validate replacement code. No merge or old-PR
+closure was performed. Any corrected head requires fresh review of its delta
+and a current-head CI readback. Optional report PR #15 remains unmerged.
+
 | Gate | Evidence required | Current disposition |
 | --- | --- | --- |
-| Replacement target/head | Fresh GitHub PR URL, base `afterimage-main`, exact head and complete commit list | **AWAITING_PR** |
-| Source/conflict review | Per-commit comparison against pinned originals and explicit omitted/adapted hunks above | **NOT_REVIEWED** |
-| Focused CI | Green current-head required checks, run/job URLs, tested checkout SHA and relevant test log evidence | **NOT_ESTABLISHED** |
-| Hardening regressions | Replacement-head native or traceable focused CI parser/store coverage, including old #13 compatibility and preservation cases | **NOT_RUN** |
-| Existing integration | All 8 `typescript_imports` cases (including synthetic SCIP), relevant graph/lock tests, selected code/new-directory/docs-pruning watcher cases, and build/interface checks | **NOT_RUN** |
-| Reviewer local native work | Explicit native-lane release before any build/test; bounded serial fixtures only | **ON_HOLD** |
+| Replacement target/head | Fresh GitHub PR URL, base `afterimage-main`, exact head and complete commit list | **VERIFIED: #16 / 662b2451** |
+| Source/conflict review | Per-commit comparison against pinned originals and explicit omitted/adapted hunks above | **REVIEWED; no concrete product blocker** |
+| Focused CI | Green current-head required checks, run/job URLs, tested checkout SHA and relevant test log evidence | **FAILURE: missing native lbug on core-unit build** |
+| Hardening regressions | Replacement-head native or traceable focused CI parser/store coverage, including old #13 compatibility and preservation cases | **Hosted integration PASS; core units unverified** |
+| Existing integration | All 8 `typescript_imports` cases (including synthetic SCIP), relevant graph/lock tests, selected watcher cases, build/interfaces | **Hosted selected integrations PASS; watchers author-reported** |
+| Reviewer local native work | Explicit native-lane release before any build/test; bounded serial fixtures only | **RELEASED; NOT_RUN, used hosted logs** |
 | Runtime/deployment | Separate authorization; no live indices, installation or activation | **OUT_OF_SCOPE** |
 
 Current `.github/workflows/ci.yml` targets `afterimage-main`, uses Rust 1.98.1
@@ -154,6 +211,7 @@ its final state. Leave experimental #10 and fork `main` untouched.
   actual agent A/B and speed comparisons separate. If replacement changes shared
   behavior, plan a bounded replacement-head check after native-lane release.
 
-No implementation PR, old draft, release, deployment or live index was changed
-by this source audit. This report is ready for a new review entry when the
-replacement PR URL and exact head arrive; it makes no implementation approval.
+No implementation source, old draft state, release, deployment or live index was
+changed by this review. Findings were posted to #16. The next gate is a corrected
+head or native-build receipt with green focused CI; this report makes no
+implementation approval.
