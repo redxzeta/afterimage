@@ -43,4 +43,3 @@ fn init_refuses_docs_store_from_a_different_storage_version_instead_of_wiping_it
         "the docs store must be left byte-for-byte untouched"
     );
 }
-

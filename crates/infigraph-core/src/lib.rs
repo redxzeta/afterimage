@@ -60,8 +60,9 @@ pub fn build_hash() -> &'static str {
 }
 
 // Shared refusal classification for code, document and combined stores.
-use graph::store::{is_lock_contention_error, is_storage_version_mismatch_error,
-                   storage_version_mismatch_context};
+use graph::store::{
+    is_lock_contention_error, is_storage_version_mismatch_error, storage_version_mismatch_context,
+};
 
 /// Open the Kùzu graph, retrying briefly on lock contention (AIF3X-331 #36).
 ///
@@ -1030,5 +1031,4 @@ mod tests {
             "a version mismatch is not corruption evidence -- nothing may be quarantined"
         );
     }
-
 }

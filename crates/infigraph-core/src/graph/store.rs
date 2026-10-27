@@ -55,7 +55,8 @@ impl WriteLock {
 /// second `infigraph` process opening a graph while a watcher already had
 /// it open would trigger `wipe_graph`, destroying the watcher's live data.
 pub fn is_lock_contention_error(err: &anyhow::Error) -> bool {
-    err.to_string().contains("Could not set lock on file")
+    err.chain()
+        .any(|cause| cause.to_string().contains("Could not set lock on file"))
 }
 
 /// lbug's `DatabaseHeader` refusal for a data file stamped with a storage
@@ -70,8 +71,11 @@ pub fn is_lock_contention_error(err: &anyhow::Error) -> bool {
 /// read it. Wiping it would destroy a perfectly good database and serve an
 /// empty one back as healthy (#140).
 pub fn is_storage_version_mismatch_error(err: &anyhow::Error) -> bool {
-    err.to_string()
-        .contains("Trying to read a database file with a different version")
+    err.chain().any(|cause| {
+        cause
+            .to_string()
+            .contains("Trying to read a database file with a different version")
+    })
 }
 
 /// Every open failure that must never trigger a wipe or quarantine: the
@@ -80,16 +84,15 @@ pub fn is_storage_version_mismatch_error(err: &anyhow::Error) -> bool {
 /// choices are "refuse" or "destroy and rebuild" (`DocIndex::init`,
 /// `open_combined_graph`).
 pub fn open_failure_is_not_corruption(err: &anyhow::Error) -> bool {
-    is_lock_contention_error(err)
-        || is_storage_version_mismatch_error(err)
+    is_lock_contention_error(err) || is_storage_version_mismatch_error(err)
 }
 
-/// Context line for a lock-contention open failure, naming the holder
-/// when the OS can tell us (see `lock_probe::describe_lock_holder`).
+/// Context line for a lock-contention refusal. Afterimage has no lock probe.
 pub fn lock_contention_context(_db_path: &Path) -> String {
     "graph is locked by another infigraph process (e.g. a running \
      `infigraph watch`) -- not corrupted, so it was left untouched. \
-     Run `infigraph watch-status` or try again in a moment.".to_string()
+     Run `infigraph watch-status` or try again in a moment."
+        .to_string()
 }
 
 /// Context line for a storage-version refusal. lbug's own message (kept as
@@ -99,8 +102,7 @@ pub fn storage_version_mismatch_context(db_path: &Path) -> String {
     format!(
         "{} was written on a different lbug storage version than this build (v{}) can read \
          -- not corrupted, so it was left untouched. Every process touching this project must \
-         run the same installed infigraph build (`infigraph doctor` / `infigraph ps` show mixed \
-         builds); to rebuild on this build's version instead, run `infigraph index --full`.",
+         run the same installed infigraph build (`infigraph doctor` identifies the build); to rebuild on this build's version instead, run `infigraph index --full`.",
         db_path.display(),
         kuzu::get_storage_version()
     )
