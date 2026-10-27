@@ -1,5 +1,11 @@
 # Reproducible offline A/B benchmark
 
+The [2026-10-26 current-head evaluation](results/2026-10-26-current-head.md)
+tests candidate `dc45de6e5769c1d86116167dcb1660d9561736c8` against the
+original baseline on the three unchanged pinned repository projections. Its
+results are separate from the older candidate measurements below; see its
+explicit AST/SCIP, performance and agent A/B acceptance boundaries.
+
 `bench.py` is a Python 3.11+ standard-library runner. It never builds Infigraph or
 executes a fixture project's code, tests, install scripts, hooks, or applications.
 Linux `/proc`, Bubblewrap (`bwrap` with unprivileged namespaces), `git`, and `which` are
