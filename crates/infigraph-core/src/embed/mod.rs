@@ -392,7 +392,11 @@ pub fn load_embeddings(path: &Path) -> Result<Vec<(String, Vec<f32>)>> {
     // Keep Afterimage's headerless (id, vector) format.
     const MIN_ENTRY_BYTES: usize = 4 + 4;
     let mut r = ByteReader::new(data, "embeddings file");
-    let count = r.count(MIN_ENTRY_BYTES)?;
+    // Preserve the existing corruption diagnostic for callers; the source
+    // reader's exact count/remaining-byte details stay in the error chain.
+    let count = r
+        .count(MIN_ENTRY_BYTES)
+        .context("truncated embeddings file: corrupt entry count")?;
     let mut result = Vec::with_capacity(count);
 
     for _ in 0..count {
