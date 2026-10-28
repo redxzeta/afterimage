@@ -372,7 +372,7 @@ fn direct_index_file_change_invalidates_success_and_obsolete_worker() {
     assert_ne!(report.run_id, run);
     assert!(report.scip.is_empty());
     assert!(
-        index_status::update_current(dir.path(), &run, Some(backend), |_| {
+        index_status::update_current::<()>(dir.path(), &run, Some(backend), |_| {
             panic!("late import must not attach to changed graph")
         })
         .unwrap()
