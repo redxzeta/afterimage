@@ -28,7 +28,7 @@ receipts, not reviewer execution, combined testing or default-branch adoption.
 
 | Artifact and exact source | PR/source-ready | Combined-tested | Pilot outcome/usefulness | Default-branch adopted |
 | --- | --- | --- | --- | --- |
-| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Joint core command failed compilation; two frozen project graph subsets measured, GigLab pending | No actual agent outcomes; callback label remains missing | **NOT_ADOPTED** |
+| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Three frozen project graph subsets measured: 68/68 symbols, 48/49 relationship labels, 8/8 imports, 14/15 complete impact subsets. Joint core command failed compilation | No actual agent outcomes; callback label remains missing | **NOT_ADOPTED** |
 | #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **FIX NEEDED**: new P2 E0282 in added core test; prior 10 CLI passes/smoke retained | **FAIL**, joint core compilation exit 101 / zero tests; minimal type annotation requested | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
 | #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY** from individual source/local receipt; no new source defect inferred | Joint profile suite 4 PASS / 1 FAIL under virtual cap; targeted rerun TIMEOUT 180s, unresolved. Stdio/HTTP process smoke PASS | No agent outcome | **NOT_ADOPTED** |
 | Local joint tree **5afe1b6db0fd1ded716c4102af6b98d87a455156** | Composition reported; both appended-test blocks retained; whitespace PASS | Sable Cargo unavailable exit 127; later Debian core compile exit 101/E0282. Binary log Finished, but wrapper receipt failed: build exit/resource samples **UNKNOWN** | Process smoke PASS is not complete integration or pilot acceptance | **NOT_ADOPTED** |
@@ -81,12 +81,29 @@ process smoke passed. Synthetic AST-only returned 0/NOT_REQUESTED; requested
 enrichment returned 1/FAILED/SCIP_TOOL_UNAVAILABLE. Frozen source inventories
 match this protocol. No further cap increases/rebuild campaign is requested here.
 
-Partial frozen-project graph results (no agent): IceCouncil **21/21 symbols,
-11/12 labelled relations, 2/2 imports**; Nightwire **23/23, 20/20, 3/3**.
-No labelled false edge was observed within those sets. IceCouncil's missing
-jsonl-to-json callback label is preserved in unchanged truth; it is not fabricated
-as a direct CALLS edge or removed from the denominator. GigLab is still running;
-there is no new three-project aggregate, exhaustive precision or speedup claim.
+Final finite graph results are published in [#17's M2 report at
+65fe4b3752d8f35120fe9e87fc3bee938f4d3cc1](https://github.com/redxzeta/afterimage/blob/65fe4b3752d8f35120fe9e87fc3bee938f4d3cc1/scripts/benchmark/results/m2-agent-pilot-20261027.md)
+and its [sanitized manifest](https://github.com/redxzeta/afterimage/blob/65fe4b3752d8f35120fe9e87fc3bee938f4d3cc1/scripts/benchmark/results/m2-agent-pilot-20261027.json).
+This reviewer verified the open PR head and read both artifacts; measurements
+remain runner-produced, not independently rerun. Their Debian continuation
+supersedes the clearly retained Sable setup receipt.
+
+| Frozen projection | Labelled symbols | Relationship labels | Imports | Complete impact subsets |
+| --- | ---: | ---: | ---: | ---: |
+| IceCouncil | 21/21 | 11/12 | 2/2 | 4/5 |
+| Nightwire | 23/23 | 20/20 | 3/3 | 5/5 |
+| GigLab | 24/24 | 17/17 | 3/3 | 5/5 |
+| Total | 68/68 | 48/49 | 8/8 | 14/15 |
+
+GigLab's source pin is `02cee19056c8ee902289892727a6acbbcd30a7d3`;
+its one AST index exited 0 in 28.2 seconds, followed by one labelled query set.
+No labelled false edge was observed within these sets. IceCouncil's missing
+jsonl-to-json callback label remains in unchanged truth; it is not fabricated
+as a direct CALLS edge or removed from the denominator. These are bounded AST
+measurements, not exhaustive precision, compiler-enrichment or speedup claims.
+Historical dc45de6e measurements above retain their original source label.
+The native lane is released, with no active Cargo, rustc or M2 test processes
+reported. No further reviewer build or evaluator session is requested.
 
 Pilot **NOT_RUN, 0/6**, with one precise execution blocker: the T3 child API
 offers no per-child candidate MCP server configuration, and the available global
