@@ -1,0 +1,15 @@
+{
+  "status": "HOLD",
+  "base": "dc45de6e5769c1d86116167dcb1660d9561736c8",
+  "pr_heads": {"18": "fef14d9ca7a2d38f9861be5bb7e20c1148150438", "19": "93881dd9c94b08052958b525568d49ec3885eecb", "20": "3ec1ea3d813e89dfd2a47d68d230701006e09f94", "17": "2aa59f675e23efe295b59037a0239a96f7ac2748"},
+  "ordered_source_commits": ["982fb3fc6f00b89a924a0fb774f4f91a50f79df0", "2d6d4039945d76caea3d569a83918c280f5dc677", "fef14d9ca7a2d38f9861be5bb7e20c1148150438", "c046613d4ebe5d2867b57b9e048f2a909318cbf9", "93881dd9c94b08052958b525568d49ec3885eecb", "0ff3ad82218cb207aa5c06c14f3ac5bfa955b89e", "3ec1ea3d813e89dfd2a47d68d230701006e09f94"],
+  "candidate_commit": "85f48fd8cc79cc6936060d0759b97109513a5d0b",
+  "candidate_tree": "5afe1b6db0fd1ded716c4102af6b98d87a455156",
+  "conflict": "typescript_callers.rs: retain both appended test blocks",
+  "binary_sha256": null,
+  "build": {"status": "BLOCKED", "exit": 127, "reason": "cargo: command not found", "jobs_max": 2, "timeout_seconds": 180, "virtual_memory_limit_kib": 8388608},
+  "truth_verification": {"icecouncil": {"commit": "10435a8c19f84549a0206f6b249ea13166aff6d0", "anchors": 32, "symbols": 21, "relations": 14, "status": "PASS"}, "nightwire": {"commit": "80985e6fc508f309b17ba1889ff2ca15b0253c08", "anchors": 39, "symbols": 23, "relations": 21, "status": "PASS"}, "giglab": {"commit": "02cee19056c8ee902289892727a6acbbcd30a7d3", "anchors": 45, "symbols": 24, "relations": 19, "status": "PASS"}},
+  "projection_inventory": "NOT_RUN", "combined_smoke": "NOT_RUN", "labelled_ast": "NOT_RUN",
+  "pilot": {"provider_requested": "codex", "model_requested": "gpt-6.1-terra", "reasoning_requested": "medium", "completed": 0, "sessions": {"canonical-arrow-chain-A": "NOT_RUN", "canonical-arrow-chain-B": "NOT_RUN", "scale-transitive-B": "NOT_RUN", "scale-transitive-A": "NOT_RUN", "workspace-decoder-A": "NOT_RUN", "workspace-decoder-B": "NOT_RUN"}, "usage": "UNKNOWN", "adjudication": "NOT_RUN"},
+  "default_branch_adoption": "NOT_DONE"
+}
