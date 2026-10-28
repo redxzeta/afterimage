@@ -296,7 +296,7 @@ pub(crate) fn merge_calls(
     pairs: &[(String, String)],
 ) -> anyhow::Result<()> {
     for (a, b) in pairs {
-        conn.query(&format!("MATCH (a:Symbol), (b:Symbol) WHERE a.id = '{}' AND b.id = '{}' AND b.kind IN ['Function', 'Method', 'Test'] MERGE (a)-[:CALLS]->(b)", super::store_util::escape(a), super::store_util::escape(b)))?;
+        conn.query(&format!("MATCH (a:Symbol), (b:Symbol) WHERE a.id = '{}' AND b.id = '{}' AND b.kind IN ['Function', 'Method', 'Test'] AND (NOT (a.language IN ['typescript', 'tsx', 'javascript']) OR b.visibility = 'public') MERGE (a)-[:CALLS]->(b)", super::store_util::escape(a), super::store_util::escape(b)))?;
     }
     Ok(())
 }

@@ -249,6 +249,7 @@ pub(crate) fn resolve_pairs(
     symbol_map: &HashMap<String, Vec<(String, String, String)>>,
     learned_store: Option<&LearnedStore>,
     modules: &crate::graph::imports::ModuleImports<'_>,
+    exported_ids: &std::collections::HashSet<String>,
 ) -> ResolvedCalls {
     let mut resolved = 0;
     let mut unresolved = 0;
@@ -413,6 +414,7 @@ pub(crate) fn resolve_pairs(
                                 .iter()
                                 .find(|(candidate, _, kind)| {
                                     candidate == &id
+                                        && exported_ids.contains(candidate)
                                         && matches!(kind.as_str(), "Function" | "Method" | "Test")
                                 })
                                 .map(|(id, _, _)| id.clone())
@@ -819,11 +821,21 @@ fn write_resolved_calls(
     let files = crate::graph::imports::module_files(conn)?;
     let modules = crate::graph::imports::ModuleImports::new(files.iter().map(String::as_str))
         .with_root(store.project_root());
+    let exported_ids = conn
+        .query("MATCH (s:Symbol) WHERE s.visibility = 'public' RETURN s.id")?
+        .map(|row| row[0].to_string())
+        .collect();
     let ResolvedCalls {
         pairs,
         external_calls,
         stats,
-    } = resolve_pairs(extractions, symbol_map, learned_store, &modules);
+    } = resolve_pairs(
+        extractions,
+        symbol_map,
+        learned_store,
+        &modules,
+        &exported_ids,
+    );
 
     if !pairs.is_empty() {
         let pq_path = std::env::temp_dir().join("infigraph_resolve_calls.parquet");

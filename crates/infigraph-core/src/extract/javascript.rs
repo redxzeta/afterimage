@@ -52,6 +52,7 @@ pub(super) fn imported_call(node: Node<'_>, root: Node<'_>, source: &[u8]) -> Op
                     | "arrow_function"
                     | "function_declaration"
                     | "function_expression"
+                    | "generator_function"
                     | "method_definition"
                     | "catch_clause"
                     | "for_statement"
@@ -132,16 +133,26 @@ fn has_binding(node: Node<'_>, name: &str, source: &[u8]) -> bool {
             .child_by_field_name("name")
             .is_some_and(|n| pattern_contains(n, name, source));
     }
-    if node.kind() == "function_declaration"
+    if node.kind() == "for_in_statement"
+        && node.child_by_field_name("kind").is_some()
         && node
-            .child_by_field_name("name")
-            .is_some_and(|n| text(n, source) == name)
+            .child_by_field_name("left")
+            .is_some_and(|n| pattern_contains(n, name, source))
     {
         return true;
     }
     if matches!(
         node.kind(),
-        "formal_parameters" | "required_parameter" | "optional_parameter" | "catch_clause"
+        "function_declaration" | "function_expression" | "generator_function"
+    ) && node
+        .child_by_field_name("name")
+        .is_some_and(|n| text(n, source) == name)
+    {
+        return true;
+    }
+    if matches!(
+        node.kind(),
+        "formal_parameters" | "required_parameter" | "optional_parameter"
     ) {
         return pattern_contains(node, name, source);
     }
@@ -156,11 +167,32 @@ fn has_binding(node: Node<'_>, name: &str, source: &[u8]) -> bool {
         // Don't let declarations in nested sibling scopes shadow this scope.
         if matches!(
             child.kind(),
-            "statement_block" | "arrow_function" | "function_expression" | "method_definition"
+            "statement_block"
+                | "arrow_function"
+                | "function_expression"
+                | "generator_function"
+                | "method_definition"
         ) {
             return false;
         }
         has_binding(child, name, source)
     });
     found
+}
+
+/// This deliberately recognizes only direct named exports. Export lists,
+/// aliases, default exports and barrels cannot certify a same-name callable.
+pub(super) fn direct_named_export(mut node: Node<'_>) -> bool {
+    while let Some(parent) = node.parent() {
+        match parent.kind() {
+            "export_statement" => {
+                let mut cursor = parent.walk();
+                let has_default = parent.children(&mut cursor).any(|n| n.kind() == "default");
+                return !has_default;
+            }
+            "lexical_declaration" | "variable_declaration" => node = parent,
+            _ => return false,
+        }
+    }
+    false
 }

@@ -421,3 +421,67 @@ fn import_is_not_a_call_binding_and_callback_values_are_not_calls() {
         ));
     }
 }
+
+#[test]
+fn lexical_shadows_and_aliased_exports_never_select_private_same_name_functions() {
+    let registry = bundled_registry().unwrap();
+    for extension in ["ts", "tsx", "js"] {
+        let dir = tempfile::tempdir().unwrap();
+        let app = format!("app.{extension}");
+        let dep = format!("dep.{extension}");
+        let alias = format!("alias.{extension}");
+        std::fs::write(dir.path().join(&dep), "export const helper = () => 1;").unwrap();
+        std::fs::write(
+            dir.path().join(&alias),
+            "const helper = () => 0; const real = () => 1; export { real as helper };",
+        )
+        .unwrap();
+        let source = "import { helper } from './dep.js'; import { helper as aliased } from './alias.js'; export function use(xs) { for (const helper of xs) helper(); for (const [helper] of xs) helper(); for (const { helper } of xs) helper(); } export const run = function helper() { return helper(); }; export const generator = function* helper() { helper(); }; export const badAlias = () => aliased(); export const good = () => helper();";
+        let extraction =
+            extract_file(&app, source.as_bytes(), registry.for_file(&app).unwrap()).unwrap();
+        for owner in ["use", "run", "generator"] {
+            assert!(
+                extraction
+                    .relations
+                    .iter()
+                    .filter(|r| r.kind == RelationKind::Calls
+                        && r.source_id == format!("{app}::{owner}"))
+                    .all(|r| !r.target_id.contains("'./dep.js'::")),
+                "{app}: {owner} bound a shadow to the import"
+            );
+        }
+        std::fs::write(dir.path().join(&app), source).unwrap();
+        let mut graph =
+            infigraph_core::Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+        graph.init().unwrap();
+        graph.index().unwrap();
+        let backend = graph.backend().unwrap();
+        assert_eq!(
+            backend.callers_of(&format!("{dep}::helper")).unwrap(),
+            vec![format!("{app}::good")]
+        );
+        for name in ["helper", "real"] {
+            assert!(
+                backend
+                    .callers_of(&format!("{alias}::{name}"))
+                    .unwrap()
+                    .is_empty(),
+                "{extension}: unsupported aliased export guessed {name}"
+            );
+        }
+        // Replacing a direct export with an unsupported alias must also drop
+        // old incoming edges from an unchanged consumer.
+        std::fs::write(
+            dir.path().join(&dep),
+            "const helper = () => 0; const real = () => 1; export { real as helper };",
+        )
+        .unwrap();
+        graph.index_files(&[dep.clone().into()]).unwrap();
+        assert!(graph
+            .backend()
+            .unwrap()
+            .callers_of(&format!("{dep}::helper"))
+            .unwrap()
+            .is_empty());
+    }
+}

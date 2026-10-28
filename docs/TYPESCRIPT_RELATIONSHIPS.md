@@ -5,8 +5,12 @@ Named imports, including aliases, keep their quoted module specifier and exporte
 name in the unresolved call target. CALLS then uses the same module lookup as
 Module IMPORTS, including importer-relative paths and `.js` to `.ts` counterparts.
 Duplicate filenames or exported names elsewhere cannot select a different file.
-Unknown unqualified JS/TS callees have no global name fallback. Parameters and
-local declarations shadowing an imported binding remain unresolved.
+Unknown unqualified JS/TS callees have no global name fallback. Parameters,
+loop declarations and named function/generator expressions shadowing an imported
+binding remain unresolved. Imported targets must be directly exported named
+callables: extraction marks internal top-level functions private in the existing
+visibility field. An alias export cannot select an unrelated private function
+with the exported name. No graph schema or receipt API changes are needed.
 
 Workspace lookup reads root `package.json` workspaces or `pnpm-workspace.yaml`
 packages, then package manifests above indexed files in matching directories.
@@ -34,7 +38,8 @@ not add `jsonl -> json` CALLS or relabel the frozen truth. Call expressions insi
 anonymous callbacks retain the enclosing named owner, as in existing extraction.
 
 Target-only reindexing preserves incoming CALLS from unchanged consumers when
-both endpoint IDs still exist and the destination remains callable. Reversed
+both endpoint IDs still exist and the destination remains callable (and directly
+exported for JS/TS import consumers). Reversed
 batches resolve after all changed modules exist. This is structural preservation;
 compiler enrichment and source resolution receipts remain separate evidence.
 
