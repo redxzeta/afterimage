@@ -28,13 +28,13 @@ receipts, not reviewer execution, combined testing or default-branch adoption.
 
 | Artifact and exact source | PR/source-ready | Combined-tested | Pilot outcome/usefulness | Default-branch adopted |
 | --- | --- | --- | --- | --- |
-| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | **NOT_RUN** in combined candidate; build blocked | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
-| #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **READY, scoped**; 10 CLI author PASS + four-file smoke; core integration offline-BLOCKED; external SCIP NOT_RUN | **NOT_RUN** in combined candidate; no receipt/state smoke | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
-| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | **NOT_RUN** in combined candidate; no transport/byte smoke | Actual investigation outcome **NOT_RUN** | **NOT_ADOPTED** |
-| Local #18+#19+#20 candidate **85f48fd8cc79cc6936060d0759b97109513a5d0b** | Composition reported; only appended-test overlap retained; whitespace PASS | **BLOCKED**, bounded offline build exit 127: Cargo not found on evaluation host; no binaries | No AST scoring or agent result | **NOT_ADOPTED** |
-| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium intended for both arms | Prerequisite candidate build blocked | **NOT_RUN, 0/6**; no answers; correctness/calls/usage/time N/A | **NOT_ADOPTED** |
+| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Joint core command failed compilation before any tests | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
+| #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **FIX NEEDED**: new P2 E0282 in added core test; prior 10 CLI passes/smoke retained | **FAIL**, joint core compilation exit 101 / zero tests; minimal type annotation requested | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
+| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | Debian reports actual stdio/HTTP process smoke PASS; other joint checks pending | No frozen investigation outcomes yet | **NOT_ADOPTED** |
+| Local joint tree **5afe1b6db0fd1ded716c4102af6b98d87a455156** | Composition reported; both appended-test blocks retained; whitespace PASS | Sable Cargo unavailable exit 127; later Debian core compile exit 101/E0282. Binary log Finished, but wrapper receipt failed: build exit/resource samples **UNKNOWN** | Process smoke PASS is not complete integration or pilot acceptance | **NOT_ADOPTED** |
+| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium intended for both arms | M2 remains **HOLD** on joint core test defect | **PENDING** per Debian handoff; no frozen outputs received, scores/usage/time N/A | **NOT_ADOPTED** |
 
-**M2 disposition: HOLD.** The final evaluation handoff reports local candidate
+**M2 disposition: HOLD.** The earlier Sable evaluation handoff reports local candidate
 commit `85f48fd8cc79cc6936060d0759b97109513a5d0b`, tree
 `5afe1b6db0fd1ded716c4102af6b98d87a455156`, composed from the three exact PR
 heads above. Its one conflict retained both independently appended
@@ -44,8 +44,23 @@ offline build exited **127 / Cargo not found** on that host: no candidate
 binaries, smoke, AST scoring or sessions exist. This is host setup evidence,
 not a new code defect and not combined acceptance. These candidate receipts are
 caller-reported; this reviewer did not execute or independently build the local
-composition. There are no answers to adjudicate. Report publication is pending;
-its existence will not turn the missing execution into a pass.
+composition. This is retained as host-specific setup evidence, not the later
+Debian execution result.
+
+The newer Debian handoff reports the **same joint tree** and a real core
+caller/import compilation failure: **exit 101 / E0282**, no tests run. The added
+panic-only `update_current` closure in #19 leaves its generic return type
+unconstrained; joint typescript_callers.rs:541 corresponds to #19's line 375.
+[Independent P2 finding](https://github.com/redxzeta/afterimage/pull/19#pullrequestreview-5678131006)
+supersedes #19's earlier scoped READY at that head. The minimal correction is
+`update_current::<()>(...)` or an explicit `anyhow::Result<()>` closure return;
+retain the panic and stale-worker assertion. No test was disabled or edited by
+the runner/reviewer. The same handoff reports actual stdio/HTTP process smoke
+PASS. The binary log says Finished but its receipt wrapper failed, so the Cargo
+exit/resource samples and complete binary build provenance remain UNKNOWN.
+Other checks and pilot work are in progress; no frozen answers were supplied.
+These are runner-reported outcomes, not reviewer native execution. Do not mix
+them with Sable exit 127 or call any unrun suite green.
 
 Each handoff needs PR URL, full base/head, changed paths, meaningful local command
 and exit/result, feature/toolchain/native-artifact provenance, named NOT_RUN
@@ -67,7 +82,8 @@ each is not a whole-corpus score. Frozen truth is unchanged. Hosted run
 40627540497 remains FAILED on missing native lbug after selected passes; the
 waiver does not relabel it green. The final receipt releases the Debian slot.
 
-Final [#19 disposition](https://github.com/redxzeta/afterimage/pull/19#pullrequestreview-5678081785):
+Earlier [#19 scoped disposition](https://github.com/redxzeta/afterimage/pull/19#pullrequestreview-5678081785),
+now superseded for the added test by the E0282 finding above:
 93881dd9's delta from reviewed c046613d adds preservation assertions, explicit
 NOT_REQUESTED stderr and receipts; no new product contract. Author CLI no-run
 build 11.674s, binary build 5.969s, 10 CLI tests and smoke 14.254s PASS. AST-only
@@ -97,8 +113,8 @@ Cross-contract source review: #19 writes the unchanged v1 resolution/scip states
 coverage on receipt/hash mismatch. Requested syntax success never implies
 compiler completeness or source freshness. The supplemental _meta is permitted
 by the [official MCP2024-11-05 Result schema](https://github.com/modelcontextprotocol/specification/blob/2024-11-05/schema/schema.ts#L41);
-visible text/JSON remains essential. No known reachable P1/P2 is accepted in these
-reviewed heads. Reviewer native execution is **NOT_RUN**, by design; source-ready
+visible text/JSON remains essential. The known #19 test P2 requires correction;
+it is not accepted. Reviewer native execution is **NOT_RUN**, by design; source-ready
 uses the inspected source and author-local evidence above.
 
 ## Resources and final snapshot
@@ -238,10 +254,12 @@ Inventory hash is SHA-256 of sorted `relative-path + NUL + file-sha256 + LF`.
 | Nightwire | 333 | d2fb1fe95c77d67e2730cfded643e46c9b4231fd3bce452f31796c87b07bec1f | f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1 |
 | GigLab | 275 | 58c875251dbde31d5bb1134168442476e18e1a7ed55d71f5b8e73b095418dde5 | d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657 |
 
-This reviewer launched no scored agents. The latest evaluation handoff is
-**HOLD / host build blocked**, with **0/6 sessions** and no answers or measured
-usage/latency to adjudicate. Source snapshots and individual approvals remain
-available; hosted CI is not the blocker. No retry, installation, new executor or
+This reviewer launched no scored agents. M2 is **HOLD / #19 core test compilation
+defect**. The earlier Sable setup executed **0/6 sessions**; the newer Debian
+handoff reports pilot work in progress, with no frozen outputs or measurements
+received here. No content/usage/latency adjudication is possible yet. #18/#20
+source approvals stand; #19 requires the small type correction and exact-head
+receipt. Hosted CI is not the blocker. No retry, installation, new executor or
 substitute deterministic question score is performed by this reviewer.
 
 The prior Sable setup is **SUPERSEDED / BLOCKED**, not a code failure or accepted
