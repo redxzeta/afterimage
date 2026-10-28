@@ -28,11 +28,24 @@ receipts, not reviewer execution, combined testing or default-branch adoption.
 
 | Artifact and exact source | PR/source-ready | Combined-tested | Pilot outcome/usefulness | Default-branch adopted |
 | --- | --- | --- | --- | --- |
-| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Pending Terra's pinned candidate; individual passes do not establish combination | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
-| #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **READY, scoped**; 10 CLI author PASS + four-file smoke; core integration offline-BLOCKED; external SCIP NOT_RUN | Pending candidate receipt/state smoke | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
-| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | Pending candidate read-only/HTTP/byte checks | Profile/warnings usable by design; actual investigation outcomes pending | **NOT_ADOPTED** |
-| Local #18+#19+#20 integration | Source contracts compatible; source-only assembly is local test input | **PENDING on Debian**; Sable setup ended exit 127 without Cargo, not a tested candidate | Not an agent result | **NOT_ADOPTED** |
-| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium for both arms | Requires runner's tested candidate | **PENDING / no frozen outputs received**; usage/time/scores N/A here | **NOT_ADOPTED** |
+| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | **NOT_RUN** in combined candidate; build blocked | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
+| #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **READY, scoped**; 10 CLI author PASS + four-file smoke; core integration offline-BLOCKED; external SCIP NOT_RUN | **NOT_RUN** in combined candidate; no receipt/state smoke | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
+| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | **NOT_RUN** in combined candidate; no transport/byte smoke | Actual investigation outcome **NOT_RUN** | **NOT_ADOPTED** |
+| Local #18+#19+#20 candidate **85f48fd8cc79cc6936060d0759b97109513a5d0b** | Composition reported; only appended-test overlap retained; whitespace PASS | **BLOCKED**, bounded offline build exit 127: Cargo not found on evaluation host; no binaries | No AST scoring or agent result | **NOT_ADOPTED** |
+| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium intended for both arms | Prerequisite candidate build blocked | **NOT_RUN, 0/6**; no answers; correctness/calls/usage/time N/A | **NOT_ADOPTED** |
+
+**M2 disposition: HOLD.** The final evaluation handoff reports local candidate
+commit `85f48fd8cc79cc6936060d0759b97109513a5d0b`, tree
+`5afe1b6db0fd1ded716c4102af6b98d87a455156`, composed from the three exact PR
+heads above. Its one conflict retained both independently appended
+typescript_callers test blocks. Reported `git diff --check` passed, and the three
+unchanged truth manifests verified against their Git pins. The one bounded
+offline build exited **127 / Cargo not found** on that host: no candidate
+binaries, smoke, AST scoring or sessions exist. This is host setup evidence,
+not a new code defect and not combined acceptance. These candidate receipts are
+caller-reported; this reviewer did not execute or independently build the local
+composition. There are no answers to adjudicate. Report publication is pending;
+its existence will not turn the missing execution into a pass.
 
 Each handoff needs PR URL, full base/head, changed paths, meaningful local command
 and exit/result, feature/toolchain/native-artifact provenance, named NOT_RUN
@@ -225,12 +238,11 @@ Inventory hash is SHA-256 of sorted `relative-path + NUL + file-sha256 + LF`.
 | Nightwire | 333 | d2fb1fe95c77d67e2730cfded643e46c9b4231fd3bce452f31796c87b07bec1f | f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1 |
 | GigLab | 275 | 58c875251dbde31d5bb1134168442476e18e1a7ed55d71f5b8e73b095418dde5 | d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657 |
 
-This reviewer launches no scored agents. The existing Debian Terra runner owns
-the bounded local integration and six-session execution; no frozen answers or
-measurements have been received for independent adjudication yet. Source
-snapshots/releases are available; hosted CI is not a prerequisite. If existing read-only execution cannot run the
-practical pilot safely, publish NOT_RUN with one precise blocker and stop;
-do not substitute the deterministic five-question MCP retrieval protocol.
+This reviewer launched no scored agents. The latest evaluation handoff is
+**HOLD / host build blocked**, with **0/6 sessions** and no answers or measured
+usage/latency to adjudicate. Source snapshots and individual approvals remain
+available; hosted CI is not the blocker. No retry, installation, new executor or
+substitute deterministic question score is performed by this reviewer.
 
 The prior Sable setup is **SUPERSEDED / BLOCKED**, not a code failure or accepted
 milestone: caller reports local candidate tree
@@ -240,11 +252,13 @@ Cargo unavailable (exit 127), **0 sessions**. Those are setup receipts; neither
 compiled integration nor pilot usefulness follows. No installation or additional
 Sable attempt is requested.
 
-Active handoff is the existing [Debian benchmark/pilot owner](t3-thread://v1/mcp:6da052f4-e1cb-4c39-9f41-81a0e11b1c6a),
-resumed at ordinal 4. It received the reviewed heads, review links and practical
-protocol; its results update existing PR #17. Freeze six answers and actual
-call transcripts before scoring; send anonymized answer packets first, then arm
-mapping and call/usage/time audit after independent content scores are recorded.
+The existing [Debian benchmark/pilot owner](t3-thread://v1/mcp:6da052f4-e1cb-4c39-9f41-81a0e11b1c6a)
+received the reviewed heads, review links and practical protocol when resumed at
+ordinal 4; the final host-blocked status is relayed there for reporting. No
+additional evaluator is launched. If a later authorized attempt produces actual
+outputs, freeze six answers and call transcripts before scoring; send anonymized
+answer packets first, then arm mapping and call/usage/time audit after independent
+content scores are recorded.
 No answer key or this reviewer report belongs in an agent session. Public output
 must omit raw session transcripts/private source/machine paths. Stop once on a
 provider-limit error, record it, and do not retry quota failures. The caller
