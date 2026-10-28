@@ -275,6 +275,7 @@ pub(crate) fn cmd_index_mode(
                 "obsolete AST-only run"
             );
         }
+        eprintln!("Compiler enrichment NOT_REQUESTED (--ast-only).");
         eprint!("{}", prism.coverage_notice());
         return Ok(());
     }
@@ -2139,8 +2140,35 @@ mod pipeline_tests {
             std::fs::read(dir.path().join(".infigraph/index-status.json")).unwrap(),
             receipt
         );
+        let malformed = dir.path().join("bad.scip");
+        std::fs::write(&malformed, [0xff]).unwrap();
+        assert!(backend.import_scip_index(&malformed, None).is_err());
+        assert!(prism.index_file(Path::new("missing.ts")).is_err());
+        assert_eq!(
+            std::fs::read(dir.path().join(".infigraph/index-status.json")).unwrap(),
+            receipt
+        );
+        prism.index_file(Path::new("app.ts")).unwrap();
+        assert_eq!(
+            index_status::load(dir.path()).unwrap().scip[label].state,
+            StageState::Succeeded
+        );
+        assert_eq!(
+            backend
+                .raw_query("MATCH (:Symbol)-[r:CALLS]->(:Symbol) RETURN count(r)")
+                .unwrap(),
+            count
+        );
+        let noop_run = local_run_id(dir.path()).unwrap().unwrap();
         std::fs::write(dir.path().join("app.ts"), "export const helper = () => 2;").unwrap();
         prism.index_file(Path::new("app.ts")).unwrap();
+        assert!(
+            import_current(dir.path(), &noop_run, label, backend, || panic!(
+                "newer source must reject previous no-op generation"
+            ))
+            .unwrap()
+            .is_none()
+        );
         assert!(import_current(dir.path(), &run, label, backend, || panic!(
             "changed source invalidates old worker"
         ))

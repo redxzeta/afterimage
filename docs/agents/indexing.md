@@ -41,7 +41,7 @@ pending, running and unknown outcomes remain incomplete. Signal cancellation is
 indexed generation, not working-tree freshness or exhaustive coverage. MCP must
 consume this receipt rather than maintaining a second tracker.
 
-Direct `index_file` now uses the existing AST receipt lock and generation identity.
+Local `index_file` now uses the existing AST receipt lock and generation identity.
 An unchanged source/grammar fingerprint retains compiler edges and successful
 stages. Changed source invalidates compiler success before graph writes, and late
 workers cannot import into a newer AST generation. A failed read/extraction before
@@ -97,7 +97,8 @@ publishing this implementation; no test or protection is disabled.
 Local execution evidence (2026-10-27, base
 `dc45de6e5769c1d86116167dcb1660d9561736c8`):
 
-- Targeted rustfmt check and `git diff --check`: passed.
+- Targeted rustfmt check and `git diff --check`: passed. An initial full formatting
+  check identified formatting in the new edits; targeted rustfmt corrected it.
 - Initial CLI test `--no-run`: timeout at 300.076 seconds, exit -9 (wrapper 137),
   while compiling `pdf_oxide`; tests did not run. No source/native error was
   emitted before the cap. The native slot was released to the MCP lane.
@@ -111,7 +112,42 @@ Local execution evidence (2026-10-27, base
   This is cached native provenance, not a reproducible upstream release pin.
 - Source Cargo.lock SHA-256:
   `f1c33ba66829fb179a1ceb48d3c2036776812953e6d8b6cc1d0a277c45689eca`.
-- Pinned four-file `tests/fixtures/python-simple` projection prepared from the
-  base SHA above. Native smoke and focused tests are pending a finite second slot.
+- Final native slot reused the MCP lane's completed debug0 dependency cache,
+  rebuilt this checkout's core/CLI source, and passed CLI test `--no-run` in
+  11.674 seconds. CLI `cargo build --locked --offline --no-default-features
+  -p infigraph-cli --bin infigraph` passed in 5.969 seconds.
+- Focused commands above: pipeline **5 passed**, outcomes **3 passed**, existing
+  tool preflight **1 passed**. Existing CLI argument regression
+  `index::tests::scip_enrich_args_parse_as_positional_language`: **1 passed**.
+  All commands used `--test-threads=1`; total **10 passed, 0 failed, 0 ignored**.
+  Command wall times: 24.965s, 4.178s, 4.161s and 4.157s respectively.
+- Core `typescript_callers` command: **BLOCKED**, exit 101 in 0.102s because
+  `cargo-husky v1.5.0` is absent from the offline cache. No core integration test
+  ran; the dependency was neither removed nor downloaded, and no retry was made.
+  The CLI tests exercised the actual core receipt/import paths successfully.
+- Pinned four-file `tests/fixtures/python-simple` projection from the base above:
+  **PASS**, smoke driver exit 0 in 14.254s. AST-only first/repeat returned 0;
+  explicit enriched/missing tool returned 1 with `SCIP_TOOL_UNAVAILABLE`;
+  explicit AST-only recovery returned 0; `doctor --json` returned 0. Resolution
+  remained `succeeded`; compiler status changed from `skipped/NOT_REQUESTED` to
+  `failed/SCIP_TOOL_UNAVAILABLE` only when requested, then to `NOT_REQUESTED` on
+  the explicit AST-only request. No indexer launch, provisioning or automatic
+  retry occurred. No watcher lock, global Infigraph directory, embeddings or
+  generated CLAUDE.md appeared. All four source hashes and retained `index.scip`
+  bytes were unchanged. First graph: 14 symbols, 4 files/modules, 6 CALLS,
+  1 INHERITS; repeat indexed 0 files. The resolver reported 5/9 cross-file calls
+  resolved and 4 unresolved builtins/externals; these counts are not quality or
+  exhaustive-coverage scores.
+- Synthetic real importer guard: first import retained the AST-owned call and
+  added one compiler reference (stored CALLS count 2); repeated same-attempt
+  import kept count 2. Missing-file reads/malformed protobuf preserved the valid
+  receipt bytes; no-op retained success and both edges; source mutation removed
+  success, preserved the independent file and rejected obsolete workers.
+- Built CLI SHA-256:
+  `c393a67ec9e2aff1bd25511efacbb9a5a5f518fd1e493c22b7b87f2f8cef739c`.
+  Focused test executable SHA-256:
+  `829e7039cb47dc2ea10c8db164a7b46729cbe6547134fd7a81bc2c3e0a12da55`.
+  Synthetic SCIP fixture SHA-256:
+  `5b95eb1c6c4478344fba6e1a3a8b01acbb1e3fbf18d8b3e5196cda4f8adfd067`.
 - Real external SCIP compiler: NOT_RUN. The synthetic protobuf fixture and fake
   subprocess tests do not establish external compiler quality or readiness.
