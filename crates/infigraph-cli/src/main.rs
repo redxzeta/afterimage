@@ -26,7 +26,6 @@ use infigraph_languages::bundled_registry;
 use agent::cmd_init;
 use commands::*;
 use group_commands::{cmd_group, cmd_repos};
-use index::cmd_index;
 use install::{cmd_install, cmd_uninstall, cmd_update};
 
 /// Build a language registry with bundled languages + grammar plugins.
@@ -88,6 +87,12 @@ enum Commands {
         /// Skip embedding generation (faster, disables semantic search)
         #[arg(long)]
         no_embed: bool,
+        /// Index syntax stages only; no embeddings, documents or external indexers
+        #[arg(long, conflicts_with = "enriched")]
+        ast_only: bool,
+        /// Require foreground SCIP enrichment using existing tools only
+        #[arg(long, conflicts_with = "ast_only")]
+        enriched: bool,
     },
 
     /// Show graph statistics
@@ -816,26 +821,35 @@ fn main() -> Result<()> {
         .stack_size(32 * 1024 * 1024)
         .build_global();
 
-    let update_handle = install::check_for_update_background();
-    let should_auto_watch = !matches!(
+    let explicit_index = matches!(
         cli.command,
-        Commands::Watch { .. }
-            | Commands::WatchStop
-            | Commands::WatchStatus
-            | Commands::ScipEnrich { .. }
-            | Commands::Delete
-            | Commands::Update
-            | Commands::Install
-            | Commands::Uninstall
-            | Commands::Init { .. }
-            | Commands::Callers { .. }
-            | Commands::Callees { .. }
-            | Commands::Impact { .. }
-            | Commands::Languages
-            | Commands::Repos
-            | Commands::CleanRuntimes
-            | Commands::Group { .. }
+        Commands::Index { ast_only: true, .. } | Commands::Index { enriched: true, .. }
     );
+    let update_handle = if explicit_index {
+        None
+    } else {
+        install::check_for_update_background()
+    };
+    let should_auto_watch = !explicit_index
+        && !matches!(
+            cli.command,
+            Commands::Watch { .. }
+                | Commands::WatchStop
+                | Commands::WatchStatus
+                | Commands::ScipEnrich { .. }
+                | Commands::Delete
+                | Commands::Update
+                | Commands::Install
+                | Commands::Uninstall
+                | Commands::Init { .. }
+                | Commands::Callers { .. }
+                | Commands::Callees { .. }
+                | Commands::Impact { .. }
+                | Commands::Languages
+                | Commands::Repos
+                | Commands::CleanRuntimes
+                | Commands::Group { .. }
+        );
 
     let result = std::thread::Builder::new()
         .stack_size(32 * 1024 * 1024)
@@ -858,7 +872,21 @@ fn run(command: Commands, root: &Path) -> Result<()> {
     match command {
         Commands::Doctor { json } => doctor::run(root, json).map(|_| ()),
         Commands::Init { group, quick, yes } => cmd_init(root, group.as_deref(), quick, yes),
-        Commands::Index { full, no_embed } => cmd_index(root, full, no_embed),
+        Commands::Index {
+            full,
+            no_embed,
+            ast_only,
+            enriched,
+        } => {
+            let mode = if ast_only {
+                index::IndexMode::AstOnly
+            } else if enriched {
+                index::IndexMode::Enriched
+            } else {
+                index::IndexMode::Default
+            };
+            index::cmd_index_mode(root, full, no_embed, mode)
+        }
         Commands::Stats => cmd_stats(root),
         Commands::Languages => cmd_languages(Some(root)),
         Commands::Symbols { file } => cmd_symbols(root, &file),
