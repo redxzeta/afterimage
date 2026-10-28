@@ -28,11 +28,11 @@ receipts, not reviewer execution, combined testing or default-branch adoption.
 
 | Artifact and exact source | PR/source-ready | Combined-tested | Pilot outcome/usefulness | Default-branch adopted |
 | --- | --- | --- | --- | --- |
-| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Joint core command failed compilation before any tests | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
+| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Joint core command failed compilation; two frozen project graph subsets measured, GigLab pending | No actual agent outcomes; callback label remains missing | **NOT_ADOPTED** |
 | #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **FIX NEEDED**: new P2 E0282 in added core test; prior 10 CLI passes/smoke retained | **FAIL**, joint core compilation exit 101 / zero tests; minimal type annotation requested | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
-| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | Debian reports actual stdio/HTTP process smoke PASS; other joint checks pending | No frozen investigation outcomes yet | **NOT_ADOPTED** |
+| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY** from individual source/local receipt; no new source defect inferred | Joint profile suite 4 PASS / 1 FAIL under virtual cap; targeted rerun TIMEOUT 180s, unresolved. Stdio/HTTP process smoke PASS | No agent outcome | **NOT_ADOPTED** |
 | Local joint tree **5afe1b6db0fd1ded716c4102af6b98d87a455156** | Composition reported; both appended-test blocks retained; whitespace PASS | Sable Cargo unavailable exit 127; later Debian core compile exit 101/E0282. Binary log Finished, but wrapper receipt failed: build exit/resource samples **UNKNOWN** | Process smoke PASS is not complete integration or pilot acceptance | **NOT_ADOPTED** |
-| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium intended for both arms | M2 remains **HOLD** on joint core test defect | **PENDING** per Debian handoff; no frozen outputs received, scores/usage/time N/A | **NOT_ADOPTED** |
+| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium intended for both arms | M2 **HOLD**; candidate MCP cannot be configured per child | **NOT_RUN, 0/6**; no answers; correctness/calls/usage/time N/A | **NOT_ADOPTED** |
 
 **M2 disposition: HOLD.** The earlier Sable evaluation handoff reports local candidate
 commit `85f48fd8cc79cc6936060d0759b97109513a5d0b`, tree
@@ -58,9 +58,42 @@ retain the panic and stale-worker assertion. No test was disabled or edited by
 the runner/reviewer. The same handoff reports actual stdio/HTTP process smoke
 PASS. The binary log says Finished but its receipt wrapper failed, so the Cargo
 exit/resource samples and complete binary build provenance remain UNKNOWN.
-Other checks and pilot work are in progress; no frozen answers were supplied.
-These are runner-reported outcomes, not reviewer native execution. Do not mix
+Further bounded checks and source projections continued, as recorded below;
+the pilot is NOT_RUN, not a completed six-session experiment. These are
+runner-reported outcomes, not reviewer native execution. Do not mix
 them with Sable exit 127 or call any unrun suite green.
+
+Latest Debian continuation pin: local merge commit
+`586e53c907dd45df61ebcc3c8bb60962947ee94d`, same tree
+`5afe1b6db0fd1ded716c4102af6b98d87a455156`, same three PR heads/base.
+Reported CLI SHA-256
+`02b420d510f3be066fe227ee5a0107bb8d815ca66a9f5832651a4a81a0fb1955`;
+MCP SHA-256 `1a688148e32a71876adaa1c9ad393240b0ed9b1331ea3fa9ec432d2495e6073c`.
+These identify reported bytes but do not recover the failed build wrapper's
+missing Cargo exit/resource receipt.
+
+The joint read-only-profile suite reports **4 passed / 1 failed** under an
+8 GiB virtual-address cap, with Kuzu requesting an 8 TiB mmap reservation. The
+targeted rerun under a 4 GiB sampled-RSS budget **timed out at 180s**, sampled
+peak **585,088 KiB**. This does not establish a clean joint suite or a diagnosed
+product defect; the timeout remains unresolved. The separate actual stdio/HTTP
+process smoke passed. Synthetic AST-only returned 0/NOT_REQUESTED; requested
+enrichment returned 1/FAILED/SCIP_TOOL_UNAVAILABLE. Frozen source inventories
+match this protocol. No further cap increases/rebuild campaign is requested here.
+
+Partial frozen-project graph results (no agent): IceCouncil **21/21 symbols,
+11/12 labelled relations, 2/2 imports**; Nightwire **23/23, 20/20, 3/3**.
+No labelled false edge was observed within those sets. IceCouncil's missing
+jsonl-to-json callback label is preserved in unchanged truth; it is not fabricated
+as a direct CALLS edge or removed from the denominator. GigLab is still running;
+there is no new three-project aggregate, exhaustive precision or speedup claim.
+
+Pilot **NOT_RUN, 0/6**, with one precise execution blocker: the T3 child API
+offers no per-child candidate MCP server configuration, and the available global
+Infigraph server is not verified as this candidate's read-only server. No global
+server was substituted, no new executor/service/configuration project was started,
+and no answer packets exist for independent blind adjudication. Model usage,
+agent tool-call/latency and correctness measurements are N/A.
 
 Each handoff needs PR URL, full base/head, changed paths, meaningful local command
 and exit/result, feature/toolchain/native-artifact provenance, named NOT_RUN
@@ -254,10 +287,10 @@ Inventory hash is SHA-256 of sorted `relative-path + NUL + file-sha256 + LF`.
 | Nightwire | 333 | d2fb1fe95c77d67e2730cfded643e46c9b4231fd3bce452f31796c87b07bec1f | f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1 |
 | GigLab | 275 | 58c875251dbde31d5bb1134168442476e18e1a7ed55d71f5b8e73b095418dde5 | d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657 |
 
-This reviewer launched no scored agents. M2 is **HOLD / #19 core test compilation
-defect**. The earlier Sable setup executed **0/6 sessions**; the newer Debian
-handoff reports pilot work in progress, with no frozen outputs or measurements
-received here. No content/usage/latency adjudication is possible yet. #18/#20
+This reviewer launched no scored agents. M2 is **HOLD** on #19 core test
+compilation, unresolved joint profile timeout and unavailable per-child candidate
+MCP configuration. Both Sable and Debian attempts have **0/6 pilot sessions**;
+there are no answers or measurements to adjudicate. #18/#20
 source approvals stand; #19 requires the small type correction and exact-head
 receipt. Hosted CI is not the blocker. No retry, installation, new executor or
 substitute deterministic question score is performed by this reviewer.
