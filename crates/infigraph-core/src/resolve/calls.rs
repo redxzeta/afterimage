@@ -38,7 +38,7 @@ pub fn resolve_calls_incremental(
         symbol_map.entry(name).or_default().push((id, file, kind));
     }
 
-    let mut stats = write_resolved_calls(&conn, extractions, &symbol_map, learned_store)?;
+    let mut stats = write_resolved_calls(store, &conn, extractions, &symbol_map, learned_store)?;
     stats.inherits_resolved = resolve_inherits(&conn, extractions, &symbol_map)?;
     resolve_custom_edges(&conn, extractions, &symbol_map)?;
     Ok(stats)
@@ -74,7 +74,7 @@ pub fn resolve_calls(
         }
     }
 
-    let mut stats = write_resolved_calls(&conn, extractions, &symbol_map, learned_store)?;
+    let mut stats = write_resolved_calls(store, &conn, extractions, &symbol_map, learned_store)?;
     stats.inherits_resolved = resolve_inherits(&conn, extractions, &symbol_map)?;
     resolve_custom_edges(&conn, extractions, &symbol_map)?;
     Ok(stats)
@@ -248,6 +248,7 @@ pub(crate) fn resolve_pairs(
     extractions: &[FileExtraction],
     symbol_map: &HashMap<String, Vec<(String, String, String)>>,
     learned_store: Option<&LearnedStore>,
+    modules: &crate::graph::imports::ModuleImports<'_>,
 ) -> ResolvedCalls {
     let mut resolved = 0;
     let mut unresolved = 0;
@@ -394,6 +395,48 @@ pub(crate) fn resolve_pairs(
                 }
 
                 let target_name = rel.target_id.rsplit("::").next().unwrap_or(&rel.target_id);
+
+                // JS/TS identifiers carry their import binding from the AST. A
+                // module dependency alone never establishes a callable binding.
+                if matches!(ext.language.as_str(), "typescript" | "tsx" | "javascript")
+                    && rel.receiver.is_none()
+                {
+                    let raw = rel
+                        .target_id
+                        .strip_prefix(&format!("{}::", ext.file))
+                        .unwrap_or(&rel.target_id);
+                    let target = if let Some((specifier, exported)) = raw.rsplit_once("::") {
+                        modules.resolve(&ext.file, specifier).and_then(|file| {
+                            let id = format!("{file}::{exported}");
+                            symbol_map
+                                .get(exported)?
+                                .iter()
+                                .find(|(candidate, _, kind)| {
+                                    candidate == &id
+                                        && matches!(kind.as_str(), "Function" | "Method" | "Test")
+                                })
+                                .map(|(id, _, _)| id.clone())
+                        })
+                    } else {
+                        // No imported binding: only an actual local callable is
+                        // eligible. Unknown globals stay explicitly unresolved.
+                        local_callables
+                            .get(target_name)
+                            .filter(|v| v.len() == 1)
+                            .map(|v| v[0].to_string())
+                    };
+                    if let Some(target) = target {
+                        // Exact local endpoints were already written during upsert.
+                        if target != rel.target_id {
+                            res.pairs.push((rel.source_id.clone(), target));
+                        }
+                        res.resolved += 1;
+                    } else {
+                        res.unresolved += 1;
+                    }
+                    res.dangling += 1;
+                    continue;
+                }
 
                 // Same-class fast path only applies when the call is unqualified
                 // (`method()`) or explicitly self-referential (`this.method()`,
@@ -767,16 +810,20 @@ pub(crate) fn resolve_pairs(
 /// write that only Kuzu's embedded `Connection` can do.
 /// Caller must hold WriteLock.
 fn write_resolved_calls(
+    store: &GraphStore,
     conn: &kuzu::Connection<'_>,
     extractions: &[FileExtraction],
     symbol_map: &HashMap<String, Vec<(String, String, String)>>,
     learned_store: Option<&LearnedStore>,
 ) -> Result<ResolveStats> {
+    let files = crate::graph::imports::module_files(conn)?;
+    let modules = crate::graph::imports::ModuleImports::new(files.iter().map(String::as_str))
+        .with_root(store.project_root());
     let ResolvedCalls {
         pairs,
         external_calls,
         stats,
-    } = resolve_pairs(extractions, symbol_map, learned_store);
+    } = resolve_pairs(extractions, symbol_map, learned_store, &modules);
 
     if !pairs.is_empty() {
         let pq_path = std::env::temp_dir().join("infigraph_resolve_calls.parquet");
@@ -834,7 +881,8 @@ pub fn re_resolve_for_files(
         .collect();
 
     let filtered_owned: Vec<FileExtraction> = filtered.into_iter().cloned().collect();
-    let mut stats = write_resolved_calls(&conn, &filtered_owned, &symbol_map, learned_store)?;
+    let mut stats =
+        write_resolved_calls(store, &conn, &filtered_owned, &symbol_map, learned_store)?;
     stats.inherits_resolved = resolve_inherits(&conn, &filtered_owned, &symbol_map)?;
     Ok(stats)
 }

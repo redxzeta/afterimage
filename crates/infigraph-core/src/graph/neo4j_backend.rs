@@ -1949,7 +1949,17 @@ impl GraphBackend for Neo4jBackend {
             pairs,
             external_calls,
             stats,
-        } = crate::resolve::resolve_pairs(extractions, &symbol_map, None);
+        } = crate::resolve::resolve_pairs(
+            extractions,
+            &symbol_map,
+            None,
+            &super::imports::ModuleImports::new(
+                symbol_map
+                    .values()
+                    .flatten()
+                    .map(|(_, file, _)| file.as_str()),
+            ),
+        );
         let resolved = stats.resolved;
         let unresolved = stats.unresolved;
         let total_dangling = stats.total_calls;

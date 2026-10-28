@@ -316,7 +316,7 @@ pub fn extract_entities(
                     )
                 };
                 if (sym.kind == SymbolKind::Test && callable(&existing.kind))
-                    || (matches!(sym.language.as_str(), "typescript" | "tsx")
+                    || (matches!(sym.language.as_str(), "typescript" | "tsx" | "javascript")
                         && existing.kind == SymbolKind::Variable
                         && callable(&sym.kind)
                         && (existing.span.start_line, existing.span.start_col)

@@ -1,11 +1,13 @@
-//! Bounded module lookup over indexed file IDs; no filesystem or Node resolver.
+//! Bounded lookup over indexed IDs and local workspace manifests; never a Node resolver.
 use std::collections::{HashMap, HashSet};
+use std::path::Path;
 
 use super::store_util::{file_stem, import_stem, resolve_import_candidate};
 
 pub(crate) struct ModuleImports<'a> {
     files: HashSet<&'a str>,
     by_stem: HashMap<String, Vec<&'a str>>,
+    packages: HashMap<String, Vec<(String, serde_json::Value)>>,
 }
 
 impl<'a> ModuleImports<'a> {
@@ -15,7 +17,87 @@ impl<'a> ModuleImports<'a> {
         for file in &files {
             by_stem.entry(file_stem(file)).or_default().push(file);
         }
-        Self { files, by_stem }
+        Self {
+            files,
+            by_stem,
+            packages: HashMap::new(),
+        }
+    }
+
+    /// Only inspect manifests above indexed files in declared local workspaces.
+    /// No recursive directory walk, node_modules lookup, code execution or network.
+    pub(crate) fn with_root(mut self, root: Option<&Path>) -> Self {
+        if self.files.is_empty() {
+            return self;
+        }
+        let Some(root) = root.and_then(|r| r.canonicalize().ok()) else {
+            return self;
+        };
+        let mut patterns: Vec<String> = read_json(&root, "package.json")
+            .and_then(|v| v.get("workspaces").cloned())
+            .and_then(|v| v.as_array().cloned())
+            .unwrap_or_default()
+            .iter()
+            .filter_map(|v| v.as_str().map(str::to_owned))
+            .collect();
+        if let Some(path) = bounded_file(&root, "pnpm-workspace.yaml") {
+            if let Ok(text) = std::fs::read_to_string(path) {
+                if let Ok(value) = serde_yaml::from_str::<serde_json::Value>(&text) {
+                    patterns.extend(
+                        value["packages"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .filter_map(|v| v.as_str().map(str::to_owned)),
+                    );
+                }
+            }
+        }
+        let exclusions: Vec<_> = patterns
+            .iter()
+            .filter_map(|p| p.strip_prefix('!'))
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        let patterns: Vec<_> = patterns
+            .iter()
+            .filter(|p| !p.contains("..") && !p.starts_with('/') && !p.starts_with('!'))
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        let mut dirs = HashSet::new();
+        for file in &self.files {
+            let mut parent = Path::new(file).parent();
+            while let Some(dir) = parent.filter(|p| !p.as_os_str().is_empty()) {
+                if !exclusions.iter().any(|p| p.matches(&dir.to_string_lossy()))
+                    && patterns.iter().any(|p| {
+                        p.matches_with(
+                            &dir.to_string_lossy(),
+                            glob::MatchOptions {
+                                require_literal_separator: true,
+                                ..Default::default()
+                            },
+                        )
+                    })
+                {
+                    dirs.insert(dir.to_string_lossy().into_owned());
+                }
+                parent = dir.parent();
+            }
+        }
+        for dir in dirs {
+            let Some(value) = read_json(&root, &format!("{dir}/package.json")) else {
+                continue;
+            };
+            if let Some(name) = value["name"].as_str() {
+                self.packages
+                    .entry(name.to_owned())
+                    .or_default()
+                    .push((dir, value));
+            }
+        }
+        // A symlink outside the project must never become an indexed destination.
+        self.files
+            .retain(|file| bounded_file(&root, file).is_some());
+        self
     }
 
     pub(crate) fn resolve(&self, source: &str, target: &str) -> Option<&'a str> {
@@ -35,10 +117,8 @@ impl<'a> ModuleImports<'a> {
             ext,
             "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
         ) {
-            // Bare packages, aliases and URLs need project/compiler metadata.
-            // Never guess by basename for JS/TS imports.
             if !name.starts_with("./") && !name.starts_with("../") {
-                return None;
+                return self.resolve_package(source, name);
             }
             let parent = source.rsplit_once('/').map(|(p, _)| p).unwrap_or("");
             let path = normalize(&format!("{parent}/{name}"))?;
@@ -51,6 +131,46 @@ impl<'a> ModuleImports<'a> {
             resolve_import_candidate(legacy_name, candidates)
         }?;
         (resolved != source).then_some(resolved)
+    }
+
+    fn resolve_package(&self, source: &str, name: &str) -> Option<&'a str> {
+        let (package, subpath) = if name.starts_with('@') {
+            let first = name.find('/')?;
+            name[first + 1..]
+                .find('/')
+                .map(|i| name.split_at(first + 1 + i))
+                .unwrap_or((name, ""))
+        } else {
+            name.find('/')
+                .map(|i| name.split_at(i))
+                .unwrap_or((name, ""))
+        };
+        let entries = self.packages.get(package)?;
+        let [(dir, manifest)] = entries.as_slice() else {
+            return None;
+        };
+        let exports = manifest.get("exports")?;
+        let key = if subpath.is_empty() {
+            ".".to_owned()
+        } else {
+            format!(".{subpath}")
+        };
+        let value = if exports.is_string() && key == "." {
+            exports
+        } else {
+            exports.get(&key)?
+        };
+        // Conditions, arrays, wildcards, absent and duplicate names remain unresolved.
+        let target = value.as_str()?.strip_prefix("./")?;
+        if target
+            .split('/')
+            .any(|p| matches!(p, ".." | "node_modules"))
+            || target.contains('*')
+        {
+            return None;
+        }
+        let path = normalize(&format!("{dir}/{target}"))?;
+        self.resolve_relative(&path).filter(|f| *f != source)
     }
 
     fn resolve_relative(&self, path: &str) -> Option<&'a str> {
@@ -98,6 +218,22 @@ impl<'a> ModuleImports<'a> {
     }
 }
 
+fn bounded_file(root: &Path, relative: &str) -> Option<std::path::PathBuf> {
+    if Path::new(relative).is_absolute()
+        || relative
+            .split('/')
+            .any(|p| matches!(p, ".." | "node_modules"))
+    {
+        return None;
+    }
+    let path = root.join(relative).canonicalize().ok()?;
+    (path.starts_with(root) && path.is_file()).then_some(path)
+}
+
+fn read_json(root: &Path, relative: &str) -> Option<serde_json::Value> {
+    serde_json::from_str(&std::fs::read_to_string(bounded_file(root, relative)?).ok()?).ok()
+}
+
 fn unquote(raw: &str) -> &str {
     for quote in ['\'', '"'] {
         if let Some(inner) = raw.strip_prefix(quote).and_then(|s| s.strip_suffix(quote)) {
@@ -138,6 +274,31 @@ pub(crate) fn inbound_imports(
         .map(|row| (row[0].to_string(), row[1].to_string()))
         .filter(|(a, b)| !changed.contains(a.as_str()) && changed.contains(b.as_str()))
         .collect())
+}
+
+/// Preserve incoming syntax call edges when unchanged consumers aren't re-extracted.
+pub(crate) fn inbound_calls(
+    conn: &kuzu::Connection<'_>,
+    changed: &HashSet<&str>,
+) -> anyhow::Result<Vec<(String, String)>> {
+    Ok(conn
+        .query("MATCH (a:Symbol)-[:CALLS]->(b:Symbol) RETURN a.id, b.id, a.file, b.file")?
+        .filter(|row| {
+            !changed.contains(row[2].to_string().as_str())
+                && changed.contains(row[3].to_string().as_str())
+        })
+        .map(|row| (row[0].to_string(), row[1].to_string()))
+        .collect())
+}
+
+pub(crate) fn merge_calls(
+    conn: &kuzu::Connection<'_>,
+    pairs: &[(String, String)],
+) -> anyhow::Result<()> {
+    for (a, b) in pairs {
+        conn.query(&format!("MATCH (a:Symbol), (b:Symbol) WHERE a.id = '{}' AND b.id = '{}' AND b.kind IN ['Function', 'Method', 'Test'] MERGE (a)-[:CALLS]->(b)", super::store_util::escape(a), super::store_util::escape(b)))?;
+    }
+    Ok(())
 }
 
 pub(crate) fn merge_imports(
@@ -213,5 +374,63 @@ mod tests {
             modules.resolve("main.ts", "main.ts::'./missing/helper'"),
             None
         );
+    }
+}
+
+#[cfg(test)]
+mod workspace_tests {
+    use super::ModuleImports;
+
+    #[test]
+    fn bounded_workspace_resolution_rejects_ambiguous_and_external_sources() {
+        let root = tempfile::tempdir().unwrap();
+        let write = |path: &str, content: &str| {
+            let path = root.path().join(path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        };
+        write("package.json", r#"{"workspaces":["packages/*"]}"#);
+        write("app.ts", "");
+        write("packages/one/src/index.ts", "");
+        write(
+            "packages/one/package.json",
+            r#"{"name":"@test/shared","exports":{".":"./src/index.ts","./conditional":{"default":"./src/index.ts"},"./array":["./src/index.ts"],"./missing":"./absent.ts","./escape":"../../app.ts","./link":"./src/link.ts","./*":"./src/*.ts"}}"#,
+        );
+        let files = [
+            "app.ts",
+            "packages/one/src/index.ts",
+            "packages/one/src/link.ts",
+        ];
+        let outside = tempfile::tempdir().unwrap();
+        std::fs::write(outside.path().join("external.ts"), "").unwrap();
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(
+            outside.path().join("external.ts"),
+            root.path().join("packages/one/src/link.ts"),
+        )
+        .unwrap();
+        let modules = ModuleImports::new(files).with_root(Some(root.path()));
+        assert_eq!(modules.resolve("app.ts", "'@test/shared'"), Some(files[1]));
+        for target in [
+            "'@test/shared/conditional'",
+            "'@test/shared/array'",
+            "'@test/shared/missing'",
+            "'@test/shared/escape'",
+            "'@test/shared/link'",
+            "'@test/shared/unknown'",
+            "'./packages/one/src/link.ts'",
+            "'../../app.ts'",
+            "'missing'",
+        ] {
+            assert_eq!(modules.resolve("app.ts", target), None, "{target}");
+        }
+        write("packages/two/src/index.ts", "");
+        write(
+            "packages/two/package.json",
+            r#"{"name":"@test/shared","exports":"./src/index.ts"}"#,
+        );
+        let modules = ModuleImports::new(files.into_iter().chain(["packages/two/src/index.ts"]))
+            .with_root(Some(root.path()));
+        assert_eq!(modules.resolve("app.ts", "'@test/shared'"), None);
     }
 }

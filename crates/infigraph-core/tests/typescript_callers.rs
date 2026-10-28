@@ -319,3 +319,105 @@ fn reindexing_unchanged_files_invalidates_compiler_enrichment() {
         .coverage_notice()
         .contains("no compiler enrichment recorded"));
 }
+
+#[test]
+fn fixed_gap_import_bindings_survive_duplicate_names_and_target_reindex() {
+    let dir = tempfile::tempdir().unwrap();
+    for (file, source) in [
+        ("utils/canonical.ts", "export const canonicalJson = (v: unknown) => JSON.stringify(v);"),
+        ("other/canonical.ts", "export const canonicalJson = () => 'wrong';"),
+        ("cli/args.ts", "export function parseOptionalArg() { return 1; }"),
+        ("other/args.ts", "export function parseOptionalArg() { return 2; }"),
+        ("app.ts", "import { canonicalJson as encode } from './utils/canonical.js'; import { parseOptionalArg } from './cli/args.js'; const canonicalJson = () => 'local'; const json = (v: unknown) => `${encode(v)}\\n`; const jsonl = (v: unknown[]) => v.map(json).join(''); export function parse() { return parseOptionalArg(); }"),
+    ] {
+        let path = dir.path().join(file);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, source).unwrap();
+    }
+    let mut graph =
+        infigraph_core::Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+    graph.init().unwrap();
+    graph.index().unwrap();
+    for target in [
+        vec![],
+        vec!["utils/canonical.ts"],
+        vec!["cli/args.ts"],
+        vec!["app.ts", "utils/canonical.ts"],
+        vec!["utils/canonical.ts", "app.ts"],
+    ] {
+        if !target.is_empty() {
+            graph
+                .index_files(
+                    &target
+                        .iter()
+                        .map(std::path::PathBuf::from)
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap();
+        }
+        let backend = graph.backend().unwrap();
+        let actual: Vec<_> = [
+            "utils/canonical.ts::canonicalJson",
+            "cli/args.ts::parseOptionalArg",
+        ]
+        .into_iter()
+        .map(|callee| backend.callers_of(callee).unwrap())
+        .collect();
+        assert_eq!(
+            actual,
+            vec![vec!["app.ts::json"], vec!["app.ts::parse"]],
+            "fixed direct CALLS (2 expected), batch {target:?}"
+        );
+        for callee in [
+            "other/canonical.ts::canonicalJson",
+            "other/args.ts::parseOptionalArg",
+            "app.ts::json",
+            "app.ts::canonicalJson",
+        ] {
+            assert!(
+                backend.callers_of(callee).unwrap().is_empty(),
+                "invented call: {callee}"
+            );
+        }
+    }
+}
+
+#[test]
+fn import_is_not_a_call_binding_and_callback_values_are_not_calls() {
+    let registry = bundled_registry().unwrap();
+    for file in ["app.ts", "app.tsx", "app.js"] {
+        let source = b"import { helper as imported } from './a/helper.js'; import type { phantom } from './b/helper.js'; const helper = () => 1; const local = () => helper(); const bound = () => imported(); const shadow = (imported) => imported(); const paramShadow = (helper) => helper(); const callback = (xs) => xs.map(helper); const unknown = () => phantom();";
+        let source = if file.ends_with(".js") {
+            String::from_utf8_lossy(source).replace("import type", "import")
+        } else {
+            String::from_utf8_lossy(source).into_owned()
+        };
+        let ext = extract_file(file, source.as_bytes(), registry.for_file(file).unwrap()).unwrap();
+        let calls: Vec<_> = ext
+            .relations
+            .iter()
+            .filter(|r| r.kind == RelationKind::Calls)
+            .collect();
+        assert!(calls
+            .iter()
+            .any(|r| r.source_id == format!("{file}::local")
+                && r.target_id == format!("{file}::helper")));
+        assert!(calls.iter().any(|r| r.source_id == format!("{file}::bound")
+            && r.target_id.ends_with("'./a/helper.js'::helper")));
+        assert!(
+            calls
+                .iter()
+                .any(|r| r.source_id == format!("{file}::shadow")
+                    && r.target_id.ends_with("@unresolved::imported")),
+            "{file}: {:?}",
+            ext.relations
+        );
+        assert!(calls
+            .iter()
+            .any(|r| r.source_id == format!("{file}::paramShadow")
+                && r.target_id.ends_with("@unresolved::helper")));
+        assert!(!calls.iter().any(
+            |r| r.source_id == format!("{file}::callback") && r.target_id.ends_with("::helper")
+        ));
+    }
+}

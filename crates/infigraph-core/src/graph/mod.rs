@@ -1,6 +1,6 @@
 mod backend;
 pub mod cozo_store;
-mod imports;
+pub(crate) mod imports;
 mod kuzu_backend;
 #[cfg(feature = "neo4j")]
 mod neo4j_backend;

@@ -437,6 +437,7 @@ impl GraphBackend for KuzuBackend {
         let changed: std::collections::HashSet<_> =
             extractions.iter().map(|e| e.file.as_str()).collect();
         let inbound = super::imports::inbound_imports(&conn, &changed)?;
+        let inbound_calls = super::imports::inbound_calls(&conn, &changed)?;
         let use_csv = existing_hashes_empty || extractions.len() > 100;
 
         if use_csv {
@@ -468,7 +469,8 @@ impl GraphBackend for KuzuBackend {
         let mut imports = inbound;
         if !use_csv {
             let files = super::imports::module_files(&conn)?;
-            let modules = super::imports::ModuleImports::new(files.iter().map(String::as_str));
+            let modules = super::imports::ModuleImports::new(files.iter().map(String::as_str))
+                .with_root(self.store.project_root());
             for extraction in extractions {
                 for rel in &extraction.relations {
                     if matches!(
@@ -484,6 +486,7 @@ impl GraphBackend for KuzuBackend {
             }
         }
         super::imports::merge_imports(&conn, &imports)?;
+        super::imports::merge_calls(&conn, &inbound_calls)?;
         // Upsert folder hierarchy
         let file_paths: Vec<&str> = extractions.iter().map(|e| e.file.as_str()).collect();
         let conn = self.store.connection()?;

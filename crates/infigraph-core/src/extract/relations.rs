@@ -260,7 +260,12 @@ pub(super) fn extract_relations_with_owners(
             } else {
                 format!("{}::{}", file, src)
             };
-            let target_id = format!("{}::{}", file, tgt);
+            let bound = (kind == RelationKind::Calls && owners.is_some())
+                .then(|| {
+                    site_node.and_then(|site| super::javascript::imported_call(site, root, source))
+                })
+                .flatten();
+            let target_id = format!("{}::{}", file, bound.as_deref().unwrap_or(&tgt));
 
             relations.push(Relation {
                 source_id,
