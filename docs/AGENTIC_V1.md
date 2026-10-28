@@ -23,9 +23,9 @@ to match new output or relabelled with a future product SHA.
 
 | Artifact / owner | Acceptance before a scoped READY | Current reviewed evidence |
 | --- | --- | --- |
-| A: TypeScript relationships | Resolve imported direct calls despite duplicate exported names; bounded exact package-export IMPORTS; aliases, shadowing, ambiguous/missing exports and callbacks get negative cases. No basename guessing, hardcoded benchmark labels or invented direct callback calls. Preserve stored endpoints and existing SCIP/import cases. | Implementation underway; baseline minimized duplicate-export direct-call case failed as expected. No candidate acceptance yet. |
+| A: TypeScript relationships | Resolve imported direct calls despite duplicate exported names; bounded exact package-export IMPORTS; aliases, shadowing, ambiguous/missing exports and callbacks get negative cases. No basename guessing, hardcoded benchmark labels or invented direct callback calls. Preserve stored endpoints and existing SCIP/import cases. | HOLD: PR #18 / 982fb3fc static review found lexical-shadow and export-alias false edges. Author final-local checks pending; native slot retained. |
 | B: read-only MCP/worktree | Boundary at the requested Git worktree, including gitfiles; never borrow parent/sibling index. Reject unknown/misspelled arguments. Opt-in subset must reject manually invoked writes before dispatch and must not index/start watchers. Arbitrary Cypher must be excluded or enforced read-only. Bounded metadata must preserve identity, index coverage and failure/unknown state. | Exact PR/head and local receipt pending. |
-| C: index contract | AST-only requested/not-requested enrichment is distinct from enrichment failure; CLI/MCP agree. No success inferred solely from graph readability or HEAD. Invalidate stale compiler receipts after bulk and single-file writes; no stale receipt cloning. If SCIP idempotence changes, repeated imports must preserve syntax imports and avoid duplicate edges. | Exact PR/head and local receipt pending. |
+| C: index contract | AST-only requested/not-requested enrichment is distinct from enrichment failure; CLI/MCP agree. No success inferred solely from graph readability or HEAD. Invalidate stale compiler receipts after bulk and single-file writes; no stale receipt cloning. If SCIP idempotence changes, repeated imports must preserve syntax imports and avoid duplicate edges. | PR #19 / c046613d statically reviewed with no concrete product blocker; runtime HOLD. CLI no-run compile timed out at 300.076s in pdf_oxide; no tests ran. Finite follow-up after MCP slot release. |
 | Cross-lane compatibility | Review actual response/receipt schemas and changed paths at each exact head; no conflicting core/lib ownership. Preserve prior fields/diagnostic causes or document compatible changes. Re-evaluate only changed integration surfaces. | All three lanes started at dc45de6e; no assembled candidate reviewed. |
 | Agent pilot | Six independent actual model sessions under the protocol below; source-backed answers scored separately from graph retrieval. | NOT_RUN; final coherent product snapshots and build-slot release pending. |
 
@@ -37,6 +37,29 @@ separate. An old pass never validates a replacement head. #16's historical
 missing-native-lbug core-unit failure and dispatch timeout remain recorded;
 fixing that packaging issue is a small follow-up, not a reason to stall V1
 source work or silently call those checks green.
+
+Exact-head review of [PR #18](https://github.com/redxzeta/afterimage/pull/18),
+base dc45de6e through **982fb3fc6f00b89a924a0fb774f4f91a50f79df0**: inspected
+the complete source/test/doc diff; frozen truth, receipt APIs and core/lib.rs
+are unchanged, and diff whitespace passes. Two source-static P2 findings hold
+acceptance: [loop/self-name lexical bindings can falsely select imports](https://github.com/redxzeta/afterimage/pull/18#issuecomment-6459912059),
+and [an aliased module export can select a different private same-name callable](https://github.com/redxzeta/afterimage/pull/18#issuecomment-6459924721).
+Both include minimal valid source cases and request conservative abstention plus
+focused regressions. Reviewer native execution is NOT_RUN; the author owns the
+slot. Baseline direct CALLS 0/2 and workspace IMPORTS 0/2 are author-reported red
+controls, not new whole-corpus scores. A corrected head needs delta review and
+its actual local results before source acceptance or final pilot preparation.
+
+Exact-head source review of [PR #19](https://github.com/redxzeta/afterimage/pull/19),
+**c046613d4ebe5d2867b57b9e048f2a909318cbf9**, found no concrete P1/P2 defect
+in the changed CLI/core/test/doc paths. Explicit `index --ast-only` and
+`index --enriched --no-embed` retain receipt v1, with skipped/NOT_REQUESTED versus
+failed stages; index_file and the same-successful-run import guard share the
+existing receipt lock. These are source observations, not executed acceptance.
+The author's compile timeout is retained as no tests run. Arbitrary raw SCIP
+import idempotence/native rollback is explicitly deferred; only the narrower
+same-run/indexer successful-import guard is in this PR. No native transaction
+redesign is required for V1. Reviewer native execution remains NOT_RUN.
 
 ## Resources and final snapshot
 
