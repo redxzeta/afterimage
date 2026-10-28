@@ -1,11 +1,12 @@
 # Agentic V1: acceptance, evaluation and runbook
 
-Owner policy, 2026-10-27: **source work and review only; NO MERGES**. The
-platform-blocked #16 action must not be retried through another tool, API,
-agent, push or permission change. Hosted CI is not this milestone's gate;
-focused local evidence counts, and skipped/failed checks keep their real status.
-#16's provenance review is complete; #13, #16 and #17 remain open. This document
-is maintained in existing report PR #15, which is optional and also unmerged.
+M2 policy: **Nathan authorized execution and explicitly waived hosted CI.**
+The earlier connector/tool merge refusal is a platform execution boundary,
+not withheld owner permission. We do not execute merges, default-branch pushes
+or alternate routes around that action. No protection/workflow changes bypass
+the refusal. Focused local evidence counts; skipped/failed checks retain their
+real status. #16's provenance review is complete; #13, #16 and #17 remain open.
+This document stays in existing report PR #15, which is also unmerged.
 No deployments, installation changes, global hooks, permanent service or live
 index operations are part of V1.
 
@@ -21,13 +22,17 @@ SCIP_TOOL_UNAVAILABLE: compiler enrichment, speedup and actual agent A/B were
 not established. These historical values and frozen truth must not be rewritten
 to match new output or relabelled with a future product SHA.
 
-| Artifact / owner | Acceptance before a scoped READY | Current reviewed evidence |
-| --- | --- | --- |
-| A: TypeScript relationships | Resolve imported direct calls despite duplicate exported names; bounded exact package-export IMPORTS; aliases, shadowing, ambiguous/missing exports and callbacks get negative cases. No basename guessing, hardcoded benchmark labels or invented direct callback calls. Preserve stored endpoints and existing SCIP/import cases. | HOLD: PR #18 / 982fb3fc static review found lexical-shadow and export-alias false edges. Author final-local checks pending; native slot retained. |
-| B: read-only MCP/worktree | Boundary at the requested Git worktree, including gitfiles; never borrow parent/sibling index. Reject unknown/misspelled arguments. Opt-in subset must reject manually invoked writes before dispatch and must not index/start watchers. Arbitrary Cypher must be excluded or enforced read-only. Bounded metadata must preserve identity, index coverage and failure/unknown state. | Exact PR/head and local receipt pending. |
-| C: index contract | AST-only requested/not-requested enrichment is distinct from enrichment failure; CLI/MCP agree. No success inferred solely from graph readability or HEAD. Invalidate stale compiler receipts after bulk and single-file writes; no stale receipt cloning. If SCIP idempotence changes, repeated imports must preserve syntax imports and avoid duplicate edges. | PR #19 / c046613d statically reviewed with no concrete product blocker; runtime HOLD. CLI no-run compile timed out at 300.076s in pdf_oxide; no tests ran. Finite follow-up after MCP slot release. |
-| Cross-lane compatibility | Review actual response/receipt schemas and changed paths at each exact head; no conflicting core/lib ownership. Preserve prior fields/diagnostic causes or document compatible changes. Re-evaluate only changed integration surfaces. | All three lanes started at dc45de6e; no assembled candidate reviewed. |
-| Agent pilot | Six independent actual model sessions under the protocol below; source-backed answers scored separately from graph retrieval. | NOT_RUN; final coherent product snapshots and build-slot release pending. |
+One milestone acceptance matrix (base **dc45de6e5769c1d86116167dcb1660d9561736c8**).
+PR-level READY means independent source review plus accepted focused author-local
+receipts, not reviewer execution, combined testing or default-branch adoption.
+
+| Artifact and exact source | PR/source-ready | Combined-tested | Pilot outcome/usefulness | Default-branch adopted |
+| --- | --- | --- | --- | --- |
+| #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Pending Terra's pinned candidate; individual passes do not establish combination | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
+| #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **READY, scoped**; 10 CLI author PASS + four-file smoke; core integration offline-BLOCKED; external SCIP NOT_RUN | Pending candidate receipt/state smoke | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
+| #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | Pending candidate read-only/HTTP/byte checks | Profile/warnings usable by design; actual investigation outcomes pending | **NOT_ADOPTED** |
+| Local #18+#19+#20 integration | Source contracts compatible; source-only assembly is local test input | **PENDING**, runner owns build; tree/binary hashes and conflicts not yet supplied | Not an agent result | **NOT_ADOPTED** |
+| Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium for both arms | Requires runner's tested candidate | **PENDING / no frozen outputs received**; usage/time/scores N/A here | **NOT_ADOPTED** |
 
 Each handoff needs PR URL, full base/head, changed paths, meaningful local command
 and exit/result, feature/toolchain/native-artifact provenance, named NOT_RUN
@@ -38,34 +43,57 @@ missing-native-lbug core-unit failure and dispatch timeout remain recorded;
 fixing that packaging issue is a small follow-up, not a reason to stall V1
 source work or silently call those checks green.
 
-Exact-head review of [PR #18](https://github.com/redxzeta/afterimage/pull/18),
-base dc45de6e through **982fb3fc6f00b89a924a0fb774f4f91a50f79df0**: inspected
-the complete source/test/doc diff; frozen truth, receipt APIs and core/lib.rs
-are unchanged, and diff whitespace passes. Two source-static P2 findings hold
-acceptance: [loop/self-name lexical bindings can falsely select imports](https://github.com/redxzeta/afterimage/pull/18#issuecomment-6459912059),
-and [an aliased module export can select a different private same-name callable](https://github.com/redxzeta/afterimage/pull/18#issuecomment-6459924721).
-Both include minimal valid source cases and request conservative abstention plus
-focused regressions. Reviewer native execution is NOT_RUN; the author owns the
-slot. Baseline direct CALLS 0/2 and workspace IMPORTS 0/2 are author-reported red
-controls, not new whole-corpus scores. A corrected head needs delta review and
-its actual local results before source acceptance or final pilot preparation.
+Final [#18 disposition](https://github.com/redxzeta/afterimage/pull/18#pullrequestreview-5678087900):
+the original loop/self-binding and aliased-export P2s are resolved at 2d6d403;
+the final fef14d9 delta changes only validation documentation. Source/test tree
+equivalence and whitespace passed. Conservative shadow/export certification,
+negative/ambiguous workspace cases and direct-to-alias target-only reindex were
+reviewed. Callback reference is not fabricated as direct CALLS. Base direct
+CALLS 0/2 and workspace IMPORTS 0/2 are red minimized controls; candidate 2/2
+each is not a whole-corpus score. Frozen truth is unchanged. Hosted run
+40627540497 remains FAILED on missing native lbug after selected passes; the
+waiver does not relabel it green. The final receipt releases the Debian slot.
 
-Exact-head source review of [PR #19](https://github.com/redxzeta/afterimage/pull/19),
-**c046613d4ebe5d2867b57b9e048f2a909318cbf9**, found no concrete P1/P2 defect
-in the changed CLI/core/test/doc paths. Explicit `index --ast-only` and
-`index --enriched --no-embed` retain receipt v1, with skipped/NOT_REQUESTED versus
-failed stages; index_file and the same-successful-run import guard share the
-existing receipt lock. These are source observations, not executed acceptance.
-The author's compile timeout is retained as no tests run. Arbitrary raw SCIP
-import idempotence/native rollback is explicitly deferred; only the narrower
-same-run/indexer successful-import guard is in this PR. No native transaction
-redesign is required for V1. Reviewer native execution remains NOT_RUN.
+Final [#19 disposition](https://github.com/redxzeta/afterimage/pull/19#pullrequestreview-5678081785):
+93881dd9's delta from reviewed c046613d adds preservation assertions, explicit
+NOT_REQUESTED stderr and receipts; no new product contract. Author CLI no-run
+build 11.674s, binary build 5.969s, 10 CLI tests and smoke 14.254s PASS. AST-only
+twice exits 0; requested absent-tool enrichment exits 1/SCIP_TOOL_UNAVAILABLE;
+explicit AST-only restores NOT_REQUESTED, with source/artifact bytes intact.
+Initial 300.076s pdf_oxide timeout ran no tests; core typescript_callers remains
+offline-BLOCKED by cargo-husky 1.5.0 (exit101/0.102s). CLI tests exercise actual
+core no-op/mutation/import paths, stored count2 and stale-worker refusal. Raw
+SCIP importer atomic replacement/idempotence remains deferred; only successful
+same-run/indexer import duplication is guarded. External SCIP is NOT_RUN.
+
+Final [#20 disposition](https://github.com/redxzeta/afterimage/pull/20#pullrequestreview-5678081689):
+the complete 3ec1ea3d range and final HTTP-only closure are reviewed. .git-file
+boundaries, missing-index refusal, symlink/source escape checks, pre-activity
+argument errors and identical discovery/manual ten-tool denial hold. The final
+guard runs before POST /ready and /webhook/reindex handlers; real author HTTP
+tests see 403, while authenticated MCP discovery returns 10. Read-only startup,
+error and read paths skip watcher/recovery/session/model/cache/log writes.
+Text/JSON warnings and project identity survive clients discarding _meta.
+Author 17 Rust/10 process cases and final rebuild 4.399s + transport 0.102s PASS;
+prior 60s/45s caps and baseline expected exit 101 remain recorded. Body limits
+bound text at 200 lines/32768 UTF-8 bytes plus evidence footer; diagnostics stay
+JSON. This profile is not a sandbox for an untrusted process/graph.
+
+Cross-contract source review: #19 writes the unchanged v1 resolution/scip states;
+#20 consumes those same states, retaining NOT_REQUESTED versus FAILED and unknown
+coverage on receipt/hash mismatch. Requested syntax success never implies
+compiler completeness or source freshness. The supplemental _meta is permitted
+by the [official MCP2024-11-05 Result schema](https://github.com/modelcontextprotocol/specification/blob/2024-11-05/schema/schema.ts#L41);
+visible text/JSON remains essential. No known reachable P1/P2 is accepted in these
+reviewed heads. Reviewer native execution is **NOT_RUN**, by design; source-ready
+uses the inspected source and author-local evidence above.
 
 ## Resources and final snapshot
 
-Debian native work is serialized: lane A holds its slot until explicit release;
-Sable lanes B/C share a separate single native slot. Reviewer currently runs no
-native builds. Lane A reports Rust 1.98.1, two Cargo/CMake jobs, debug=0 profiles,
+Debian lane A explicitly released its native slot; Sable implementation slots
+also released. The separate Terra integration/pilot runner now owns its bounded
+Sable build group. Reviewer starts no competing build or pilot. Lane A reports
+Rust 1.98.1, two Cargo/CMake jobs, debug=0 profiles,
 offline locked commands with a 180-second bound, retained repository rustflags
 and no CXX override. GCC13 is absent; default GCC14.2 does not mean a native C++
 rebuild occurred. Its reused lbug 0.19.1 archive hash is
@@ -103,11 +131,14 @@ benchmark reports, other arm or live repository. Explicit limits plus complete
 audited calls are sufficient. Contaminated or over-budget runs are INVALID,
 reported without replacement/retry. Do not weaken existing sandbox protections.
 
-Use the live model **gpt-6.1-sol**, reasoning **high**, provider **codex**, same
-provider/default service setting and prompt envelope for both arms. The live
-capability response confirmed this model/setting is available; a run must record
-the returned actual model/settings. An unreported provider snapshot is N/A;
-never imply an immutable backend snapshot from a live model alias.
+M2 execution update before scored results: the caller assigns **gpt-6.1-terra**,
+reasoning **medium**, to all six pilot sessions. Use the same configured provider,
+service setting, budget and prompt envelope for both arms; record the returned
+actual provider/model/settings. This supersedes the initial proposed Sol/high
+pilot setting, without changing any question or scoring truth. Independent
+semantic adjudication remains Sol/high; the runner's orchestration effort is
+separate from the six sessions' effort. An unreported backend snapshot is N/A;
+never imply an immutable snapshot from a live model alias.
 
 Exactly three fixed tasks, chosen from the existing #17 protocol, with two clean
 independent sessions each. Order: IceCouncil A/B, Nightwire B/A, GigLab A/B.
@@ -193,11 +224,23 @@ Inventory hash is SHA-256 of sorted `relative-path + NUL + file-sha256 + LF`.
 | Nightwire | 333 | d2fb1fe95c77d67e2730cfded643e46c9b4231fd3bce452f31796c87b07bec1f | f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1 |
 | GigLab | 275 | 58c875251dbde31d5bb1134168442476e18e1a7ed55d71f5b8e73b095418dde5 | d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657 |
 
-No scored agent was launched and no token/time/quality measurements exist yet.
-The current execution dependency is the coherent exact product snapshots and
-native-slot release, not hosted CI. If existing read-only execution cannot run
-the practical pilot safely, publish NOT_RUN with one precise blocker and stop;
+This reviewer launches no scored agents. Terra owns the bounded local integration
+and six-session execution; no frozen answers/measurements have been received for
+independent adjudication yet. Source snapshots/releases are now available;
+hosted CI is not a prerequisite. If existing read-only execution cannot run the
+practical pilot safely, publish NOT_RUN with one precise blocker and stop;
 do not substitute the deterministic five-question MCP retrieval protocol.
+
+Runner handoff is [Afterimage M2 — integrated candidate and agent pilot](t3-thread://v1/mcp:5cb3f8dd-b04c-4752-a859-5e470db69e8d).
+It has the exact reviewed heads and dispositions. Freeze six answers and actual
+call transcripts before scoring; send anonymized answer packets first, then arm
+mapping and call/usage/time audit after independent content scores are recorded.
+No answer key or this reviewer report belongs in an agent session. Public output
+must omit raw session transcripts/private source/machine paths. Stop once on a
+provider-limit error, record it, and do not retry quota failures. The caller
+reports the prior reviewer pause was a provider-quota stop, not a code failure;
+it supplies no failing product evidence. This finite source-review turn has
+launched no provider retries or duplicate pilot sessions.
 
 ## Short agent runbook
 

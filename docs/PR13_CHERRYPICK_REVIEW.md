@@ -3,8 +3,9 @@
 Review date: 2026-10-26 (America/Los_Angeles).
 
 Policy update, 2026-10-27: the source/provenance audit below is complete.
-The owner subsequently accepted bypassing hosted CI, while explicitly forbidding
-all merges and alternate routes around the platform-blocked #16 action. The
+Nathan subsequently authorized execution and accepted bypassing hosted CI.
+The connector/tool refused a merge action, so merges and alternate routes remain
+unexecuted at that platform boundary; this is not withheld owner permission. The
 historical failed run below is preserved; it is not a new V1 hosted-CI gate.
 Current scoped acceptance, pilot and runbook live in [AGENTIC_V1.md](AGENTIC_V1.md).
 No further #16 rebuild/review campaign is required by that milestone.
