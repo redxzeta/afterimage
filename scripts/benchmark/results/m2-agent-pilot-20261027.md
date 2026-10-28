@@ -1,6 +1,45 @@
-# M2 agent-ready pilot: HOLD
+# M2 agent-ready pilot: current status
 
-The next section is the earlier Sable setup receipt. The Debian continuation below supersedes its statements about the availability of a binary and tests, but does not erase the original exit 127.
+**Targeted combined functional checks passed; six pilot sessions completed and blind content ratings are frozen.** One GigLab session is invalid for exceeding the 20-call budget. The other sessions' isolation remains unresolved, token usage is unknown, and independent post-mapping validity review is pending. No merge or adoption occurred.
+
+Practical recommendation: the read-only client may be tried as an optional local investigation aid with source verification; this small, incompletely audited pilot does not establish an advantage over ordinary file search.
+
+## Frozen blind ratings and pilot audit
+
+An independent Sol/high reviewer froze the content ratings before receiving the arm mapping or activity records. The unchanged rating file SHA-256 is `0ffa932024c7f331cb3a55d7e44925115ae9e413abe1840f6f2795d5d62d4c58`. Ratings count supported expected callable/dependency chains in the frozen labelled subset; intermediates named in a chain count. They are source-backed content scores, not proof of session validity or exhaustive precision. The reviewer found no confirmed material false claim in the checked set; other claims were not exhaustively adjudicated.
+
+| Packet | Projection | Arm | Supported expected chains | Recorded command executions | Run elapsed seconds | Validity |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| P2 | IceCouncil | A | 3/3 | 13 | 68.610 | Isolation audit unresolved |
+| P6 | IceCouncil | B | 3/3 | 11 | 42.309 | Isolation audit unresolved |
+| P4 | Nightwire | B | 5/5 | 9 | 37.947 | Isolation audit unresolved |
+| P7 | Nightwire | A | 5/5 | 4 | 32.447 | Isolation audit unresolved |
+| P1 | GigLab | A | 3/5 | 21 | 79.683 | INVALID: over 20 calls |
+| P9 | GigLab | B | 4/5 | 19 | 66.261 | Isolation audit unresolved |
+
+Arm A used the shell-mediated read-only client; arm B used ordinary source reads. All six completed on `codex_aux` / `gpt-6.1-terra`, reasoning `medium`; run elapsed is T3 start to completion, with index/setup separate. Provider token usage and cost are UNKNOWN. The P1 participant reported the 21-call violation, and it is invalid without replacement; its blind content score remains visible but cannot support an arm comparison. Other sessions have no observed call or wall-time violation, but validity is unresolved: T3's rendered command activity omits working-directory arguments, no pre-session index-byte hashes were captured, and client HOME was shared (empty after the sessions). Source inventories matched before and after. No assertion of unchanged index bytes or fully isolated sessions is justified.
+
+The P2 and P1 answers said their client returned no usable output, although the private activity contains JSON responses; P7 received one JSON response and one client argument rejection. These are recorded response/answer discrepancies, not fabricated tool outcomes. The reviewer credited both IceCouncil callback chains as callback-mediated. No speedup, general productivity, adoption, or pilot-usefulness conclusion follows from these six small and incompletely audited sessions. The independent post-mapping validity review remains pending.
+
+## 2026-10-28 continuation: functional checks and pilot
+
+The former #19 E0282 blocker was corrected at [head `9ec80e8a27ddc969ae47d6114eaa7c0091c2e1c0`](https://github.com/redxzeta/afterimage/pull/19); its sole change from `93881dd9` is a test-only type annotation. Private combined commit `6fd340588e5fe93080885d389b6b4daf8fefac53` has tree `f58844b938171cf41317c15e947a47085355b00e`; product bytes and lockfile match the previously measured tree. Rust/Cargo 1.98.1, offline/locked, no default features: the caller target compiled (exit 0, 11.174s); the stale-receipt test passed (exit 0, 1 test, 5.683s); focused imported-caller and workspace-import tests each passed (exit 0, 6.872s and 14.424s). [#19 receipt](https://github.com/redxzeta/afterimage/pull/19#issuecomment-6470971988).
+
+The previously unresolved indexed read-only warning and byte-preservation test passed unchanged with two CPUs and Rayon threads, 180s wall and 4 GiB sampled RSS, no virtual address or separate CPU-seconds cap: exit 0, one passed, 165.558s and 645856 KiB sampled peak tree RSS. Test executable SHA-256 `5bdd59791228d184f6a1b713faba1f8044926fafdbd2b8427de6a40bcc765f17`; its test-profile MCP binary SHA-256 `0d46080d742787977799f2ee7a46f527d341458cb058f9cff969b405cf58020b`. The earlier 8 GiB virtual-address failure, 180s timeout and 150 CPU-second termination remain historical. Diagnostic markers showed writer closure and all ten in-process tools completing; a pipe-waiting parent, waiting supervisor and runnable worker were observed before the budget termination. This is a functional calibration, not a proven root cause or speed claim. [#20 receipt](https://github.com/redxzeta/afterimage/pull/20#issuecomment-6471268431).
+
+A single unscored setup probe launched the candidate dev MCP binary (`1a688148e32a71876adaa1c9ad393240b0ed9b1331ea3fa9ec432d2495e6073c`) with the read-only environment and a disposable indexed fixture. The launcher's process executable matched that binary; initialization, exact ten-tool discovery and `get_stats` succeeded, showing failed compiler coverage and freshness warnings. The finite shell-mediated client is [m2-pilot-client.py](../m2-pilot-client.py), SHA-256 `cc978e62fc6212f6d49912479973c17c212b19063d654f6a5759b835884f6bf3`; it accepts only explicit prepared roots and the ten actions, checks the binary hash, and starts no service. To reproduce the same setup in a private disposable directory, place that exact script at the directory root, the pinned binary at `bin/infigraph-mcp`, and an already prepared fixture index at `smoke/repo`, then run:
+
+```sh
+python3 m2-pilot-client.py "$PWD/smoke/repo" get_stats '{}'
+```
+
+Stop the foreground process if necessary and remove only the disposable directory and its contents. Do not install or register a global server. This shell-mediated trial does not establish native MCP tool parity.
+
+Six independent sessions were dispatched and completed under `codex_aux`, `gpt-6.1-terra`, reasoning `medium`, with the fixed three questions, source pins and 20-call/600-second limits. The two arms had ordinary source read/search; the candidate-client arm could also invoke the read-only client. The frozen source inventories matched between arms. One session exceeded the budget at 21 calls and is **INVALID**, without replacement. Neutral answer packets were frozen and independently scored before mapping; see the newer section above. The full call/path and post-mapping validity audit remain **PENDING**. Post-session source inventories still match. The shared client HOME was empty after the sessions, but per-session isolation and unchanged index bytes cannot be established from the captured setup: index hashes were not frozen before dispatch, and the T3 activity rendering does not expose each shell call’s working-directory argument. Those limitations remain open in the validity audit. Provider token usage is **UNKNOWN**. No productivity or speedup conclusion is available. Earlier no-session and failed receipts below remain historical.
+
+## Historical appendix: Sable setup attempt
+
+This appendix records the earlier Sable setup attempt at its original pins. Its zero sessions and blocked build are historical; see the current results above.
 
 The three source lanes were composed locally, but the combined candidate has not
 been built or tested. The practical A/B and acceptance are **NOT_RUN**; no GO
@@ -8,7 +47,7 @@ recommendation can be made. The host has no `cargo` on PATH or in the checked
 standard locations. A single bounded offline build attempt exited 127 immediately
 (`cargo: command not found`). No installation or repeated build was attempted.
 
-## Inputs and composition
+### Historical inputs and composition
 
 Refreshed default `afterimage-main`: `dc45de6e5769c1d86116167dcb1660d9561736c8`.
 PR heads: [#18](https://github.com/redxzeta/afterimage/pull/18)
@@ -38,7 +77,7 @@ build. #18's author reported the Debian native slot released, 9 caller, 8 import
 changed in the final commit; its prior hosted CI failed on missing liblbug.
 These are lane receipts, not candidate results. [#19 source and narrow local review was approved](https://github.com/redxzeta/afterimage/pull/19#pullrequestreview-5678081785), with its core offline dependency block and external SCIP NOT_RUN. [#20 source and focused author-local review was approved](https://github.com/redxzeta/afterimage/pull/20#pullrequestreview-5678081689). These are not combined-candidate results; raw SCIP importer transaction and idempotence remain deferred.
 
-## Evidence and remaining checks
+### Historical evidence and remaining checks
 
 The existing #17 truth verifier passed against each exact Git pin: IceCouncil
 32 anchors/21 symbols/14 relations; Nightwire 39/23/21; GigLab 45/24/19. This
@@ -82,40 +121,10 @@ started process and remove only the disposable clone, projections and indexes;
 no global registration, daemon, deployment or production index was created.
 Default-branch adoption, merges, releases and runtime activation: **NOT DONE**.
 
-## Frozen blind ratings and pilot audit
 
-An independent Sol/high reviewer froze the content ratings before receiving the arm mapping or activity records. The unchanged rating file SHA-256 is `0ffa932024c7f331cb3a55d7e44925115ae9e413abe1840f6f2795d5d62d4c58`. Ratings count supported expected callable/dependency chains in the frozen labelled subset; intermediates named in a chain count. They are source-backed content scores, not proof of session validity or exhaustive precision. The reviewer found no confirmed material false claim in the checked set; other claims were not exhaustively adjudicated.
+## Historical appendix: first Debian combined tree
 
-| Packet | Projection | Arm | Supported expected chains | Recorded command executions | Run elapsed seconds | Validity |
-| --- | --- | --- | ---: | ---: | ---: | --- |
-| P2 | IceCouncil | A | 3/3 | 13 | 68.610 | Isolation audit unresolved |
-| P6 | IceCouncil | B | 3/3 | 11 | 42.309 | Isolation audit unresolved |
-| P4 | Nightwire | B | 5/5 | 9 | 37.947 | Isolation audit unresolved |
-| P7 | Nightwire | A | 5/5 | 4 | 32.447 | Isolation audit unresolved |
-| P1 | GigLab | A | 3/5 | 21 | 79.683 | INVALID: over 20 calls |
-| P9 | GigLab | B | 4/5 | 19 | 66.261 | Isolation audit unresolved |
 
-Arm A used the shell-mediated read-only client; arm B used ordinary source reads. All six completed on `codex_aux` / `gpt-6.1-terra`, reasoning `medium`; run elapsed is T3 start to completion, with index/setup separate. Provider token usage and cost are UNKNOWN. The P1 participant reported the 21-call violation, and it is invalid without replacement; its blind content score remains visible but cannot support an arm comparison. Other sessions have no observed call or wall-time violation, but validity is unresolved: T3's rendered command activity omits working-directory arguments, no pre-session index-byte hashes were captured, and client HOME was shared (empty after the sessions). Source inventories matched before and after. No assertion of unchanged index bytes or fully isolated sessions is justified.
-
-The P2 and P1 answers said their client returned no usable output, although the private activity contains JSON responses; P7 received one JSON response and one client argument rejection. These are recorded response/answer discrepancies, not fabricated tool outcomes. The reviewer credited both IceCouncil callback chains as callback-mediated. No speedup, general productivity, adoption, or pilot-usefulness conclusion follows from these six small and incompletely audited sessions. The independent post-mapping validity review remains pending.
-
-## 2026-10-28 continuation: functional checks and pilot
-
-The former #19 E0282 blocker was corrected at [head `9ec80e8a27ddc969ae47d6114eaa7c0091c2e1c0`](https://github.com/redxzeta/afterimage/pull/19); its sole change from `93881dd9` is a test-only type annotation. Private combined commit `6fd340588e5fe93080885d389b6b4daf8fefac53` has tree `f58844b938171cf41317c15e947a47085355b00e`; product bytes and lockfile match the previously measured tree. Rust/Cargo 1.98.1, offline/locked, no default features: the caller target compiled (exit 0, 11.174s); the stale-receipt test passed (exit 0, 1 test, 5.683s); focused imported-caller and workspace-import tests each passed (exit 0, 6.872s and 14.424s). [#19 receipt](https://github.com/redxzeta/afterimage/pull/19#issuecomment-6470971988).
-
-The previously unresolved indexed read-only warning and byte-preservation test passed unchanged with two CPUs and Rayon threads, 180s wall and 4 GiB sampled RSS, no virtual address or separate CPU-seconds cap: exit 0, one passed, 165.558s and 645856 KiB sampled peak tree RSS. Test executable SHA-256 `5bdd59791228d184f6a1b713faba1f8044926fafdbd2b8427de6a40bcc765f17`; its test-profile MCP binary SHA-256 `0d46080d742787977799f2ee7a46f527d341458cb058f9cff969b405cf58020b`. The earlier 8 GiB virtual-address failure, 180s timeout and 150 CPU-second termination remain historical. Diagnostic markers showed writer closure and all ten in-process tools completing; a pipe-waiting parent, waiting supervisor and runnable worker were observed before the budget termination. This is a functional calibration, not a proven root cause or speed claim. [#20 receipt](https://github.com/redxzeta/afterimage/pull/20#issuecomment-6471268431).
-
-A single unscored setup probe launched the candidate dev MCP binary (`1a688148e32a71876adaa1c9ad393240b0ed9b1331ea3fa9ec432d2495e6073c`) with the read-only environment and a disposable indexed fixture. The launcher's process executable matched that binary; initialization, exact ten-tool discovery and `get_stats` succeeded, showing failed compiler coverage and freshness warnings. The finite shell-mediated client is [m2-pilot-client.py](../m2-pilot-client.py), SHA-256 `cc978e62fc6212f6d49912479973c17c212b19063d654f6a5759b835884f6bf3`; it accepts only explicit prepared roots and the ten actions, checks the binary hash, and starts no service. To reproduce the same setup in a private disposable directory, place that exact script at the directory root, the pinned binary at `bin/infigraph-mcp`, and an already prepared fixture index at `smoke/repo`, then run:
-
-```sh
-python3 m2-pilot-client.py "$PWD/smoke/repo" get_stats '{}'
-```
-
-Stop the foreground process if necessary and remove only the disposable directory and its contents. Do not install or register a global server. This shell-mediated trial does not establish native MCP tool parity.
-
-Six independent sessions were dispatched and completed under `codex_aux`, `gpt-6.1-terra`, reasoning `medium`, with the fixed three questions, source pins and 20-call/600-second limits. The two arms had ordinary source read/search; the candidate-client arm could also invoke the read-only client. The frozen source inventories matched between arms. One session exceeded the budget at 21 calls and is **INVALID**, without replacement. Neutral answer packets were frozen and independently scored before mapping; see the newer section above. The full call/path and post-mapping validity audit remain **PENDING**. Post-session source inventories still match. The shared client HOME was empty after the sessions, but per-session isolation and unchanged index bytes cannot be established from the captured setup: index hashes were not frozen before dispatch, and the T3 activity rendering does not expose each shell call’s working-directory argument. Those limitations remain open in the validity audit. Provider token usage is **UNKNOWN**. No productivity or speedup conclusion is available. Earlier no-session and failed receipts below remain historical.
-
-## Debian continuation: combined tree and bounded checks
 
 The local test-only merge commit `586e53c907dd45df61ebcc3c8bb60962947ee94d` has tree `5afe1b6db0fd1ded716c4102af6b98d87a455156`, identical to Sable's tree. The heads above were refreshed and unchanged. This composition excluded #16 and preserved both appended tests. It was not pushed as product source. Source review #18 and #20 remains approved; **#19 is HOLD**, superseding the earlier scoped approval: its appended test fails compilation with E0282 because the panic-only `update_current` closure has an unconstrained return type. The combined caller/import test command exited 101 and ran zero tests. See the [#19 review](https://github.com/redxzeta/afterimage/pull/19).
 
