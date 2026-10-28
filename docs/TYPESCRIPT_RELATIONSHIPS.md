@@ -53,11 +53,32 @@ fixtures cover both root declaration formats, re-exports, incremental batches,
 missing/conditional mappings, duplicate packages, escapes and external symlinks.
 The callback fixture asserts absence of an invented invocation.
 
-Run on a serialized native build slot, using an existing trusted target cache
-or a separately provisioned native build environment:
+The author ran the following checks at reviewed code commit
+`2d6d4039945d76caea3d569a83918c280f5dc677`, with two build jobs, serial
+runtime tests, offline/locked dependencies and disposable fixture roots. The
+receipt-only documentation commit that follows it changes no source or tests.
+
+- CALLS fixtures: **0/2** on the unchanged base and **2/2** at the reviewed code
+  commit. Workspace IMPORTS fixtures: **0/2** on base and **2/2** at that commit.
+  These are minimized cases, not whole-corpus benchmark scores.
+- The caller suite passed 9 tests, imports 8, existing call resolver 16, and
+  module-resolver units 4. Formatting and strict core/languages Clippy passed.
+- The full frozen benchmark and a cold native build were **NOT_RUN**. Existing
+  lbug 0.19.1 cached archives were reused; their provenance is reported in the
+  PR handoff, not established by these tests.
+- Hosted [CI run 40627540497](https://github.com/redxzeta/afterimage/actions/runs/40627540497)
+  at the reviewed code commit **FAILED**: a subsequent lbug build could not find
+  the native static library. Its selected caller/import tests passed earlier in
+  that run; the overall job remains failed. The debugger diagnostic is not a
+  test pass. Hosted CI is not a prerequisite under the owner's policy.
+
+The commands below reproduce the focused checks on a serialized native build
+slot using an existing trusted target cache or a separately provisioned native
+build environment:
 
 ```sh
-CARGO_BUILD_JOBS=2 CMAKE_BUILD_PARALLEL_LEVEL=2 cargo test --offline --locked -p infigraph-core --test typescript_imports --test typescript_callers --test resolve_calls -- --test-threads=1
+CARGO_BUILD_JOBS=2 CMAKE_BUILD_PARALLEL_LEVEL=2 cargo test --offline --locked -p infigraph-core --test typescript_callers --test typescript_imports -- --test-threads=1
+CARGO_BUILD_JOBS=2 CMAKE_BUILD_PARALLEL_LEVEL=2 cargo test --offline --locked -p infigraph-core --test resolve_calls -- --test-threads=1
 cargo test --offline --locked -p infigraph-core --lib graph::imports:: -- --test-threads=1
 cargo fmt --all -- --check
 cargo clippy --offline --locked -p infigraph-core -p infigraph-languages --all-targets -- -D warnings
@@ -69,6 +90,5 @@ Source-only reference pins: IceCouncil
 pins Nightwire `80985e6fc508f309b17ba1889ff2ca15b0253c08`.
 This lane does not rerun that full benchmark, change truth manifests, or claim
 new whole-corpus scores. Exact-head local results and cache provenance belong
-in the PR receipt. Hosted CI is optional under the owner's policy. No merge,
-release, deployment, target application execution, or runtime activation follows
-from these checks.
+in the PR receipt. No merge, release, deployment, target application execution,
+or runtime activation follows from these checks.
