@@ -82,6 +82,23 @@ started process and remove only the disposable clone, projections and indexes;
 no global registration, daemon, deployment or production index was created.
 Default-branch adoption, merges, releases and runtime activation: **NOT DONE**.
 
+## Frozen blind ratings and pilot audit
+
+An independent Sol/high reviewer froze the content ratings before receiving the arm mapping or activity records. The unchanged rating file SHA-256 is `0ffa932024c7f331cb3a55d7e44925115ae9e413abe1840f6f2795d5d62d4c58`. Ratings count supported expected callable/dependency chains in the frozen labelled subset; intermediates named in a chain count. They are source-backed content scores, not proof of session validity or exhaustive precision. The reviewer found no confirmed material false claim in the checked set; other claims were not exhaustively adjudicated.
+
+| Packet | Projection | Arm | Supported expected chains | Recorded command executions | Run elapsed seconds | Validity |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| P2 | IceCouncil | A | 3/3 | 13 | 68.610 | Isolation audit unresolved |
+| P6 | IceCouncil | B | 3/3 | 11 | 42.309 | Isolation audit unresolved |
+| P4 | Nightwire | B | 5/5 | 9 | 37.947 | Isolation audit unresolved |
+| P7 | Nightwire | A | 5/5 | 4 | 32.447 | Isolation audit unresolved |
+| P1 | GigLab | A | 3/5 | 21 | 79.683 | INVALID: over 20 calls |
+| P9 | GigLab | B | 4/5 | 19 | 66.261 | Isolation audit unresolved |
+
+Arm A used the shell-mediated read-only client; arm B used ordinary source reads. All six completed on `codex_aux` / `gpt-6.1-terra`, reasoning `medium`; run elapsed is T3 start to completion, with index/setup separate. Provider token usage and cost are UNKNOWN. The P1 participant reported the 21-call violation, and it is invalid without replacement; its blind content score remains visible but cannot support an arm comparison. Other sessions have no observed call or wall-time violation, but validity is unresolved: T3's rendered command activity omits working-directory arguments, no pre-session index-byte hashes were captured, and client HOME was shared (empty after the sessions). Source inventories matched before and after. No assertion of unchanged index bytes or fully isolated sessions is justified.
+
+The P2 and P1 answers said their client returned no usable output, although the private activity contains JSON responses; P7 received one JSON response and one client argument rejection. These are recorded response/answer discrepancies, not fabricated tool outcomes. The reviewer credited both IceCouncil callback chains as callback-mediated. No speedup, general productivity, adoption, or pilot-usefulness conclusion follows from these six small and incompletely audited sessions. The independent post-mapping validity review remains pending.
+
 ## 2026-10-28 continuation: functional checks and pilot
 
 The former #19 E0282 blocker was corrected at [head `9ec80e8a27ddc969ae47d6114eaa7c0091c2e1c0`](https://github.com/redxzeta/afterimage/pull/19); its sole change from `93881dd9` is a test-only type annotation. Private combined commit `6fd340588e5fe93080885d389b6b4daf8fefac53` has tree `f58844b938171cf41317c15e947a47085355b00e`; product bytes and lockfile match the previously measured tree. Rust/Cargo 1.98.1, offline/locked, no default features: the caller target compiled (exit 0, 11.174s); the stale-receipt test passed (exit 0, 1 test, 5.683s); focused imported-caller and workspace-import tests each passed (exit 0, 6.872s and 14.424s). [#19 receipt](https://github.com/redxzeta/afterimage/pull/19#issuecomment-6470971988).
@@ -96,7 +113,7 @@ python3 m2-pilot-client.py "$PWD/smoke/repo" get_stats '{}'
 
 Stop the foreground process if necessary and remove only the disposable directory and its contents. Do not install or register a global server. This shell-mediated trial does not establish native MCP tool parity.
 
-Six independent sessions were dispatched and completed under `codex_aux`, `gpt-6.1-terra`, reasoning `medium`, with the fixed three questions, source pins and 20-call/600-second limits. The two arms had ordinary source read/search; the candidate-client arm could also invoke the read-only client. The frozen source inventories matched between arms. One session exceeded the budget at 21 calls and is **INVALID**, without replacement. Neutral answer packets were frozen and sent for independent blind scoring; semantic ratings and the full call/path audit are **PENDING**. Post-session source inventories still match. The shared client HOME was empty after the sessions, but per-session isolation and unchanged index bytes cannot be established from the captured setup: index hashes were not frozen before dispatch, and the T3 activity rendering does not expose each shell call’s working-directory argument. Those limitations remain open in the validity audit. Provider token usage is **UNKNOWN**. No productivity or speedup conclusion is available. Earlier no-session and failed receipts below remain historical.
+Six independent sessions were dispatched and completed under `codex_aux`, `gpt-6.1-terra`, reasoning `medium`, with the fixed three questions, source pins and 20-call/600-second limits. The two arms had ordinary source read/search; the candidate-client arm could also invoke the read-only client. The frozen source inventories matched between arms. One session exceeded the budget at 21 calls and is **INVALID**, without replacement. Neutral answer packets were frozen and independently scored before mapping; see the newer section above. The full call/path and post-mapping validity audit remain **PENDING**. Post-session source inventories still match. The shared client HOME was empty after the sessions, but per-session isolation and unchanged index bytes cannot be established from the captured setup: index hashes were not frozen before dispatch, and the T3 activity rendering does not expose each shell call’s working-directory argument. Those limitations remain open in the validity audit. Provider token usage is **UNKNOWN**. No productivity or speedup conclusion is available. Earlier no-session and failed receipts below remain historical.
 
 ## Debian continuation: combined tree and bounded checks
 

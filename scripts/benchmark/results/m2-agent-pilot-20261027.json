@@ -233,13 +233,85 @@
       "provider": "codex_aux",
       "model": "gpt-6.1-terra",
       "reasoning": "medium",
-      "blind_content_scoring": "PENDING",
-      "transcript_audit": "PENDING",
+      "blind_content_scoring": "FROZEN_BEFORE_MAPPING",
+      "transcript_audit": "PARTIAL; independent post-mapping review pending",
       "usage": "UNKNOWN",
       "source_inventories_after": "MATCH",
       "index_byte_comparison": "UNKNOWN: no pre-session hashes",
       "shell_cwd_audit": "UNKNOWN: rendered activity does not expose working-directory arguments",
-      "client_home": "shared; empty after sessions; per-session isolation not independently established"
+      "client_home": "shared; empty after sessions; per-session isolation not independently established",
+      "blind_ratings_sha256": "0ffa932024c7f331cb3a55d7e44925115ae9e413abe1840f6f2795d5d62d4c58",
+      "sessions": [
+        {
+          "packet": "P2",
+          "project": "IceCouncil",
+          "arm": "A",
+          "supported_expected": 3,
+          "expected_total": 3,
+          "command_executions": 13,
+          "elapsed_seconds": 68.61,
+          "validity": "ISOLATION_UNRESOLVED",
+          "packet_sha256": "33eab0d481b23794c7f94441d362396c29a0e4de28b33475435900c98752a661"
+        },
+        {
+          "packet": "P6",
+          "project": "IceCouncil",
+          "arm": "B",
+          "supported_expected": 3,
+          "expected_total": 3,
+          "command_executions": 11,
+          "elapsed_seconds": 42.309,
+          "validity": "ISOLATION_UNRESOLVED",
+          "packet_sha256": "fa357c8fccf2468ddcfda5d6cbec505283e6ac274bb73e1d4e10a6ac266a37c3"
+        },
+        {
+          "packet": "P4",
+          "project": "Nightwire",
+          "arm": "B",
+          "supported_expected": 5,
+          "expected_total": 5,
+          "command_executions": 9,
+          "elapsed_seconds": 37.947,
+          "validity": "ISOLATION_UNRESOLVED",
+          "packet_sha256": "c656ea79b48cb149d7a983c02edc5ae2f542995ac774d24580394d1bdb92ddf3"
+        },
+        {
+          "packet": "P7",
+          "project": "Nightwire",
+          "arm": "A",
+          "supported_expected": 5,
+          "expected_total": 5,
+          "command_executions": 4,
+          "elapsed_seconds": 32.447,
+          "validity": "ISOLATION_UNRESOLVED",
+          "packet_sha256": "65c06214ce09e8667fc3f23cd4fd0eff2bdcbcdbd8c8cec9cfe700ebcac2646c"
+        },
+        {
+          "packet": "P1",
+          "project": "GigLab",
+          "arm": "A",
+          "supported_expected": 3,
+          "expected_total": 5,
+          "command_executions": 21,
+          "elapsed_seconds": 79.683,
+          "validity": "INVALID_OVER_20",
+          "packet_sha256": "bf3e1b627c5e69fbba2158fb16f21241e4142143076353b23fa991d800581da8"
+        },
+        {
+          "packet": "P9",
+          "project": "GigLab",
+          "arm": "B",
+          "supported_expected": 4,
+          "expected_total": 5,
+          "command_executions": 19,
+          "elapsed_seconds": 66.261,
+          "validity": "ISOLATION_UNRESOLVED",
+          "packet_sha256": "002ab6d95b8358a3b552d9899c4c09bc759862c1a726abf6d036039642478e61"
+        }
+      ],
+      "checked_claims": "No confirmed material false claims in checked set; open-world extras not exhaustively adjudicated",
+      "response_discrepancies": "P2 and P1 reported no usable client output despite JSON in activity; P7 one JSON response and one argument rejection",
+      "timing_basis": "T3 run start to completion; index/setup separate"
     },
     "default_branch_adoption": "NOT_DONE"
   }
