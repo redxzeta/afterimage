@@ -9,6 +9,8 @@ INFIGRAPH_MCP_PROFILE=read-only infigraph-mcp --mcp
 No installation or user-global agent configuration is needed. Unset the variable
 (or use `normal`) for the normal profile. Unknown profile values fail closed.
 The read-only profile supports existing **local** graphs; it does not expose the UI.
+Existing HTTP MCP calls use the same profile; readiness/reindex mutation endpoints
+return HTTP 403 in read-only mode.
 
 1. Pass the exact checkout directory as `path` on every call, including diagnostics.
    Paths are canonicalized. A linked Git worktree (`.git` file) or nested checkout

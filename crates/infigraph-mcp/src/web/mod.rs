@@ -197,6 +197,15 @@ pub fn start_mcp_http_server(port: u16, is_primary: bool, health_path: &str) -> 
                 continue;
             }
 
+            if !crate::profile::permits_side_effects()
+                && method == "POST"
+                && matches!(route, "/ready" | "/webhook/reindex")
+            {
+                let _ = request.respond(serve_json_status(403,
+                    json!({"error":"READ_ONLY_TOOL_DENIED: HTTP mutation unavailable in read-only profile"})));
+                continue;
+            }
+
             if method == "POST" && route == "/ready" {
                 if !check_auth(&request) {
                     let _ =
