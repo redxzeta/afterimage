@@ -188,5 +188,59 @@
     "single_file_receipt": "NOT_RUN",
     "external_scip": "NOT_RUN",
     "adoption": "NOT_DONE"
+  },
+  "oct28_continuation": {
+    "pr19_head": "9ec80e8a27ddc969ae47d6114eaa7c0091c2e1c0",
+    "candidate_commit": "6fd340588e5fe93080885d389b6b4daf8fefac53",
+    "candidate_tree": "f58844b938171cf41317c15e947a47085355b00e",
+    "old_tree_delta": "one test-only type annotation",
+    "core_compile": {
+      "exit": 0,
+      "seconds": 11.174
+    },
+    "stale_receipt": {
+      "exit": 0,
+      "passed": 1,
+      "seconds": 5.683
+    },
+    "caller_test": {
+      "exit": 0,
+      "seconds": 6.872
+    },
+    "import_test": {
+      "exit": 0,
+      "seconds": 14.424
+    },
+    "readonly_calibration": {
+      "exit": 0,
+      "passed": 1,
+      "seconds": 165.558,
+      "peak_tree_rss_kib": 645856,
+      "cpus": 2,
+      "rayon_threads": 2,
+      "wall_limit_seconds": 180,
+      "memory_mib": 4096,
+      "cpu_seconds_cap": null,
+      "test_sha256": "5bdd59791228d184f6a1b713faba1f8044926fafdbd2b8427de6a40bcc765f17",
+      "test_mcp_sha256": "0d46080d742787977799f2ee7a46f527d341458cb058f9cff969b405cf58020b"
+    },
+    "client_sha256": "cc978e62fc6212f6d49912479973c17c212b19063d654f6a5759b835884f6bf3",
+    "setup_probe": "PASS",
+    "pilot": {
+      "dispatched": 6,
+      "completed": 6,
+      "invalid_over_budget": 1,
+      "provider": "codex_aux",
+      "model": "gpt-6.1-terra",
+      "reasoning": "medium",
+      "blind_content_scoring": "PENDING",
+      "transcript_audit": "PENDING",
+      "usage": "UNKNOWN",
+      "source_inventories_after": "MATCH",
+      "index_byte_comparison": "UNKNOWN: no pre-session hashes",
+      "shell_cwd_audit": "UNKNOWN: rendered activity does not expose working-directory arguments",
+      "client_home": "shared; empty after sessions; per-session isolation not independently established"
+    },
+    "default_branch_adoption": "NOT_DONE"
   }
 }
