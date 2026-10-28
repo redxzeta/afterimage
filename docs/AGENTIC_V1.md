@@ -31,7 +31,7 @@ receipts, not reviewer execution, combined testing or default-branch adoption.
 | #18 **fef14d9ca7a2d38f9861be5bb7e20c1148150438**; product/tests **2d6d4039945d76caea3d569a83918c280f5dc677**, final delta docs-only | **READY**; both P2s fixed, 9 caller + 8 import + 16 resolver + 4 module units, fmt/strict Clippy author PASS | Pending Terra's pinned candidate; individual passes do not establish combination | Not inferred from minimized 2/2 cases or #17 | **NOT_ADOPTED** |
 | #19 **93881dd9c94b08052958b525568d49ec3885eecb** | **READY, scoped**; 10 CLI author PASS + four-file smoke; core integration offline-BLOCKED; external SCIP NOT_RUN | Pending candidate receipt/state smoke | Requested AST success remains partial compiler coverage | **NOT_ADOPTED** |
 | #20 **3ec1ea3d813e89dfd2a47d68d230701006e09f94** | **READY**; 17 Rust + 10 supervisor cases, real stdio/HTTP author PASS; final HTTP guard reviewed | Pending candidate read-only/HTTP/byte checks | Profile/warnings usable by design; actual investigation outcomes pending | **NOT_ADOPTED** |
-| Local #18+#19+#20 integration | Source contracts compatible; source-only assembly is local test input | **PENDING**, runner owns build; tree/binary hashes and conflicts not yet supplied | Not an agent result | **NOT_ADOPTED** |
+| Local #18+#19+#20 integration | Source contracts compatible; source-only assembly is local test input | **PENDING on Debian**; Sable setup ended exit 127 without Cargo, not a tested candidate | Not an agent result | **NOT_ADOPTED** |
 | Six-session practical pilot | Fixed questions/source pins/budgets ready; Terra/medium for both arms | Requires runner's tested candidate | **PENDING / no frozen outputs received**; usage/time/scores N/A here | **NOT_ADOPTED** |
 
 Each handoff needs PR URL, full base/head, changed paths, meaningful local command
@@ -91,8 +91,9 @@ uses the inspected source and author-local evidence above.
 ## Resources and final snapshot
 
 Debian lane A explicitly released its native slot; Sable implementation slots
-also released. The separate Terra integration/pilot runner now owns its bounded
-Sable build group. Reviewer starts no competing build or pilot. Lane A reports
+also released. The existing Debian benchmark owner resumed as Terra/high on
+configured codex_aux (run ordinal 4) and now owns the bounded native/pilot group.
+Reviewer starts no competing build or pilot. Lane A reports
 Rust 1.98.1, two Cargo/CMake jobs, debug=0 profiles,
 offline locked commands with a 180-second bound, retained repository rustflags
 and no CXX override. GCC13 is absent; default GCC14.2 does not mean a native C++
@@ -224,15 +225,24 @@ Inventory hash is SHA-256 of sorted `relative-path + NUL + file-sha256 + LF`.
 | Nightwire | 333 | d2fb1fe95c77d67e2730cfded643e46c9b4231fd3bce452f31796c87b07bec1f | f36da1b7b30c24fe78f53fefc575ee9388485bd392db87acb9fc2a984a3b59c1 |
 | GigLab | 275 | 58c875251dbde31d5bb1134168442476e18e1a7ed55d71f5b8e73b095418dde5 | d2c3d852777236dd5a1465490a99a5f44bf5b0063608b41e04bdbe766eed2657 |
 
-This reviewer launches no scored agents. Terra owns the bounded local integration
-and six-session execution; no frozen answers/measurements have been received for
-independent adjudication yet. Source snapshots/releases are now available;
-hosted CI is not a prerequisite. If existing read-only execution cannot run the
+This reviewer launches no scored agents. The existing Debian Terra runner owns
+the bounded local integration and six-session execution; no frozen answers or
+measurements have been received for independent adjudication yet. Source
+snapshots/releases are available; hosted CI is not a prerequisite. If existing read-only execution cannot run the
 practical pilot safely, publish NOT_RUN with one precise blocker and stop;
 do not substitute the deterministic five-question MCP retrieval protocol.
 
-Runner handoff is [Afterimage M2 — integrated candidate and agent pilot](t3-thread://v1/mcp:5cb3f8dd-b04c-4752-a859-5e470db69e8d).
-It has the exact reviewed heads and dispositions. Freeze six answers and actual
+The prior Sable setup is **SUPERSEDED / BLOCKED**, not a code failure or accepted
+milestone: caller reports local candidate tree
+`5afe1b6db0fd1ded716c4102af6b98d87a455156` with only appended-test overlap
+retained, report-only commit `7659c85869f440dc67713c168cf94b5892932e20`,
+Cargo unavailable (exit 127), **0 sessions**. Those are setup receipts; neither
+compiled integration nor pilot usefulness follows. No installation or additional
+Sable attempt is requested.
+
+Active handoff is the existing [Debian benchmark/pilot owner](t3-thread://v1/mcp:6da052f4-e1cb-4c39-9f41-81a0e11b1c6a),
+resumed at ordinal 4. It received the reviewed heads, review links and practical
+protocol; its results update existing PR #17. Freeze six answers and actual
 call transcripts before scoring; send anonymized answer packets first, then arm
 mapping and call/usage/time audit after independent content scores are recorded.
 No answer key or this reviewer report belongs in an agent session. Public output
