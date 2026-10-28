@@ -2,6 +2,13 @@
 
 Review date: 2026-10-26 (America/Los_Angeles).
 
+Policy update, 2026-10-27: the source/provenance audit below is complete.
+The owner subsequently accepted bypassing hosted CI, while explicitly forbidding
+all merges and alternate routes around the platform-blocked #16 action. The
+historical failed run below is preserved; it is not a new V1 hosted-CI gate.
+Current scoped acceptance, pilot and runbook live in [AGENTIC_V1.md](AGENTIC_V1.md).
+No further #16 rebuild/review campaign is required by that milestone.
+
 **Disposition: HOLD / replacement CI failed.** Independent source review of
 [PR #16](https://github.com/redxzeta/afterimage/pull/16) at
 `662b24515fd94e5f0cd28fc2e63bdb95ce85263a` found no concrete blocking product
