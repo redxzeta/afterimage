@@ -13,6 +13,11 @@ fn main() -> Result<()> {
         std::process::exit(code);
     }
     let args: Vec<String> = std::env::args().collect();
+    let profile = infigraph_mcp::profile::McpProfile::from_env()?;
+    anyhow::ensure!(
+        profile != infigraph_mcp::profile::McpProfile::ReadOnly || !ui_enabled_from(&args),
+        "read-only MCP profile does not expose the UI"
+    );
 
     if args.iter().any(|a| a == "--worker") {
         return run_worker();
@@ -98,7 +103,11 @@ fn ui_enabled_from(args: &[String]) -> bool {
 }
 
 fn run() -> Result<()> {
-    let instance_lock = acquire_instance_lock();
+    let instance_lock = if infigraph_mcp::profile::permits_side_effects() {
+        acquire_instance_lock()
+    } else {
+        None
+    };
     let is_primary = instance_lock.is_some();
     let _lock_guard = instance_lock;
 

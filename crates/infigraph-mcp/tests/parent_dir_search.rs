@@ -87,9 +87,9 @@ fn test_search_with_dot_path_uses_cwd() {
     );
 }
 
-/// Issue #8: CWD is parent of indexed project, path is "." — should resolve via registry.
+/// Naming a parent directory must not guess a registered child project.
 #[test]
-fn test_search_dot_path_from_parent_finds_via_registry() {
+fn test_search_dot_path_from_parent_does_not_guess_registry_child() {
     let _lock = CWD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let parent = tempfile::TempDir::new().expect("parent tmpdir");
     let project_dir = parent.path().join("child");
@@ -108,14 +108,11 @@ fn test_search_dot_path_from_parent_finds_via_registry() {
     let original_cwd = std::env::current_dir().unwrap();
     std::env::set_current_dir(parent.path()).unwrap();
 
-    // Should find the function via registry fallback
+    // The explicit parent has no graph: do not choose its child from the registry.
     let result = tool_search(&json!({"path": ".", "query": "registry_resolve_func"}));
 
     std::env::set_current_dir(&original_cwd).unwrap();
 
-    let result = result.expect("search should resolve child project via registry");
-    assert!(
-        result.contains("registry_resolve_func"),
-        "should find function from parent CWD via registry resolution: {result}"
-    );
+    let error = result.expect_err("explicit parent must not select a registry child");
+    assert!(error.to_string().contains("NOT_INDEXED"), "{error:#}");
 }
