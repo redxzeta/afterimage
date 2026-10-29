@@ -1,0 +1,343 @@
+{
+  "status": "HOLD",
+  "base": "dc45de6e5769c1d86116167dcb1660d9561736c8",
+  "pr_heads": {
+    "18": "fef14d9ca7a2d38f9861be5bb7e20c1148150438",
+    "19": "93881dd9c94b08052958b525568d49ec3885eecb",
+    "20": "3ec1ea3d813e89dfd2a47d68d230701006e09f94",
+    "17": "2aa59f675e23efe295b59037a0239a96f7ac2748"
+  },
+  "ordered_source_commits": [
+    "982fb3fc6f00b89a924a0fb774f4f91a50f79df0",
+    "2d6d4039945d76caea3d569a83918c280f5dc677",
+    "fef14d9ca7a2d38f9861be5bb7e20c1148150438",
+    "c046613d4ebe5d2867b57b9e048f2a909318cbf9",
+    "93881dd9c94b08052958b525568d49ec3885eecb",
+    "0ff3ad82218cb207aa5c06c14f3ac5bfa955b89e",
+    "3ec1ea3d813e89dfd2a47d68d230701006e09f94"
+  ],
+  "candidate_commit": "85f48fd8cc79cc6936060d0759b97109513a5d0b",
+  "candidate_tree": "5afe1b6db0fd1ded716c4102af6b98d87a455156",
+  "conflict": "typescript_callers.rs: retain both appended test blocks",
+  "binary_sha256": null,
+  "build": {
+    "status": "BLOCKED",
+    "exit": 127,
+    "reason": "cargo: command not found",
+    "jobs_max": 2,
+    "timeout_seconds": 180,
+    "virtual_memory_limit_kib": 8388608
+  },
+  "truth_verification": {
+    "icecouncil": {
+      "commit": "10435a8c19f84549a0206f6b249ea13166aff6d0",
+      "anchors": 32,
+      "symbols": 21,
+      "relations": 14,
+      "status": "PASS"
+    },
+    "nightwire": {
+      "commit": "80985e6fc508f309b17ba1889ff2ca15b0253c08",
+      "anchors": 39,
+      "symbols": 23,
+      "relations": 21,
+      "status": "PASS"
+    },
+    "giglab": {
+      "commit": "02cee19056c8ee902289892727a6acbbcd30a7d3",
+      "anchors": 45,
+      "symbols": 24,
+      "relations": 19,
+      "status": "PASS"
+    }
+  },
+  "projection_inventory": "NOT_RUN",
+  "combined_smoke": "NOT_RUN",
+  "labelled_ast": "NOT_RUN",
+  "pilot": {
+    "provider_requested": "codex",
+    "model_requested": "gpt-6.1-terra",
+    "reasoning_requested": "medium",
+    "completed": 0,
+    "sessions": {
+      "canonical-arrow-chain-A": "NOT_RUN",
+      "canonical-arrow-chain-B": "NOT_RUN",
+      "scale-transitive-B": "NOT_RUN",
+      "scale-transitive-A": "NOT_RUN",
+      "workspace-decoder-A": "NOT_RUN",
+      "workspace-decoder-B": "NOT_RUN"
+    },
+    "usage": "UNKNOWN",
+    "adjudication": "NOT_RUN"
+  },
+  "default_branch_adoption": "NOT_DONE",
+  "debian_continuation": {
+    "candidate_commit": "586e53c907dd45df61ebcc3c8bb60962947ee94d",
+    "candidate_tree": "5afe1b6db0fd1ded716c4102af6b98d87a455156",
+    "cargo_exit": "UNKNOWN_WRAPPER_FAILURE",
+    "cargo_log": "FINISHED",
+    "rustc": "1.98.1",
+    "cargo": "1.98.1",
+    "binary_sha256": {
+      "cli": "02b420d510f3be066fe227ee5a0107bb8d815ca66a9f5832651a4a81a0fb1955",
+      "mcp": "1a688148e32a71876adaa1c9ad393240b0ed9b1331ea3fa9ec432d2495e6073c"
+    },
+    "cached_lbug_sha256": "9100591f7cf1de0f565c96b55e3293998763260fc936bfbb9e304bef6f4ec2b8",
+    "core_test": {
+      "exit": 101,
+      "tests_run": 0,
+      "reason": "E0282 unconstrained update_current closure"
+    },
+    "readonly_rust": {
+      "initial": "4 passed, 1 failed under virtual address limit",
+      "targeted": "TIMEOUT 180s",
+      "peak_tree_rss_kib": 585088
+    },
+    "stdio_http_smoke": "PASS",
+    "ast_smoke": {
+      "exit": 0,
+      "scip": "NOT_REQUESTED"
+    },
+    "enriched_smoke": {
+      "exit": 1,
+      "scip": "FAILED SCIP_TOOL_UNAVAILABLE"
+    },
+    "projection_inventory": "PASS",
+    "labelled_ast": {
+      "ice-council": {
+        "index_exit": 0,
+        "index_seconds": 88.8,
+        "scores": {
+          "symbols": {
+            "matched": 21,
+            "expected": 21,
+            "labelled_false_edges": 0
+          },
+          "calls": {
+            "matched": 11,
+            "expected": 12,
+            "labelled_false_edges": 0
+          },
+          "imports": {
+            "matched": 2,
+            "expected": 2,
+            "labelled_false_edges": 0
+          }
+        },
+        "impact_complete": 4,
+        "impact_total": 5,
+        "query_failures": 0
+      },
+      "nightwire": {
+        "index_exit": 0,
+        "index_seconds": 38.8,
+        "scores": {
+          "symbols": {
+            "matched": 23,
+            "expected": 23,
+            "labelled_false_edges": 0
+          },
+          "calls": {
+            "matched": 20,
+            "expected": 20,
+            "labelled_false_edges": 0
+          },
+          "imports": {
+            "matched": 3,
+            "expected": 3,
+            "labelled_false_edges": 0
+          }
+        },
+        "impact_complete": 5,
+        "impact_total": 5,
+        "query_failures": 0
+      },
+      "giglab": {
+        "index_exit": 0,
+        "index_seconds": 28.2,
+        "scores": {
+          "symbols": {
+            "matched": 24,
+            "expected": 24,
+            "labelled_false_edges": 0
+          },
+          "calls": {
+            "matched": 17,
+            "expected": 17,
+            "labelled_false_edges": 0
+          },
+          "imports": {
+            "matched": 3,
+            "expected": 3,
+            "labelled_false_edges": 0
+          }
+        },
+        "impact_complete": 5,
+        "impact_total": 5,
+        "query_failures": 0
+      }
+    },
+    "callback": "source dependency, not direct CALLS",
+    "pilot": {
+      "dispatched": 0,
+      "status": "NOT_RUN",
+      "reason": "No supported per-child binding of candidate read-only MCP server and isolated index",
+      "usage": "UNKNOWN",
+      "adjudication": "NOT_RUN"
+    },
+    "single_file_receipt": "NOT_RUN",
+    "external_scip": "NOT_RUN",
+    "adoption": "NOT_DONE"
+  },
+  "oct28_continuation": {
+    "pr19_head": "9ec80e8a27ddc969ae47d6114eaa7c0091c2e1c0",
+    "candidate_commit": "6fd340588e5fe93080885d389b6b4daf8fefac53",
+    "candidate_tree": "f58844b938171cf41317c15e947a47085355b00e",
+    "old_tree_delta": "one test-only type annotation",
+    "core_compile": {
+      "exit": 0,
+      "seconds": 11.174
+    },
+    "stale_receipt": {
+      "exit": 0,
+      "passed": 1,
+      "seconds": 5.683
+    },
+    "caller_test": {
+      "exit": 0,
+      "seconds": 6.872
+    },
+    "import_test": {
+      "exit": 0,
+      "seconds": 14.424
+    },
+    "readonly_calibration": {
+      "exit": 0,
+      "passed": 1,
+      "seconds": 165.558,
+      "peak_tree_rss_kib": 645856,
+      "cpus": 2,
+      "rayon_threads": 2,
+      "wall_limit_seconds": 180,
+      "memory_mib": 4096,
+      "cpu_seconds_cap": null,
+      "test_sha256": "5bdd59791228d184f6a1b713faba1f8044926fafdbd2b8427de6a40bcc765f17",
+      "test_mcp_sha256": "0d46080d742787977799f2ee7a46f527d341458cb058f9cff969b405cf58020b"
+    },
+    "client_sha256": "cc978e62fc6212f6d49912479973c17c212b19063d654f6a5759b835884f6bf3",
+    "setup_probe": "PASS",
+    "pilot": {
+      "dispatched": 6,
+      "completed": 6,
+      "invalid_over_budget": 1,
+      "provider": "codex_aux",
+      "model": "gpt-6.1-terra",
+      "reasoning": "medium",
+      "blind_content_scoring": "FROZEN_BEFORE_MAPPING",
+      "transcript_audit": "COMPLETE: one INVALID_OVER_20, five budget-pass AUDIT_LIMITED",
+      "usage": "UNKNOWN",
+      "source_inventories_after": "MATCH",
+      "index_byte_comparison": "UNKNOWN: no pre-session hashes",
+      "shell_cwd_audit": "UNKNOWN: rendered activity does not expose working-directory arguments",
+      "client_home": "shared; empty after sessions; per-session isolation not independently established",
+      "blind_ratings_sha256": "0ffa932024c7f331cb3a55d7e44925115ae9e413abe1840f6f2795d5d62d4c58",
+      "sessions": [
+        {
+          "packet": "P2",
+          "project": "IceCouncil",
+          "arm": "A",
+          "supported_expected": 3,
+          "expected_total": 3,
+          "command_executions": 13,
+          "elapsed_seconds": 68.61,
+          "validity": "BUDGET_PASS_AUDIT_LIMITED",
+          "packet_sha256": "33eab0d481b23794c7f94441d362396c29a0e4de28b33475435900c98752a661"
+        },
+        {
+          "packet": "P6",
+          "project": "IceCouncil",
+          "arm": "B",
+          "supported_expected": 3,
+          "expected_total": 3,
+          "command_executions": 11,
+          "elapsed_seconds": 42.309,
+          "validity": "BUDGET_PASS_AUDIT_LIMITED",
+          "packet_sha256": "fa357c8fccf2468ddcfda5d6cbec505283e6ac274bb73e1d4e10a6ac266a37c3"
+        },
+        {
+          "packet": "P4",
+          "project": "Nightwire",
+          "arm": "B",
+          "supported_expected": 5,
+          "expected_total": 5,
+          "command_executions": 9,
+          "elapsed_seconds": 37.947,
+          "validity": "BUDGET_PASS_AUDIT_LIMITED",
+          "packet_sha256": "c656ea79b48cb149d7a983c02edc5ae2f542995ac774d24580394d1bdb92ddf3"
+        },
+        {
+          "packet": "P7",
+          "project": "Nightwire",
+          "arm": "A",
+          "supported_expected": 5,
+          "expected_total": 5,
+          "command_executions": 4,
+          "elapsed_seconds": 32.447,
+          "validity": "BUDGET_PASS_AUDIT_LIMITED",
+          "packet_sha256": "65c06214ce09e8667fc3f23cd4fd0eff2bdcbcdbd8c8cec9cfe700ebcac2646c"
+        },
+        {
+          "packet": "P1",
+          "project": "GigLab",
+          "arm": "A",
+          "supported_expected": 3,
+          "expected_total": 5,
+          "command_executions": 21,
+          "elapsed_seconds": 79.683,
+          "validity": "INVALID_OVER_20",
+          "packet_sha256": "bf3e1b627c5e69fbba2158fb16f21241e4142143076353b23fa991d800581da8"
+        },
+        {
+          "packet": "P9",
+          "project": "GigLab",
+          "arm": "B",
+          "supported_expected": 4,
+          "expected_total": 5,
+          "command_executions": 19,
+          "elapsed_seconds": 66.261,
+          "validity": "BUDGET_PASS_AUDIT_LIMITED",
+          "packet_sha256": "002ab6d95b8358a3b552d9899c4c09bc759862c1a726abf6d036039642478e61"
+        }
+      ],
+      "checked_claims": "No confirmed material false claims in checked set; open-world extras not exhaustively adjudicated",
+      "response_discrepancies": "P2 and P1 reported no usable client output despite successful JSON in activity; P7 received non-error impact JSON then used literal TOOL as tool name, failing allowed-tool assertion; no forbidden path key established",
+      "timing_basis": "T3 run start to completion; index/setup separate",
+      "reasoning_evidence": "medium in runner task receipt; not exposed by rendered activity",
+      "rendered_command_audit": "No observed forbidden target execution, truth/global-server access or secret command; cwd remains uncertified"
+    },
+    "default_branch_adoption": "NOT_DONE",
+    "targeted_functional_acceptance": "ACCEPTED_SCOPED"
+  },
+  "m3": {
+    "product_head": "5260ebc206294f5c55ca56e1be649a57bdd98f0c",
+    "candidate_commit": "d9b1804e13e85a7bc73ea8b394cee7fe0794d899",
+    "tree": "abcdd0ef46b3a2806d6beede5e3ca8beaad71f94",
+    "build_exit": 0,
+    "build_seconds": 34.017,
+    "cli_sha256": "c5f8d3532095121ecaf6ee74a8fba5fe1c47a439d6f6c879d2226eb8a74502f9",
+    "mcp_sha256": "17df4d0846d24349542f6dd0bb1045908684c1bc735aa8248e570013b5e515d8",
+    "checks": {
+      "hardening": "PASS 9",
+      "callers": "PASS 10",
+      "workspace_import": "PASS 1",
+      "linked_worktree": "PASS 1",
+      "curated_denial": "PASS 1",
+      "stdio_http": "PASS",
+      "ast_only": "exit 0 NOT_REQUESTED",
+      "missing_enrichment": "exit 1 FAILED SCIP_TOOL_UNAVAILABLE",
+      "indexed_readonly_contract": "UNRESOLVED: two 180s timeouts, first included compilation"
+    },
+    "adoption": "PRODUCT_SOURCE_MERGED",
+    "release_runtime": "NOT_DONE"
+  }
+}
