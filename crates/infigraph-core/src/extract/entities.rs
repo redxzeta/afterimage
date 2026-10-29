@@ -229,8 +229,21 @@ pub fn extract_entities(
                     .or_else(|| extract_child_text(node, "result", source))
             });
 
-            let visibility =
-                extract_visibility(node, source).or_else(|| default_visibility(&name, language));
+            let visibility = if matches!(language, "typescript" | "tsx" | "javascript")
+                && parent.is_none()
+                && matches!(sym_kind, SymbolKind::Function | SymbolKind::Test)
+            {
+                Some(
+                    if super::javascript::direct_named_export(node) {
+                        "public"
+                    } else {
+                        "private"
+                    }
+                    .to_owned(),
+                )
+            } else {
+                extract_visibility(node, source).or_else(|| default_visibility(&name, language))
+            };
 
             symbols.push(Symbol {
                 id,
@@ -316,7 +329,7 @@ pub fn extract_entities(
                     )
                 };
                 if (sym.kind == SymbolKind::Test && callable(&existing.kind))
-                    || (matches!(sym.language.as_str(), "typescript" | "tsx")
+                    || (matches!(sym.language.as_str(), "typescript" | "tsx" | "javascript")
                         && existing.kind == SymbolKind::Variable
                         && callable(&sym.kind)
                         && (existing.span.start_line, existing.span.start_col)
@@ -325,6 +338,7 @@ pub fn extract_entities(
                             <= (existing.span.end_line, existing.span.end_col))
                 {
                     existing.kind = sym.kind.clone();
+                    existing.visibility.clone_from(&sym.visibility);
                     existing.span = sym.span.clone();
                     existing.signature_hash.clone_from(&sym.signature_hash);
                     existing.complexity = sym.complexity;

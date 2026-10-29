@@ -38,6 +38,87 @@ impl WriteLock {
     }
 }
 
+// ---- Open-failure classification (R3.1.1) ----
+//
+// `Database::new` collapses every failure into one stringified error before
+// it reaches any caller, so the only way to tell "not corruption -- leave the
+// file alone" from "durably unopenable" is the text. These are the classes
+// every wipe-on-open-failure path (`Infigraph::init`, `DocIndex::init`,
+// `open_combined_graph`, the combined-docs generation) must recognise BEFORE
+// taking a destructive branch. They live here, next to the open itself,
+// precisely so that each of those paths does not grow its own partial list
+// (#143 found two that had none at all).
+
+/// Kuzu's IO-layer error for "another process holds this database's lock"
+/// (see docs.ladybugdb.com/concurrency) is lock contention, not corruption.
+/// This was previously indistinguishable from genuine corruption, so a
+/// second `infigraph` process opening a graph while a watcher already had
+/// it open would trigger `wipe_graph`, destroying the watcher's live data.
+pub fn is_lock_contention_error(err: &anyhow::Error) -> bool {
+    err.chain()
+        .any(|cause| cause.to_string().contains("Could not set lock on file"))
+}
+
+/// lbug's `DatabaseHeader` refusal for a data file stamped with a storage
+/// version this build cannot read ("Trying to read a database file with a
+/// different version. Database file version: N, Current build storage
+/// version: M"). `Database::new` raises it on any non-empty file (via
+/// `Checkpointer::readCheckpoint`), so it arrives through the same "failed
+/// to open ... kuzu db" wrapping as every other open failure. It is neither
+/// transient nor corruption: the database was written by an `infigraph` on
+/// a different lbug version (typically a stale binary still on the old one,
+/// or a file left behind by a newer install) and this process simply cannot
+/// read it. Wiping it would destroy a perfectly good database and serve an
+/// empty one back as healthy (#140).
+pub fn is_storage_version_mismatch_error(err: &anyhow::Error) -> bool {
+    err.chain().any(|cause| {
+        cause
+            .to_string()
+            .contains("Trying to read a database file with a different version")
+    })
+}
+
+/// Every open failure that must never trigger a wipe or quarantine: the
+/// file is either busy or written on a lbug
+/// version this build cannot read. The single guard for callers whose only
+/// choices are "refuse" or "destroy and rebuild" (`DocIndex::init`,
+/// `open_combined_graph`).
+pub fn open_failure_is_not_corruption(err: &anyhow::Error) -> bool {
+    is_lock_contention_error(err) || is_storage_version_mismatch_error(err)
+}
+
+/// Context line for a lock-contention refusal. Afterimage has no lock probe.
+pub fn lock_contention_context(_db_path: &Path) -> String {
+    "graph is locked by another infigraph process (e.g. a running \
+     `infigraph watch`) -- not corrupted, so it was left untouched. \
+     Run `infigraph watch-status` or try again in a moment."
+        .to_string()
+}
+
+/// Context line for a storage-version refusal. lbug's own message (kept as
+/// the cause) already names both versions; this adds which build is
+/// speaking, that nothing was touched, and the two ways out.
+pub fn storage_version_mismatch_context(db_path: &Path) -> String {
+    format!(
+        "{} was written on a different lbug storage version than this build (v{}) can read \
+         -- not corrupted, so it was left untouched. Every process touching this project must \
+         run the same installed infigraph build (`infigraph doctor` identifies the build); to rebuild on this build's version instead, run `infigraph index --full`.",
+        db_path.display(),
+        kuzu::get_storage_version()
+    )
+}
+
+/// Context line for any [`open_failure_is_not_corruption`] failure, so a
+/// caller that refuses instead of wiping explains *why* the file was left
+/// alone in the same words `Infigraph::init` uses.
+pub fn non_corruption_open_context(err: &anyhow::Error, db_path: &Path) -> String {
+    if is_lock_contention_error(err) {
+        lock_contention_context(db_path)
+    } else {
+        storage_version_mismatch_context(db_path)
+    }
+}
+
 /// Persistent graph store backed by Kuzu.
 pub struct GraphStore {
     db: Database,
@@ -67,6 +148,13 @@ impl GraphStore {
     /// space mid-COPY and crashed the process).
     pub fn db_dir(&self) -> Option<&Path> {
         self.lock_path.parent()
+    }
+
+    /// Workspace metadata is available only for the standard project database layout.
+    pub(crate) fn project_root(&self) -> Option<&Path> {
+        self.db_dir()
+            .filter(|p| p.file_name().is_some_and(|n| n == ".infigraph"))?
+            .parent()
     }
 
     /// Open an existing Kuzu database in read-only mode.

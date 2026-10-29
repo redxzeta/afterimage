@@ -186,41 +186,81 @@ fn bulk_unwind_and_large_incremental_parquet_keep_imports() {
 }
 
 #[test]
-fn syntax_only_workspace_exports_are_explicitly_unresolved() {
+fn fixed_gap_workspace_exports_use_only_local_unambiguous_manifests() {
     use infigraph_core::Infigraph;
-    let dir = tempfile::tempdir().unwrap();
-    std::fs::create_dir_all(dir.path().join("packages/helpers/src")).unwrap();
-    std::fs::write(
-        dir.path().join("package.json"),
-        r#"{"private":true,"workspaces":["packages/*"]}"#,
-    )
-    .unwrap();
-    std::fs::write(dir.path().join("packages/helpers/package.json"), r#"{"name":"@workspace/helpers","exports":{".":"./src/index.ts","./subpath":"./src/subpath.ts"}}"#).unwrap();
-    std::fs::write(
-        dir.path().join("packages/helpers/src/index.ts"),
-        "export const helper = 1;",
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("packages/helpers/src/subpath.ts"),
-        "export const subpath = 1;",
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("main.ts"),
-        "import '@workspace/helpers'; import '@workspace/helpers/subpath';",
-    )
-    .unwrap();
-    let mut graph = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
-    graph.init().unwrap();
-    graph.index().unwrap(); // Syntax path only; no compiler, package manager or app runs.
-    assert!(graph
-        .backend()
-        .unwrap()
-        .get_file_deps("main.ts")
-        .unwrap()
-        .imports
-        .is_empty());
+    for declaration in ["package.json", "pnpm-workspace.yaml"] {
+        let dir = tempfile::tempdir().unwrap();
+        let write = |file: &str, source: &str| {
+            let path = dir.path().join(file);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, source).unwrap();
+        };
+        write(
+            declaration,
+            if declaration.ends_with("json") {
+                r#"{"workspaces":["packages/*"]}"#
+            } else {
+                "packages:\n  - 'packages/*'\n"
+            },
+        );
+        write(
+            "packages/contracts/package.json",
+            r#"{"name":"@giglab/contracts","exports":{".":"./src/match.ts"}}"#,
+        );
+        write(
+            "packages/controllers/package.json",
+            r#"{"name":"@giglab/controllers","exports":{"./prompt":"./src/prompt.ts","./conditional":{"import":"./src/prompt.ts"},"./escape":"../../outside.ts","./missing":"./missing.ts"}}"#,
+        );
+        write(
+            "packages/contracts/src/match.ts",
+            "export const match = () => 1;",
+        );
+        write(
+            "packages/controllers/src/prompt.ts",
+            "export const prompt = () => 1;",
+        );
+        write("outside.ts", "export const outside = 1;");
+        write("packages/datasets/src/index.ts", "export * from '@giglab/contracts'; export * from '@giglab/controllers/prompt'; import '@giglab/controllers/conditional'; import '@giglab/controllers/escape'; import '@giglab/controllers/missing'; import 'node:fs';");
+        let mut graph = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+        graph.init().unwrap();
+        graph.index().unwrap();
+        let expected = vec![
+            "packages/contracts/src/match.ts",
+            "packages/controllers/src/prompt.ts",
+        ];
+        let deps = || {
+            let mut imports = graph
+                .backend()
+                .unwrap()
+                .get_file_deps("packages/datasets/src/index.ts")
+                .unwrap()
+                .imports;
+            imports.sort();
+            imports
+        };
+        assert_eq!(deps(), expected, "fixed workspace IMPORTS (2 expected)");
+        for batch in [
+            vec![
+                "packages/controllers/src/prompt.ts",
+                "packages/datasets/src/index.ts",
+            ],
+            vec![
+                "packages/datasets/src/index.ts",
+                "packages/controllers/src/prompt.ts",
+            ],
+            vec!["packages/contracts/src/match.ts"],
+        ] {
+            graph
+                .index_files(
+                    &batch
+                        .into_iter()
+                        .map(std::path::PathBuf::from)
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap();
+            assert_eq!(deps(), expected);
+        }
+    }
 }
 
 #[test]

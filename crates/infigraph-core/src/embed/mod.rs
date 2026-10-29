@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use anyhow::{Context, Result};
 
+use crate::byte_reader::ByteReader;
 use crate::model::Symbol;
 
 struct CachedEmbeddings {
@@ -388,34 +389,30 @@ pub fn load_embeddings(path: &Path) -> Result<Vec<(String, Vec<f32>)>> {
     let data = &mmap[..];
 
     anyhow::ensure!(data.len() >= 4, "embeddings file too small");
-    let count = u32::from_le_bytes(data[0..4].try_into().unwrap()) as usize;
-    // Each entry needs at least an ID length and a dimension (two u32s).
-    // Validate the untrusted count before reserving memory from it.
-    anyhow::ensure!(count <= (data.len() - 4) / 8, "truncated embeddings file");
+    // Keep Afterimage's headerless (id, vector) format.
+    const MIN_ENTRY_BYTES: usize = 4 + 4;
+    let mut r = ByteReader::new(data, "embeddings file");
+    // Preserve the existing corruption diagnostic for callers; the source
+    // reader's exact count/remaining-byte details stay in the error chain.
+    let count = r
+        .count(MIN_ENTRY_BYTES)
+        .context("truncated embeddings file: corrupt entry count")?;
     let mut result = Vec::with_capacity(count);
-    let mut pos = 4usize;
 
     for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
-        let id_len = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        anyhow::ensure!(pos + id_len <= data.len(), "truncated embeddings file");
-        let id = std::str::from_utf8(&data[pos..pos + id_len])
-            .context("invalid utf8 in embedding id")?
-            .to_string();
-        pos += id_len;
-        anyhow::ensure!(pos + 4 <= data.len(), "truncated embeddings file");
-        let dim = u32::from_le_bytes(data[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        let float_bytes = dim * 4;
-        anyhow::ensure!(pos + float_bytes <= data.len(), "truncated embeddings file");
-        let vec: Vec<f32> = data[pos..pos + float_bytes]
+        // Strict UTF-8: a symbol id is a lookup key.
+        let id = r.utf8_u32()?;
+        let dim = r.u32()? as usize;
+        let float_bytes = dim.checked_mul(4).ok_or_else(|| {
+            anyhow::anyhow!("embeddings file: dimension {dim} overflows — corrupt")
+        })?;
+        let vec: Vec<f32> = r
+            .bytes(float_bytes)?
             .as_chunks::<4>()
             .0
             .iter()
-            .map(|chunk| f32::from_le_bytes(*chunk))
+            .map(|c| f32::from_le_bytes(*c))
             .collect();
-        pos += float_bytes;
         result.push((id, vec));
     }
     Ok(result)
@@ -768,21 +765,27 @@ fn read_sidecar(bytes: &[u8]) -> Result<SidecarData> {
         });
     }
     // Binary format: [version:u8] [count:u32] [dim:u32] [emb_mtime_secs:u64] foreach: [id_len:u32] [id_bytes]
-    anyhow::ensure!(bytes[0] == 1, "unsupported sidecar version {}", bytes[0]);
-    anyhow::ensure!(bytes.len() >= 17, "sidecar too small for header");
-    let count = u32::from_le_bytes(bytes[1..5].try_into().unwrap()) as usize;
-    let dim = u32::from_le_bytes(bytes[5..9].try_into().unwrap()) as usize;
-    let emb_mtime_secs = u64::from_le_bytes(bytes[9..17].try_into().unwrap());
-    let mut ids = Vec::with_capacity(count);
-    let mut pos = 17usize;
-    for _ in 0..count {
-        anyhow::ensure!(pos + 4 <= bytes.len(), "truncated sidecar");
-        let id_len = u32::from_le_bytes(bytes[pos..pos + 4].try_into().unwrap()) as usize;
-        pos += 4;
-        anyhow::ensure!(pos + id_len <= bytes.len(), "truncated sidecar id");
-        let id = String::from_utf8_lossy(&bytes[pos..pos + id_len]).into_owned();
-        pos += id_len;
-        ids.push(id);
+    // Binary layout, after the version byte:
+    //   [count:u32] [dim:u32] [emb_mtime_secs:u64] then count * [id_len:u32][id]
+    // Each id costs at least its own 4-byte length prefix.
+    const ID_MIN_BYTES: usize = 4;
+    let mut r = ByteReader::new(bytes, "hnsw sidecar");
+    anyhow::ensure!(r.u8()? == 1, "unsupported sidecar version {}", bytes[0]);
+    // `count` precedes `dim`/`emb_mtime_secs` on disk, but it can only be
+    // validated against the bytes that follow the whole header -- so read the
+    // trailing header fields first and check the count against what is left.
+    let raw_count = r.u32()? as usize;
+    let dim = r.u32()? as usize;
+    let emb_mtime_secs = r.u64()?;
+    let max_ids = r.remaining() / ID_MIN_BYTES;
+    anyhow::ensure!(
+        raw_count <= max_ids,
+        "hnsw sidecar: claims {raw_count} ids but only {} bytes remain (at most {max_ids}) — corrupt",
+        r.remaining()
+    );
+    let mut ids = Vec::with_capacity(raw_count);
+    for _ in 0..raw_count {
+        ids.push(r.string_u32()?);
     }
     Ok(SidecarData {
         emb_mtime_secs,
@@ -903,4 +906,70 @@ fn fnv1a(data: &[u8]) -> u64 {
         hash = hash.wrapping_mul(0x100000001b3);
     }
     hash
+}
+
+#[cfg(test)]
+mod corrupt_input_tests {
+    use super::*;
+
+    /// #132-class regression: the entry count is an unvalidated `u32` read
+    /// straight off disk, so a corrupt file names an arbitrary number of
+    /// 56-byte `(String, Vec<f32>, u64)` tuples. Reserving that many up front
+    /// asked glibc for ~92GB, and Rust's allocation-failure handler aborted
+    /// the whole process -- no `Result`, nothing to catch, the entire test
+    /// binary gone. It only reproduced on Linux because macOS overcommits.
+    ///
+    /// These are the exact bytes and the exact arithmetic from the CI abort:
+    /// `b"garbage"` reads "garb" as 1_651_663_207, and 1_651_663_207 * 56 is
+    /// 92_493_139_592 -- the byte count in the failure message.
+    ///
+    /// A corrupt file must be a plain `Err`, which is what the caller
+    /// (`infigraph verify`) already reports as a FAIL.
+    #[test]
+    fn a_garbage_embeddings_file_errors_instead_of_aborting_the_process() {
+        let tmp = tempfile::tempdir().unwrap();
+        let path = tmp.path().join("embeddings.bin");
+        std::fs::write(&path, b"garbage").unwrap();
+
+        let err = load_embeddings(&path).expect_err("garbage must not parse");
+        assert!(
+            err.to_string().contains("corrupt"),
+            "a bogus entry count must be reported as corruption, got: {err}"
+        );
+    }
+
+    /// The count is only trustworthy relative to how many bytes actually
+    /// follow it, so bound it by the payload rather than by a magic constant:
+    /// a file claiming more entries than its own length could hold is corrupt
+    /// however it was produced.
+    #[test]
+    fn an_entry_count_larger_than_the_payload_could_hold_is_rejected() {
+        let tmp = tempfile::tempdir().unwrap();
+        let path = tmp.path().join("embeddings.bin");
+        // Legacy headerless payload: count = 1000, then nothing to back it up.
+        let mut buf = 1000u32.to_le_bytes().to_vec();
+        buf.extend_from_slice(&[0u8; 16]);
+        std::fs::write(&path, &buf).unwrap();
+
+        assert!(
+            load_embeddings(&path).is_err(),
+            "a count the payload cannot possibly hold must be rejected"
+        );
+    }
+
+    /// The sidecar loader carries the same unvalidated count in its own
+    /// header and had the same abort.
+    #[test]
+    fn a_sidecar_claiming_more_ids_than_it_holds_is_rejected() {
+        // [version=1][count=u32::MAX][dim][emb_mtime] and no ids at all.
+        let mut bytes = vec![1u8];
+        bytes.extend_from_slice(&u32::MAX.to_le_bytes());
+        bytes.extend_from_slice(&8u32.to_le_bytes());
+        bytes.extend_from_slice(&0u64.to_le_bytes());
+
+        assert!(
+            read_sidecar(&bytes).is_err(),
+            "a sidecar id count beyond its own length must be rejected"
+        );
+    }
 }

@@ -8,53 +8,58 @@ use infigraph_languages::bundled_registry;
 
 pub use super::session::{session_date_id, session_epoch};
 
-/// Resolve a path argument to a project root containing `.infigraph/`.
-/// 1. If the path itself has `.infigraph/`, use it directly.
-/// 2. Walk UP from the path looking for `.infigraph/` (handles subdirectory CWD).
-/// 3. Check the global registry for a project whose path starts with (or contains) this path.
-/// 4. Fall back to the original path (let downstream error).
-pub fn resolve_project_path(path: &str) -> String {
-    let start = if path == "." {
-        std::env::current_dir()
-            .and_then(|p| p.canonicalize())
-            .unwrap_or_else(|_| PathBuf::from("."))
-    } else {
-        PathBuf::from(path)
-            .canonicalize()
-            .unwrap_or_else(|_| PathBuf::from(path))
-    };
-
-    // A project .infigraph/ contains a "graph" subdir but NOT registry.json.
-    // The global ~/.infigraph/ has registry.json — skip it during walk-up.
-    let is_project_infigraph = |p: &std::path::Path| {
-        let ig = p.join(".infigraph");
-        ig.join("graph").exists() && !ig.join("registry.json").exists()
-    };
-
-    // Direct match
-    if is_project_infigraph(&start) {
-        return start.to_string_lossy().to_string();
-    }
-
-    // Walk up (CWD is inside a project subdir)
-    let mut current = start.as_path();
-    while let Some(parent) = current.parent() {
-        if is_project_infigraph(parent) {
-            return parent.to_string_lossy().to_string();
+/// Resolve only within the requested checkout. Never guess a registry child or
+/// walk past a Git boundary (linked worktrees have a `.git` file).
+pub fn resolve_project_path(path: &str) -> Result<String> {
+    anyhow::ensure!(
+        !path.trim().is_empty(),
+        "INVALID_PATH: path must not be empty"
+    );
+    let start = PathBuf::from(path)
+        .canonicalize()
+        .with_context(|| format!("INVALID_PATH: project path does not exist: {path}"))?;
+    anyhow::ensure!(start.is_dir(), "INVALID_PATH: expected a project directory");
+    for current in start.ancestors() {
+        let index = current.join(".infigraph");
+        if index.join("graph").exists() && !index.join("registry.json").exists() {
+            validate_local_index(current)?;
+            return Ok(current.to_string_lossy().into_owned());
         }
-        current = parent;
-    }
-
-    // Check registry for child projects under this path
-    if let Ok(registry) = infigraph_core::multi::Registry::load() {
-        for entry in registry.repos.values() {
-            if entry.path.starts_with(&start) {
-                return entry.path.to_string_lossy().to_string();
-            }
+        if current.join(".git").exists() {
+            return Ok(current.to_string_lossy().into_owned());
         }
     }
+    Ok(start.to_string_lossy().into_owned())
+}
 
-    path.to_string()
+/// A symlinked index can belong to another checkout, even inside the same repo.
+fn validate_local_index(root: &std::path::Path) -> Result<()> {
+    for path in [root.join(".infigraph"), root.join(".infigraph/graph")] {
+        anyhow::ensure!(
+            path.canonicalize()? == path,
+            "PATH_ESCAPE: index must belong to the requested checkout"
+        );
+    }
+    Ok(())
+}
+
+pub fn require_local_index(root: &std::path::Path) -> Result<()> {
+    anyhow::ensure!(root.join(".infigraph/graph").exists(),
+        "NOT_INDEXED: {} has no local graph. Explicitly index this checkout outside read-only mode; no parent or sibling graph was used.", root.display());
+    validate_local_index(root)
+}
+
+/// Validate a source path against the selected project, including symlinks.
+pub fn project_file(root: &std::path::Path, file: &str) -> Result<PathBuf> {
+    let path = root
+        .join(file)
+        .canonicalize()
+        .with_context(|| format!("INVALID_PATH: source file unavailable: {file}"))?;
+    anyhow::ensure!(
+        path.starts_with(root),
+        "PATH_ESCAPE: source file is outside the selected project"
+    );
+    Ok(path)
 }
 
 pub fn open_prism(args: &Value) -> Result<Infigraph> {
@@ -62,7 +67,7 @@ pub fn open_prism(args: &Value) -> Result<Infigraph> {
         .get("path")
         .and_then(|p| p.as_str())
         .context("missing 'path' argument")?;
-    let path = resolve_project_path(raw_path);
+    let path = resolve_project_path(raw_path)?;
     let registry = bundled_registry()?;
     let mut prism = Infigraph::open(&PathBuf::from(&path), registry)?;
     prism.init()?;
@@ -75,7 +80,10 @@ pub fn open_prism_read_only(args: &Value) -> Result<Infigraph> {
         .get("path")
         .and_then(|p| p.as_str())
         .context("missing 'path' argument")?;
-    let path = resolve_project_path(raw_path);
+    let path = resolve_project_path(raw_path)?;
+    if std::env::var("INFIGRAPH_BACKEND").map_or(true, |v| v == "kuzu") {
+        require_local_index(std::path::Path::new(&path))?;
+    }
     let registry = bundled_registry()?;
     let mut prism = Infigraph::open(&PathBuf::from(&path), registry)?;
     prism.init_read_only()?;

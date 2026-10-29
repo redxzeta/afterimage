@@ -86,11 +86,7 @@ pub fn tool_get_code_snippet(args: &Value) -> Result<String> {
             .unwrap_or(&detail.file),
         None => &detail.file,
     };
-    let file_path = if std::path::Path::new(rel_file).is_absolute() {
-        PathBuf::from(rel_file)
-    } else {
-        prism.root().join(rel_file)
-    };
+    let file_path = super::helpers::project_file(prism.root(), rel_file)?;
     let snippet = infigraph_core::search::read_lines_from_file(
         &file_path,
         detail.start_line,
@@ -232,6 +228,10 @@ pub fn tool_get_graph_schema(args: &Value) -> Result<String> {
 }
 
 pub fn tool_symbol_context(args: &Value) -> Result<String> {
+    symbol_context(args, true)
+}
+
+pub(crate) fn symbol_context(args: &Value, include_sessions: bool) -> Result<String> {
     let prism = open_prism_read_only(args)?;
     let symbol_id = args
         .get("symbol_id")
@@ -284,7 +284,9 @@ pub fn tool_symbol_context(args: &Value) -> Result<String> {
     }
 
     let path = args.get("path").and_then(|p| p.as_str()).unwrap_or(".");
-    auto_inject_session_context(path, &detail.name, &mut out);
+    if include_sessions {
+        auto_inject_session_context(path, &detail.name, &mut out);
+    }
 
     Ok(out)
 }

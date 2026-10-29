@@ -77,7 +77,7 @@ fn remote_cache_key() -> SystemTime {
 
 fn get_or_build_search_ctx(args: &Value) -> Result<CachedSearchData> {
     let raw_path = args.get("path").and_then(|p| p.as_str()).unwrap_or(".");
-    let path = super::helpers::resolve_project_path(raw_path);
+    let path = super::helpers::resolve_project_path(raw_path)?;
     let tg_root = PathBuf::from(&path).join(".infigraph");
     let canon = tg_root.canonicalize().unwrap_or_else(|_| tg_root.clone());
 
@@ -229,7 +229,7 @@ pub fn tool_search(args: &Value) -> Result<String> {
     let file_pattern = args.get("file_pattern").and_then(|f| f.as_str());
     let path = &super::helpers::resolve_project_path(
         args.get("path").and_then(|p| p.as_str()).unwrap_or("."),
-    );
+    )?;
     let use_regex = args.get("regex").and_then(|v| v.as_bool()).unwrap_or(false);
 
     let ctx = get_or_build_search_ctx(args)?;
@@ -546,6 +546,40 @@ pub fn tool_search(args: &Value) -> Result<String> {
     Ok(out)
 }
 
+/// Existing symbol search, restricted to in-memory lexical ranking in read-only mode.
+pub(crate) fn search_symbols_read_only(args: &Value) -> Result<String> {
+    let query = args
+        .get("query")
+        .and_then(Value::as_str)
+        .context("missing 'query'")?;
+    let limit = args.get("limit").and_then(Value::as_u64).unwrap_or(10) as usize;
+    let prism = super::helpers::open_prism_read_only(args)?;
+    let mut rows = prism
+        .backend()
+        .context("not initialized")?
+        .get_symbols_for_search()?;
+    rows.sort_by(|a, b| a[0].cmp(&b[0]));
+    let index = BM25Index::build(build_docs_from_rows(&rows));
+    let results = index.search(query, limit + 1);
+    let mut out = String::new();
+    for (i, score) in results.iter().take(limit) {
+        let row = &rows[*i];
+        out.push_str(&format!(
+            "{score:.3}  {} {} ({}:L{}-{})  id={}\n",
+            row[2], row[1], row[3], row[5], row[6], row[0]
+        ));
+    }
+    if results.len() > limit {
+        out.push_str(
+            "Warning: TRUNCATED: more symbol matches exist; narrow query or raise limit.\n",
+        );
+    }
+    if out.is_empty() {
+        out = format!("No results for '{query}' in the current graph.");
+    }
+    Ok(out)
+}
+
 pub fn tool_search_symbols(args: &Value) -> Result<String> {
     let query = args
         .get("query")
@@ -554,7 +588,7 @@ pub fn tool_search_symbols(args: &Value) -> Result<String> {
     let limit = args.get("limit").and_then(|l| l.as_u64()).unwrap_or(10) as usize;
     let path = &super::helpers::resolve_project_path(
         args.get("path").and_then(|p| p.as_str()).unwrap_or("."),
-    );
+    )?;
 
     let ctx = get_or_build_search_ctx(args)?;
     let rows = ctx.rows;
@@ -647,7 +681,7 @@ pub fn tool_semantic_search(args: &Value) -> Result<String> {
         .map(str::to_lowercase);
     let path = &super::helpers::resolve_project_path(
         args.get("path").and_then(|p| p.as_str()).unwrap_or("."),
-    );
+    )?;
 
     let ctx = get_or_build_search_ctx(args)?;
     let rows = ctx.rows;

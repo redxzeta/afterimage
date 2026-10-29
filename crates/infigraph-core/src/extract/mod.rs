@@ -1,4 +1,5 @@
 mod entities;
+mod javascript;
 mod relations;
 pub use entities::extract_entities;
 pub use relations::{extract_relations, extract_relations_with_custom_edges};
@@ -32,8 +33,8 @@ pub fn extract_file(path: &str, source: &[u8], pack: &LanguagePack) -> Result<Fi
             let root = tree.root_node();
 
             let symbols = extract_entities(path, source, root, entity_query, &pack.name);
-            let owners =
-                matches!(pack.name.as_str(), "typescript" | "tsx").then_some(symbols.as_slice());
+            let owners = matches!(pack.name.as_str(), "typescript" | "tsx" | "javascript")
+                .then_some(symbols.as_slice());
             let relations = relations::extract_relations_with_owners(
                 path,
                 source,

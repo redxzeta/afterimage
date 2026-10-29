@@ -1,5 +1,7 @@
 pub mod compress;
+pub mod profile;
 pub mod recovery;
+mod response;
 pub mod session_context;
 pub mod tools;
 pub mod web;
@@ -236,6 +238,23 @@ fn tool_compress(args: &Value) -> Result<String, anyhow::Error> {
 }
 
 pub fn dispatch_tool(tool_name: &str, args: &Value) -> Result<String, anyhow::Error> {
+    dispatch_tool_with_profile(tool_name, args, profile::McpProfile::from_env()?)
+}
+
+pub fn dispatch_tool_with_profile(
+    tool_name: &str,
+    args: &Value,
+    profile: profile::McpProfile,
+) -> Result<String, anyhow::Error> {
+    profile::validate(tool_name, args, profile)?;
+    if profile == profile::McpProfile::ReadOnly {
+        profile::dispatch(tool_name, args)
+    } else {
+        dispatch_tool_inner(tool_name, args)
+    }
+}
+
+fn dispatch_tool_inner(tool_name: &str, args: &Value) -> Result<String, anyhow::Error> {
     match tool_name {
         "diagnose" => tools::diagnostics::tool_diagnose(args),
         "index_project" => tools::index::tool_index_project(args),
@@ -586,6 +605,9 @@ pub fn mcp_log(level: &str, msg: &str) {
         .unwrap_or(0);
     let line = format!("[{ts}] {level}: {msg}");
     eprintln!("{line}");
+    if !profile::permits_side_effects() {
+        return;
+    }
     let path = mcp_log_file_path();
     if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
@@ -614,8 +636,11 @@ pub fn estimate_tokens(text: &str) -> usize {
 }
 
 pub fn handle_initialize(id: &Value, is_primary: bool) -> Value {
+    if let Err(e) = profile::McpProfile::from_env() {
+        return profile::error(id, &e);
+    }
     mcp_log("INFO", &format!("initialize called (primary={is_primary})"));
-    if is_primary {
+    if is_primary && profile::permits_side_effects() {
         std::thread::spawn(|| {
             mcp_log("DEBUG", "init_watchers start");
             tools::watch::init_watchers();
@@ -649,7 +674,7 @@ pub fn handle_initialize(id: &Value, is_primary: bool) -> Value {
         mcp_log("INFO", "Skipping watchers — not primary instance");
     }
 
-    json!({
+    let mut response = json!({
         "jsonrpc": "2.0",
         "id": id,
         "result": {
@@ -662,11 +687,36 @@ pub fn handle_initialize(id: &Value, is_primary: bool) -> Value {
                 "version": "0.1.0"
             }
         }
-    })
+    });
+    if matches!(
+        profile::McpProfile::from_env(),
+        Ok(profile::McpProfile::ReadOnly)
+    ) {
+        response["result"]["instructions"] = json!("Afterimage read-only instructions v1: Pass the exact checkout as path on every call. Use search_symbols then exact symbol_id for context/callers/callees/impact. Read Project, coverage, freshness and truncation warnings in text. Empty results do not prove absence. NOT_INDEXED requires an explicit indexing action outside this profile; do not switch to a parent/sibling. Compiler NOT_REQUESTED/FAILED is partial coverage even when requested AST work succeeded. Verify current source before editing.");
+    }
+    response
 }
 
 pub fn handle_tools_list(id: &Value) -> Value {
-    let tools = build_tools_list();
+    let profile = match profile::McpProfile::from_env() {
+        Ok(profile) => profile,
+        Err(e) => return profile::error(id, &e),
+    };
+    handle_tools_list_with_profile(id, profile)
+}
+
+pub fn handle_tools_list_with_profile(id: &Value, profile: profile::McpProfile) -> Value {
+    let mut tools = build_tools_list();
+    if profile == profile::McpProfile::ReadOnly {
+        tools.retain(|t| profile::READ_ONLY_TOOLS.contains(&t["name"].as_str().unwrap_or("")));
+        for tool in &mut tools {
+            tool["annotations"] =
+                json!({"readOnlyHint":true,"destructiveHint":false,"openWorldHint":false});
+            if tool["name"] == "search_symbols" {
+                tool["description"] = json!("Read-only lexical BM25 search of the existing local symbol graph. No models, downloads, caches, or watchers. Returns exact symbol IDs and source ranges. Limit defaults to 10 (maximum 1000).");
+            }
+        }
+    }
     json!({
         "jsonrpc": "2.0",
         "id": id,
@@ -677,9 +727,28 @@ pub fn handle_tools_list(id: &Value) -> Value {
 }
 
 pub fn handle_tools_call(id: &Value, request: &Value) -> Value {
+    let profile = match profile::McpProfile::from_env() {
+        Ok(profile) => profile,
+        Err(e) => return profile::error(id, &e),
+    };
+    handle_tools_call_with_profile(id, request, profile)
+}
+
+pub fn handle_tools_call_with_profile(
+    id: &Value,
+    request: &Value,
+    profile: profile::McpProfile,
+) -> Value {
     let params = request.get("params").cloned().unwrap_or(Value::Null);
     let tool_name = params.get("name").and_then(|n| n.as_str()).unwrap_or("");
     let args = params.get("arguments").cloned().unwrap_or(json!({}));
+
+    if let Err(e) = profile::validate(tool_name, &args, profile) {
+        return profile::error(id, &e);
+    }
+    if profile == profile::McpProfile::ReadOnly {
+        return response::read_only_call(id, tool_name, &args);
+    }
 
     // Diagnostics must remain read-only and machine-readable: no activity
     // files, session mutations, focus recording, or text compression.
@@ -767,13 +836,7 @@ pub fn handle_tools_call(id: &Value, request: &Value) -> Value {
                     }
                 }
             }
-            json!({
-                "jsonrpc": "2.0",
-                "id": id,
-                "result": {
-                    "content": [{ "type": "text", "text": compressed }]
-                }
-            })
+            response::with_evidence(id, tool_name, &args, compressed, false)
         }
         Ok(Err(e)) => {
             mcp_log("ERROR", &format!("tool={tool_name} err={e}"));

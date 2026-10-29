@@ -113,7 +113,8 @@ impl GraphStore {
             ));
         }
 
-        let modules = ModuleImports::new(extractions.iter().map(|e| e.file.as_str()));
+        let modules = ModuleImports::new(extractions.iter().map(|e| e.file.as_str()))
+            .with_root(self.project_root());
 
         // 6. All relation edges grouped by type
         let mut calls_pairs: Vec<String> = Vec::new();
