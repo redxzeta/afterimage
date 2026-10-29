@@ -150,6 +150,13 @@ impl GraphStore {
         self.lock_path.parent()
     }
 
+    /// Workspace metadata is available only for the standard project database layout.
+    pub(crate) fn project_root(&self) -> Option<&Path> {
+        self.db_dir()
+            .filter(|p| p.file_name().is_some_and(|n| n == ".infigraph"))?
+            .parent()
+    }
+
     /// Open an existing Kuzu database in read-only mode.
     /// Safe for concurrent access while a watcher is writing.
     pub fn open_read_only(path: &Path) -> Result<Self> {

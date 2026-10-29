@@ -217,7 +217,8 @@ impl GraphStore {
                 .iter()
                 .map(String::as_str)
                 .chain(extractions.iter().map(|e| e.file.as_str())),
-        );
+        )
+        .with_root(self.project_root());
 
         // Collect all data into vecs
         let mut mod_ids = Vec::new();

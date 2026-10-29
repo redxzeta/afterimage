@@ -1945,11 +1945,28 @@ impl GraphBackend for Neo4jBackend {
         // disambiguation strategies, same-class fast path, and bare-source-id
         // reconciliation live in exactly one place now, not two hand-synced
         // copies.
+        let exported_ids = self
+            .get_api_surface()?
+            .into_iter()
+            .filter(|s| s.visibility == "public")
+            .map(|s| s.id)
+            .collect();
         let crate::resolve::ResolvedCalls {
             pairs,
             external_calls,
             stats,
-        } = crate::resolve::resolve_pairs(extractions, &symbol_map, None);
+        } = crate::resolve::resolve_pairs(
+            extractions,
+            &symbol_map,
+            None,
+            &super::imports::ModuleImports::new(
+                symbol_map
+                    .values()
+                    .flatten()
+                    .map(|(_, file, _)| file.as_str()),
+            ),
+            &exported_ids,
+        );
         let resolved = stats.resolved;
         let unresolved = stats.unresolved;
         let total_dangling = stats.total_calls;

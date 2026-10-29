@@ -23,6 +23,10 @@ impl GraphStore {
         conn: &Connection<'_>,
         extraction: &FileExtraction,
     ) -> Result<()> {
+        let inbound_calls = super::imports::inbound_calls(
+            conn,
+            &std::collections::HashSet::from([extraction.file.as_str()]),
+        )?;
         let inbound = super::imports::inbound_imports(
             conn,
             &std::collections::HashSet::from([extraction.file.as_str()]),
@@ -41,6 +45,7 @@ impl GraphStore {
             escape(&extraction.file)
         ));
         self.upsert_file_conn_no_delete(conn, extraction)?;
+        super::imports::merge_calls(conn, &inbound_calls)?;
         super::imports::merge_imports(conn, &inbound)
     }
 
@@ -166,7 +171,8 @@ impl GraphStore {
         } else {
             Vec::new()
         };
-        let modules = super::imports::ModuleImports::new(module_files.iter().map(String::as_str));
+        let modules = super::imports::ModuleImports::new(module_files.iter().map(String::as_str))
+            .with_root(self.project_root());
         let mut reads_pairs: Vec<(&str, &str)> = Vec::new();
         let mut writes_pairs: Vec<(&str, &str)> = Vec::new();
         let mut custom_pairs: HashMap<String, Vec<(&str, &str)>> = HashMap::new();
