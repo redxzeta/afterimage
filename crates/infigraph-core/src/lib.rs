@@ -1,6 +1,7 @@
 mod analysis;
 pub mod bench;
 pub mod bridges;
+pub mod byte_reader;
 pub mod check;
 pub mod claude_md;
 pub mod cluster;
@@ -58,17 +59,10 @@ pub fn build_hash() -> &'static str {
     env!("INFIGRAPH_BUILD_HASH")
 }
 
-/// Kuzu's IO-layer error for "another process holds this database's lock"
-/// (see docs.ladybugdb.com/concurrency) is lock contention, not corruption.
-/// `GraphStore::open` collapses the underlying Kuzu error into a stringified
-/// `anyhow::Error` before it reaches `Infigraph::init`, so there's no
-/// structured error variant to match on here -- only Kuzu's own error text.
-/// This was previously indistinguishable from genuine corruption, so a
-/// second `infigraph` process opening a graph while a watcher already had
-/// it open would trigger `wipe_graph`, destroying the watcher's live data.
-fn is_lock_contention_error(err: &anyhow::Error) -> bool {
-    err.to_string().contains("Could not set lock on file")
-}
+// Shared refusal classification for code, document and combined stores.
+use graph::store::{
+    is_lock_contention_error, is_storage_version_mismatch_error, storage_version_mismatch_context,
+};
 
 /// Open the Kùzu graph, retrying briefly on lock contention (AIF3X-331 #36).
 ///
@@ -184,6 +178,12 @@ impl Infigraph {
                          Run `infigraph watch-status` or try again in a moment."
                     })
                 }
+                Err(first_err) if is_storage_version_mismatch_error(&first_err) => {
+                    // Written by an infigraph on a different lbug version:
+                    // readable by *that* build, unreadable by this one. Not
+                    // corruption, so no retry, no quarantine, no wipe (#140).
+                    Err(first_err).with_context(|| storage_version_mismatch_context(&self.db_path))
+                }
                 Err(first_err) => {
                     // Some Kuzu IO errors (e.g. a short read while a concurrent
                     // writer is mid-checkpoint) look identical to genuine
@@ -211,6 +211,14 @@ impl Infigraph {
                                      running `infigraph watch`) -- not corrupted, so it was \
                                      left untouched. Run `infigraph watch-status` or try \
                                      again in a moment."
+                                });
+                            }
+                            Err(e) if is_storage_version_mismatch_error(&e) => {
+                                // Same refusal as above: a version mismatch
+                                // surfacing only after a transient first
+                                // failure must still never reach the wipe.
+                                return Err(e).with_context(|| {
+                                    storage_version_mismatch_context(&self.db_path)
                                 });
                             }
                             Err(e) => last_err = e,
@@ -698,6 +706,30 @@ mod tests {
         );
     }
 
+    /// #140: lbug's storage-version refusal is "this build cannot read that
+    /// graph" -- recognised on its own, and by none of the other classifiers.
+    #[test]
+    fn is_storage_version_mismatch_error_matches_lbug_header_message() {
+        let err = anyhow::anyhow!(
+            "failed to open kuzu db: Runtime exception: Trying to read a database file with a \
+             different version. Database file version: 44, Current build storage version: 43"
+        );
+        assert!(is_storage_version_mismatch_error(&err));
+        assert!(!is_lock_contention_error(&err));
+    }
+
+    #[test]
+    fn is_storage_version_mismatch_error_does_not_match_genuine_corruption() {
+        let err = anyhow::anyhow!(
+            "failed to open kuzu db: Runtime exception: Database ID for temporary file \
+             '/repo/.infigraph/graph.wal.checkpoint' does not match the current database."
+        );
+        assert!(
+            !is_storage_version_mismatch_error(&err),
+            "a genuine format/ID mismatch must still take the corruption path"
+        );
+    }
+
     // AIF3X-331 #36: open_kuzu_with_retry waits out a transient lock-contention
     // window (a watcher's per-reindex write) instead of hard-failing a reader.
 
@@ -927,6 +959,76 @@ mod tests {
             rows.len(),
             0,
             "persistent corruption should have been wiped, not silently ignored"
+        );
+    }
+
+    /// Regression test for #140: a graph written by a binary on a
+    /// *different lbug storage version* is neither transient nor corrupt --
+    /// it is a perfectly good graph this build simply cannot read. `init()`
+    /// used to take the corruption branch anyway (retry, quarantine, wipe,
+    /// rebuild, `Ok(())`) and serve an empty graph back as healthy. It must
+    /// refuse loudly instead, naming both versions, and leave the file
+    /// byte-for-byte untouched -- no wipe, no quarantine pool entry.
+    #[test]
+    fn init_refuses_a_graph_from_a_different_storage_version_instead_of_wiping_it() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let root = dir.path();
+        let db_path = root.join(".infigraph").join("graph");
+
+        {
+            let store = GraphStore::open(&db_path).unwrap();
+            let conn = store.connection().unwrap();
+            conn.query(
+                "CREATE (:Symbol {id: 'marker::foreign-version', name: 'foreign', kind: 'function', \
+                 file: 'marker.rs', start_line: 0, end_line: 0, signature_hash: '', \
+                 language: 'rust', visibility: 'public', parent: '', docstring: '', \
+                 complexity: 0, parameters: '', return_type: ''})",
+            )
+            .unwrap();
+        }
+
+        // Re-stamp the on-disk header with a storage version this build
+        // cannot read (one past its own), exactly as a graph left behind by
+        // a newer `infigraph` would look to this binary.
+        let current = kuzu::get_storage_version();
+        let foreign = current + 1;
+        let mut bytes = std::fs::read(&db_path).unwrap();
+        assert_eq!(&bytes[..4], b"LBUG", "unexpected database header layout");
+        assert_eq!(
+            u64::from_le_bytes(bytes[4..12].try_into().unwrap()),
+            current,
+            "header must carry this build's storage version before re-stamping"
+        );
+        bytes[4..12].copy_from_slice(&foreign.to_le_bytes());
+        std::fs::write(&db_path, &bytes).unwrap();
+
+        let mut ig = Infigraph::open(root, LanguageRegistry::new()).unwrap();
+        let err = ig
+            .init()
+            .expect_err("a storage-version mismatch must be refused, not wiped and rebuilt");
+        let msg = format!("{err:#}");
+        assert!(
+            msg.contains(&foreign.to_string()) && msg.contains(&current.to_string()),
+            "the refusal must name both the file's and this build's storage version: {msg}"
+        );
+
+        assert_eq!(
+            std::fs::read(&db_path).unwrap(),
+            bytes,
+            "the graph file must be left byte-for-byte untouched"
+        );
+        let quarantined: Vec<_> = std::fs::read_dir(root.join(".infigraph"))
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.file_name()
+                    .to_string_lossy()
+                    .starts_with("graph.corrupt.")
+            })
+            .collect();
+        assert!(
+            quarantined.is_empty(),
+            "a version mismatch is not corruption evidence -- nothing may be quarantined"
         );
     }
 }
