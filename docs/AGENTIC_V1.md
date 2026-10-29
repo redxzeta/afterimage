@@ -3,8 +3,9 @@
 **M3 product integration VERIFIED.** #16, #18, #19 and #20 are merged.
 Default product commit `5260ebc206294f5c55ca56e1be649a57bdd98f0c` has tree
 `abcdd0ef46b3a2806d6beede5e3ca8beaad71f94`, exactly the native candidate tree.
-Scoped M3 smoke is PENDING until actual Terra receipts. Installation/runtime
-activation is not established. The completed M2 exploratory pilot and its limits are unchanged.
+**M3 runtime acceptance: PARTIAL / HOLD** on the indexed read-only contract.
+Installation, full read-only candidate certification and runtime activation are
+not established. The completed M2 exploratory pilot and its limits are unchanged.
 
 Nathan authorized execution and waived hosted CI. The earlier #16 tool refusal
 is historical: the normal expected-head GitHub merge subsequently succeeded.
@@ -30,19 +31,63 @@ release or live-index operation is part of this milestone.
   Independent source review confirms all three appended #18 test blocks and
   corrected #19 stale-worker block unchanged, including `update_current::<()>`,
   panic and stale-generation assertions. Earlier #19 no-op/malformed-artifact
-  assertions also remain. Whitespace passes. The source-complete candidate is
-  independently verified merge #19 at `5260ebc206294f5c55ca56e1be649a57bdd98f0c`
+  assertions also remain. Whitespace passes. Independently verified merge #19 at `5260ebc206294f5c55ca56e1be649a57bdd98f0c`
   has parents959a450 andba4cb405 and that same exact tree. Source is now on the
   default branch; installation is not established.
 - #13 closed as superseded after #16; #10 closed as a retired provisional design
   after #20, per caller handoff. #10's Git-dirty/pending-queue advisories are not
   claimed to be identical to #20. Branches/evidence are preserved.
-- Terra owns the sole native slot for focused M3 smoke. Exact candidate/tree,
-  outcomes and final default-branch coverage will be recorded from actual receipts;
-  the older M2 tree and tests are not relabelled M3 evidence. Runner reports a
-  bounded offline CLI/MCP build exit0/34.017s on private candidate commit
-  `d9b1804e13e85a7bc73ea8b394cee7fe0794d899`; raw/final scoped-smoke receipts
-  remain pending here. Matching trees avoid a redundant build on merge metadata.
+- Focused native work is complete and the slot is released. Reviewer read the
+  actual receipts/logs and verified supplied hashes; no duplicate native runs.
+
+## M3 scoped runtime results — PARTIAL / HOLD
+
+[Current-first report #17 at 087e35a7ab725b628a04df3241d957b73fc5df8c](https://github.com/redxzeta/afterimage/blob/087e35a7ab725b628a04df3241d957b73fc5df8c/scripts/benchmark/results/m2-agent-pilot-20261027.md)
+records the same actual product tree above, tested as private commit
+`d9b1804e13e85a7bc73ea8b394cee7fe0794d899`. Rust/Cargo1.98.1, locked/offline,
+no default features, one Cargo/CMake job, two CPUs/Rayon2,180s wall and sampled
+4GiB RSS, no virtual-address or separate aggregate CPU cap.
+
+| Exact-tree check | Actual outcome |
+| --- | --- |
+| CLI/MCP build | Exit0,34.017s |
+| Hardening cache/store refusal tests | Exit0,9/9 PASS |
+| TypeScript callers, stale receipt and imported helper | Exit0,10/10 PASS |
+| Workspace import regression | Exit0,1/1 PASS |
+| Linked-worktree scope | Exit0,1/1 PASS |
+| Curated discovery/manual tool denial | Exit0,1/1 PASS |
+| Stdio/HTTP disposable fixture | Exit0; HTTP403 and fixture bytes unchanged |
+| Bubblewrap AST-only | Exit0, compiler NOT_REQUESTED |
+| Explicit enrichment, absent indexer | Expected exit1, FAILED/SCIP_TOOL_UNAVAILABLE |
+| Indexed warning/byte-preservation contract | **TIMEOUT twice; no final pass** |
+
+The first indexed invocation exited-9/BUDGET_EXCEEDED at180.049s, including
+25.35s compilation. The separate already-built unchanged test also exited-9/
+BUDGET_EXCEEDED at180.116s, peak tree RSS657,868KiB. All ten in-process tool
+markers were reached; the full remaining assertions did not complete. This is
+an unresolved actual-head result, not diagnosed corruption, proven deadlock or
+full read-only safety certification. No deadline extension or further retry.
+M2's165.558s pass belongs to treef58844b9 and **does not clear M3**. Passing
+transport fixture checks also do not substitute for the indexed contract.
+
+M3 CLI SHA-256
+`c5f8d3532095121ecaf6ee74a8fba5fe1c47a439d6f6c879d2226eb8a74502f9`;
+MCP `17df4d0846d24349542f6dd0bb1045908684c1bc735aa8248e570013b5e515d8`.
+Receipt SHA-256 (actual JSON read and matched):
+
+- Build: `42dba13587f4b9a7cb630a08b119304dcce68b4e39682392a7944906e6761866`.
+- Hardening: `f86d6afc179e3493fd3856a8e472bebcd43022077721c2f810343fb4aae5dc54`.
+- Callers: `1fa7bc256b50724f3f0f41c89f8458cac90dbe0ece44f9de1971f1a85f81b8c1`.
+- Workspace import: `d7df9d310a67c69e22151240322dd619df336c2f385d65cbc3d5fa401762f64d`.
+- Already-built timeout: `e93b66c5e537de57370bfaab3d12ce263e167fdcbece3c5dd4af52baad976fda`;
+  its log: `8c6b9e340978bf9fb27676f5084b3d2fa9336e3084a0b2f8bf46af07ad054cdc`.
+
+**Final classification:** product-source integration VERIFIED; selected runtime
+checks PASS; overall scoped runtime acceptance PARTIAL/HOLD. Handoff is optional
+experimental local use with source fallback, not installation or full candidate
+certification. No new features, pilot, benchmark, native run or operational action
+is requested. The completed M2 pilot's audit limits and lack of productivity
+proof remain unchanged below.
 
 ## Completed M2 acceptance (historical adoption snapshot)
 
@@ -390,14 +435,15 @@ launched no provider retries or duplicate pilot sessions.
 
 ## Short opt-in local runbook
 
-Use existing verified binaries and an explicit owner-approved local checkout;
+Use the explicit M3 binary paths matching the hashes above and a disposable local checkout;
 indexing is a separate requested write, never a read-tool fallback. No installation
-or global MCP configuration is implied:
+or global MCP configuration is implied. The historical M2 benchmark client pins
+a different binary; it is not this M3 handoff:
 
 ```sh
 cd -- "$EXPLICIT_CHECKOUT"
-"$AFTERIMAGE_CLI" index --ast-only
-INFIGRAPH_MCP_PROFILE=read-only "$AFTERIMAGE_MCP" --mcp
+HOME="$ISOLATED_HOME" INFIGRAPH_NO_WATCH=1 "$AFTERIMAGE_CLI" index --ast-only
+HOME="$ISOLATED_HOME" INFIGRAPH_MCP_PROFILE=read-only "$AFTERIMAGE_MCP" --mcp
 ```
 
 AST-only success covers syntax stages, not compiler completeness. Inspect the
