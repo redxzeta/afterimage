@@ -1,9 +1,10 @@
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex, OnceLock};
 
 use anyhow::{Context, Result};
 use serde_json::{json, Value};
 
-use infigraph_core::Infigraph;
+use infigraph_core::{lang::LanguageRegistry, Infigraph};
 use infigraph_languages::bundled_registry;
 
 pub use super::session::{session_date_id, session_epoch};
@@ -75,6 +76,22 @@ pub fn open_prism(args: &Value) -> Result<Infigraph> {
     Ok(prism)
 }
 
+// Compiled language metadata is immutable and independent of project roots.
+// Graph handles remain request-local and all path checks still run per open.
+fn shared_read_registry() -> Result<Arc<LanguageRegistry>> {
+    static REGISTRY: OnceLock<Mutex<Option<Arc<LanguageRegistry>>>> = OnceLock::new();
+    let mut registry = REGISTRY
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .map_err(|_| anyhow::anyhow!("language registry lock poisoned"))?;
+    if let Some(registry) = registry.as_ref() {
+        return Ok(Arc::clone(registry));
+    }
+    let compiled = Arc::new(bundled_registry()?);
+    *registry = Some(Arc::clone(&compiled));
+    Ok(compiled)
+}
+
 pub fn open_prism_read_only(args: &Value) -> Result<Infigraph> {
     let raw_path = args
         .get("path")
@@ -84,8 +101,8 @@ pub fn open_prism_read_only(args: &Value) -> Result<Infigraph> {
     if std::env::var("INFIGRAPH_BACKEND").map_or(true, |v| v == "kuzu") {
         require_local_index(std::path::Path::new(&path))?;
     }
-    let registry = bundled_registry()?;
-    let mut prism = Infigraph::open(&PathBuf::from(&path), registry)?;
+    let registry = shared_read_registry()?;
+    let mut prism = Infigraph::open_shared(&PathBuf::from(&path), registry)?;
     prism.init_read_only()?;
     apply_repo_filter(&mut prism, &path);
     Ok(prism)
@@ -284,5 +301,18 @@ pub fn glob_match_inner(glob: &[char], path: &[char]) -> bool {
         (Some('?'), Some(_)) => glob_match_inner(&glob[1..], &path[1..]),
         (Some(g), Some(p)) if g.eq_ignore_ascii_case(p) => glob_match_inner(&glob[1..], &path[1..]),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod registry_tests {
+    use super::*;
+
+    #[test]
+    fn read_registry_shares_compiled_metadata() {
+        let first = shared_read_registry().unwrap();
+        let second = shared_read_registry().unwrap();
+        assert!(Arc::ptr_eq(&first, &second));
+        assert!(first.languages().next().is_some());
     }
 }

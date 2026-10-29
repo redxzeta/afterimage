@@ -1,5 +1,14 @@
 # Agentic V1: acceptance, evaluation and runbook
 
+**M4 local indexed read-only latency:** the unchanged indexed contract passed
+in 20.321s and 19.094s on the scoped candidate under the existing 180s wall,
+two-CPU/Rayon-2 and sampled 4 GiB RSS budget. This is local evidence, pending
+independent review and merge; it does not establish deployment or broader
+platform acceptance. The merged M3 baseline timed out under the same wall limit.
+The scoped change shares immutable compiled language metadata within the process;
+graph opens, root checks and evidence observations remain separate. The M2
+pilot and M3 historical outcomes below remain unchanged.
+
 **M3 product integration VERIFIED.** #16, #18, #19 and #20 are merged.
 Default product commit `5260ebc206294f5c55ca56e1be649a57bdd98f0c` has tree
 `abcdd0ef46b3a2806d6beede5e3ca8beaad71f94`, exactly the native candidate tree.
