@@ -317,5 +317,27 @@
     },
     "default_branch_adoption": "NOT_DONE",
     "targeted_functional_acceptance": "ACCEPTED_SCOPED"
+  },
+  "m3": {
+    "product_head": "5260ebc206294f5c55ca56e1be649a57bdd98f0c",
+    "candidate_commit": "d9b1804e13e85a7bc73ea8b394cee7fe0794d899",
+    "tree": "abcdd0ef46b3a2806d6beede5e3ca8beaad71f94",
+    "build_exit": 0,
+    "build_seconds": 34.017,
+    "cli_sha256": "c5f8d3532095121ecaf6ee74a8fba5fe1c47a439d6f6c879d2226eb8a74502f9",
+    "mcp_sha256": "17df4d0846d24349542f6dd0bb1045908684c1bc735aa8248e570013b5e515d8",
+    "checks": {
+      "hardening": "PASS 9",
+      "callers": "PASS 10",
+      "workspace_import": "PASS 1",
+      "linked_worktree": "PASS 1",
+      "curated_denial": "PASS 1",
+      "stdio_http": "PASS",
+      "ast_only": "exit 0 NOT_REQUESTED",
+      "missing_enrichment": "exit 1 FAILED SCIP_TOOL_UNAVAILABLE",
+      "indexed_readonly_contract": "UNRESOLVED: two 180s timeouts, first included compilation"
+    },
+    "adoption": "PRODUCT_SOURCE_MERGED",
+    "release_runtime": "NOT_DONE"
   }
 }

@@ -1,4 +1,37 @@
-# M2 agent-ready pilot: current status
+# M3 integrated product and optional-use handoff
+
+**Product integration:** #16, #18, #20 and #19 are merged. Actual `afterimage-main` product head `5260ebc206294f5c55ca56e1be649a57bdd98f0c` has tree `abcdd0ef46b3a2806d6beede5e3ca8beaad71f94`, identical to the private M3 test candidate `d9b1804e13e85a7bc73ea8b394cee7fe0794d899`. Scoped checks and limitations are recorded below; adoption here means product source merged, not installation, release or runtime activation.
+
+## M3 exact-tree smoke — HOLD on indexed read-only contract
+
+The merged product tree was built offline/locked with Rust/Cargo 1.98.1, no default features, one Cargo/CMake job, two CPUs, Rayon 2, 180-second wall and sampled 4 GiB resident-memory limits; no virtual-address cap or aggregate CPU-seconds cap. CLI/MCP build exited 0 in 34.017s. CLI SHA-256 `c5f8d3532095121ecaf6ee74a8fba5fe1c47a439d6f6c879d2226eb8a74502f9`; MCP SHA-256 `17df4d0846d24349542f6dd0bb1045908684c1bc735aa8248e570013b5e515d8`. Cargo.lock SHA-256 `f1c33ba66829fb179a1ceb48d3c2036776812953e6d8b6cc1d0a277c45689eca`. These are M3 binaries; the older M2 client is pinned to a different binary.
+
+| Scoped check | M3 outcome |
+| --- | --- |
+| Hardening cache/store refusals | 9 passed; exit 0 |
+| TypeScript callers, including stale receipt and imported helper | 10 passed; exit 0 |
+| Workspace import resolution | 1 passed; exit 0 |
+| Linked-worktree scope; ten-tool discovery and manual denial | Each 1 passed; exit 0 |
+| Disposable stdio/HTTP smoke | Exit 0; discovery, raw/mutation denial, HTTP 403 and fixture bytes unchanged |
+| Two-file isolated AST-only | Exit 0; compiler stage `NOT_REQUESTED` |
+| Explicit enrichment with missing indexer | Exit 1; compiler stage `FAILED/SCIP_TOOL_UNAVAILABLE` |
+| Indexed warnings and byte-preservation contract | **UNRESOLVED:** both bounded invocations hit the 180-second limit, including the already-built test; no pass |
+
+The first timed-out invocation spent 25.35 seconds compiling; the separate already-built functional run also timed out after 180.116 seconds, with sampled peak tree RSS 657868 KiB. All ten in-process tool markers were reached; remaining assertions did not finish. The previous M2 pass on another tree does not clear this result. No source defect or runtime safety outcome is inferred from a timeout. External SCIP was not run. No new three-repository benchmark or agent trial was conducted.
+
+Optional local handoff: in a disposable source copy with an isolated HOME, use the tested executable to build a syntax-only index and start the read-only stdio profile only when explicitly needed:
+
+```sh
+cd "$DISPOSABLE_PROJECT"
+HOME="$ISOLATED_HOME" INFIGRAPH_NO_WATCH=1 "$INFIGRAPH_CLI" index --ast-only
+HOME="$ISOLATED_HOME" INFIGRAPH_MCP_PROFILE=read-only "$INFIGRAPH_MCP" --mcp
+```
+
+Stop the foreground process to disable it and remove only the disposable project and isolated HOME when finished. Until the indexed contract is resolved, treat this as experimental optional use and verify answers with ordinary source reads such as `rg -n 'symbol' "$DISPOSABLE_PROJECT"`. Do not infer graph completeness, deploy or install a service.
+
+The following M2 benchmark and pilot are historical evidence under their original tested pins; merging product source does not relabel them.
+
+# M2 agent-ready pilot: historical results
 
 **Targeted combined functional checks are accepted within their scope; six pilot sessions completed and blind content ratings are frozen.** The completed post-mapping audit found one GigLab session invalid for exceeding the 20-call budget and five budget-pass sessions audit-limited. Isolation is not certified and token usage is unknown. No merge or adoption occurred.
 
