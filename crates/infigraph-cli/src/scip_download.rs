@@ -288,6 +288,52 @@ pub(crate) fn indexers_for_languages(detected: &HashSet<String>) -> Vec<&'static
     result
 }
 
+/// Locate an already available indexer and runtime without installing or running
+/// anything. Search the same runtime/cache directories used by the subprocess.
+pub(crate) fn existing_indexer(indexer: &ScipIndexer) -> Option<PathBuf> {
+    let extra = extra_runtime_paths();
+    let paths = std::env::var_os("PATH").unwrap_or_default();
+    let search: Vec<PathBuf> = std::env::split_paths(&std::ffi::OsString::from(extra))
+        .chain(std::env::split_paths(&paths))
+        .filter(|p| !p.as_os_str().is_empty())
+        .collect();
+    existing_indexer_in(indexer, &search)
+}
+
+fn existing_indexer_in(indexer: &ScipIndexer, paths: &[PathBuf]) -> Option<PathBuf> {
+    let find = |name: &str| {
+        paths
+            .iter()
+            .map(|p| p.join(binary_file_name(name)))
+            .find(|p| {
+                let Ok(meta) = std::fs::metadata(p) else {
+                    return false;
+                };
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    meta.is_file() && meta.permissions().mode() & 0o111 != 0
+                }
+                #[cfg(not(unix))]
+                {
+                    meta.is_file()
+                }
+            })
+    };
+    let runtime = match indexer.binary_name {
+        "scip-typescript" | "scip-python" => Some("node"),
+        "scip-java" => Some("java"),
+        "scip-dotnet" => Some("dotnet"),
+        "scip-dart" => Some("dart"),
+        "scip-php" => Some("php"),
+        _ => None,
+    };
+    if let Some(runtime) = runtime {
+        find(runtime)?;
+    }
+    find(indexer.binary_name).and_then(|path| std::fs::canonicalize(path).ok())
+}
+
 pub(crate) fn ensure_indexer(indexer: &ScipIndexer) -> Option<PathBuf> {
     if !ensure_runtime_for(indexer) {
         return None;
@@ -1428,6 +1474,27 @@ mod tests {
                 all_tags.push(tag);
             }
         }
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn existing_tool_preflight_requires_executable_and_runtime_without_writes() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let indexer = &CATALOG[0];
+        let paths = [dir.path().to_path_buf()];
+        assert!(existing_indexer_in(indexer, &paths).is_none());
+        let tool = dir.path().join(indexer.binary_name);
+        std::fs::write(&tool, b"never execute this").unwrap();
+        std::fs::set_permissions(&tool, std::fs::Permissions::from_mode(0o700)).unwrap();
+        assert!(existing_indexer_in(indexer, &paths).is_none());
+        let runtime = dir.path().join("node");
+        std::fs::write(&runtime, b"never execute this either").unwrap();
+        assert!(existing_indexer_in(indexer, &paths).is_none());
+        std::fs::set_permissions(&runtime, std::fs::Permissions::from_mode(0o700)).unwrap();
+        assert_eq!(existing_indexer_in(indexer, &paths), Some(tool.clone()));
+        assert_eq!(std::fs::read(tool).unwrap(), b"never execute this");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 2);
     }
 
     #[test]

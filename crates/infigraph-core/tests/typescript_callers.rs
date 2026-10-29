@@ -300,6 +300,29 @@ fn reindexing_unchanged_files_invalidates_compiler_enrichment() {
         vec!["app.ts::caller"]
     );
 
+    // Direct indexing is also a true no-op for the same source/grammar.
+    prism.index_file(std::path::Path::new("app.ts")).unwrap();
+    assert!(prism.coverage_notice().starts_with("Coverage:"));
+    assert_eq!(
+        backend.callers_of("app.ts::helper").unwrap(),
+        vec!["app.ts::caller"]
+    );
+    let receipt_path = dir.path().join(".infigraph/index-status.json");
+    let receipt_bytes = std::fs::read(&receipt_path).unwrap();
+    assert!(prism
+        .index_file(std::path::Path::new("missing.ts"))
+        .is_err());
+    assert_eq!(std::fs::read(&receipt_path).unwrap(), receipt_bytes);
+    // A malformed artifact is rejected before any native graph write.
+    let malformed = dir.path().join("malformed.scip");
+    std::fs::write(&malformed, [0xff]).unwrap();
+    assert!(backend.import_scip_index(&malformed, None).is_err());
+    assert_eq!(
+        backend.callers_of("app.ts::helper").unwrap(),
+        vec!["app.ts::caller"]
+    );
+    assert_eq!(std::fs::read(&receipt_path).unwrap(), receipt_bytes);
+
     // Watcher/batch indexing rewrites even an unchanged file and its symbols.
     assert_eq!(
         prism.index_files(&["app.ts".into()]).unwrap().indexed_files,
@@ -484,4 +507,41 @@ fn lexical_shadows_and_aliased_exports_never_select_private_same_name_functions(
             .unwrap()
             .is_empty());
     }
+}
+
+#[test]
+fn direct_index_file_change_invalidates_success_and_obsolete_worker() {
+    use infigraph_core::{
+        index_status::{self, StageOutcome, StageState},
+        Infigraph,
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let source = dir.path().join("app.ts");
+    std::fs::write(&source, "export const helper = () => 1;").unwrap();
+    let mut prism = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+    prism.init().unwrap();
+    prism.index().unwrap();
+    let backend = prism.backend().unwrap();
+    let run = index_status::current_run(dir.path()).unwrap().run_id;
+    index_status::update_current(dir.path(), &run, Some(backend), |r| {
+        r.scip.insert(
+            "scip-typescript".into(),
+            StageOutcome::new(StageState::Succeeded, "SCIP_IMPORTED"),
+        );
+        Ok(())
+    })
+    .unwrap()
+    .unwrap();
+    std::fs::write(&source, "export const helper = () => 2;").unwrap();
+    prism.index_file(&source).unwrap();
+    let report = index_status::current_run(dir.path()).unwrap();
+    assert_ne!(report.run_id, run);
+    assert!(report.scip.is_empty());
+    assert!(
+        index_status::update_current::<()>(dir.path(), &run, Some(backend), |_| {
+            panic!("late import must not attach to changed graph")
+        })
+        .unwrap()
+        .is_none()
+    );
 }

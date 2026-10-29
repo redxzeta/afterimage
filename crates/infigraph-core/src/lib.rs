@@ -492,9 +492,26 @@ impl Infigraph {
             .for_file_with_content(&rel, &source)
             .with_context(|| format!("no language for {rel}"))?;
         let extraction = extract::extract_file(&rel, &source, pack)?;
-        self.backend()
-            .context("call init() first")?
-            .upsert_file(&extraction)
+        let backend = self.backend().context("call init() first")?;
+        let status = if matches!(self.backend_kind, BackendKind::Kuzu(_)) {
+            Some(index_status::AstRun::begin(&self.root)?)
+        } else {
+            None
+        };
+        // Check under the receipt lock: a true no-op preserves compiler edges,
+        // while rewriting identical symbols would remove them.
+        if backend.get_file_hashes()?.get(&rel) == Some(&extraction.content_hash) {
+            if let Some(status) = status {
+                status.finish(backend, false, false)?;
+            }
+            return Ok(());
+        }
+        backend.upsert_file(&extraction)?;
+        let resolution = backend.resolve_calls(&[extraction], None);
+        if let Some(status) = status {
+            status.finish(backend, resolution.is_err(), true)?;
+        }
+        resolution.map(|_| ())
     }
 
     /// Index a batch of files by path, returning an IndexResult with all extractions.

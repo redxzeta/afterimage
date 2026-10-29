@@ -6,7 +6,23 @@ use infigraph_core::graph::GraphBackend;
 use infigraph_core::Infigraph;
 use infigraph_languages::bundled_registry;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum IndexMode {
+    Default,
+    AstOnly,
+    Enriched,
+}
+
 pub(crate) fn cmd_index(root: &Path, full: bool, no_embed: bool) -> Result<()> {
+    cmd_index_mode(root, full, no_embed, IndexMode::Default)
+}
+
+pub(crate) fn cmd_index_mode(
+    root: &Path,
+    full: bool,
+    no_embed: bool,
+    mode: IndexMode,
+) -> Result<()> {
     #[cfg(feature = "remote")]
     let remote = is_neo4j_backend();
     #[cfg(not(feature = "remote"))]
@@ -220,7 +236,7 @@ pub(crate) fn cmd_index(root: &Path, full: bool, no_embed: bool) -> Result<()> {
     }
 
     // Hint: suggest .infigraphignore if none exists
-    if !root.join(".infigraphignore").exists() {
+    if mode == IndexMode::Default && !root.join(".infigraphignore").exists() {
         eprintln!("\nhint: Create .infigraphignore in the project root to exclude non-source directories.");
         eprintln!("      Common entries:");
         eprintln!("        target/        # Rust build output");
@@ -244,9 +260,44 @@ pub(crate) fn cmd_index(root: &Path, full: bool, no_embed: bool) -> Result<()> {
         );
     }
 
+    let backend = prism.backend().context("graph not initialized")?;
+    let languages = languages_for_index(backend, &result)?;
+    let run_id = local_run_id(root)?;
+    if mode == IndexMode::AstOnly {
+        for indexer in crate::scip_download::indexers_for_languages(&languages) {
+            anyhow::ensure!(
+                record_scip(
+                    root,
+                    run_id.as_deref(),
+                    indexer.binary_name,
+                    StageOutcome::new(StageState::Skipped, "NOT_REQUESTED"),
+                )?,
+                "obsolete AST-only run"
+            );
+        }
+        eprintln!("Compiler enrichment NOT_REQUESTED (--ast-only).");
+        eprint!("{}", prism.coverage_notice());
+        return Ok(());
+    }
+    if mode == IndexMode::Enriched {
+        prepare_scip(root, &languages, run_id.as_deref())?;
+        preflight_scip(root, &languages, run_id.as_deref())?;
+        enrich_scip_with_tools(
+            root,
+            &languages,
+            run_id.as_deref(),
+            backend,
+            crate::scip_download::existing_indexer,
+        )?;
+    }
+
     // Compute and save embeddings — only for new/changed symbols
     if no_embed {
-        auto_scip(root, &result, prism.backend())?;
+        if mode == IndexMode::Default {
+            auto_scip(root, &result, prism.backend())?;
+        } else {
+            eprint!("{}", prism.coverage_notice());
+        }
         return Ok(());
     }
     {
@@ -279,6 +330,11 @@ pub(crate) fn cmd_index(root: &Path, full: bool, no_embed: bool) -> Result<()> {
     match crate::commands::cmd_index_docs(root, doc_ns) {
         Ok(()) => {}
         Err(e) => eprintln!("warning: document indexing failed: {e}"),
+    }
+
+    if mode == IndexMode::Enriched {
+        eprint!("{}", prism.coverage_notice());
+        return Ok(());
     }
 
     // Drop prism to release the GraphStore handle before background SCIP
@@ -561,7 +617,14 @@ fn record_scip(
         return Ok(true);
     };
     Ok(index_status::update_current(root, run_id, None, |report| {
-        report.scip.insert(label.into(), outcome);
+        if !report
+            .scip
+            .get(label)
+            .is_some_and(|stage| stage.state == StageState::Succeeded)
+            || outcome.reason == "NOT_REQUESTED"
+        {
+            report.scip.insert(label.into(), outcome);
+        }
         Ok(())
     })?
     .is_some())
@@ -634,6 +697,59 @@ fn prepare_scip(
             anyhow::bail!("obsolete enrichment run");
         }
     }
+    Ok(())
+}
+
+/// Inspect all requested prerequisites before launching any indexer. No downloads,
+/// package-manager invocation, or runtime provisioning is allowed on this path.
+fn preflight_scip(
+    root: &Path,
+    languages: &std::collections::HashSet<String>,
+    run_id: Option<&str>,
+) -> Result<()> {
+    preflight_scip_with_tools(
+        root,
+        languages,
+        run_id,
+        crate::scip_download::existing_indexer,
+    )
+}
+
+fn preflight_scip_with_tools(
+    root: &Path,
+    languages: &std::collections::HashSet<String>,
+    run_id: Option<&str>,
+    find_tool: impl Fn(&crate::scip_download::ScipIndexer) -> Option<std::path::PathBuf>,
+) -> Result<()> {
+    let mut failures = Vec::new();
+    for indexer in crate::scip_download::indexers_for_languages(languages) {
+        let label = indexer.binary_name;
+        if scip_succeeded(root, run_id, label)? {
+            continue;
+        }
+        let reason = if !should_run_indexer(root, indexer) {
+            Some("PROJECT_PREREQUISITE_MISSING")
+        } else if find_tool(indexer).is_none() {
+            Some("SCIP_TOOL_UNAVAILABLE")
+        } else {
+            None
+        };
+        if let Some(reason) = reason {
+            anyhow::ensure!(
+                record_scip(
+                    root,
+                    run_id,
+                    label,
+                    StageOutcome::new(StageState::Failed, reason)
+                )?,
+                "obsolete enrichment run"
+            );
+            failures.push(format!("{label}: {reason}"));
+        }
+    }
+    anyhow::ensure!(failures.is_empty(),
+        "{}; provide the existing indexer/runtime and project prerequisites, or explicitly use index --ast-only. No tools were installed; retry only after prerequisites change. See .infigraph/index-status.json",
+        failures.join("; "));
     Ok(())
 }
 
@@ -721,13 +837,7 @@ fn enrich_scip_with_tools(
                 }
             };
             if let Some(run_id) = run_id {
-                let current =
-                    index_status::update_current(root, run_id, Some(backend), |report| {
-                        let imported = import()?;
-                        report.indexed_file_fingerprint = index_status::file_fingerprint(backend)?;
-                        report.scip.insert(label.into(), imported.clone());
-                        Ok(imported)
-                    })?;
+                let current = import_current(root, run_id, label, backend, import)?;
                 let Some(imported) = current else {
                     anyhow::bail!("obsolete enrichment artifact discarded");
                 };
@@ -750,6 +860,30 @@ fn enrich_scip_with_tools(
     }
     anyhow::ensure!(!failed, "Partial index: analysis failed; the syntax graph remains available. See .infigraph/index-status.json");
     Ok(())
+}
+
+/// The receipt lock covers both the last ownership check and the storage write.
+/// A second worker for the same successful attempt must not import again.
+fn import_current(
+    root: &Path,
+    run_id: &str,
+    label: &str,
+    backend: &dyn infigraph_core::graph::GraphBackend,
+    import: impl FnOnce() -> Result<StageOutcome>,
+) -> Result<Option<StageOutcome>> {
+    index_status::update_current(root, run_id, Some(backend), |report| {
+        if let Some(stage) = report
+            .scip
+            .get(label)
+            .filter(|stage| stage.state == StageState::Succeeded)
+        {
+            return Ok(stage.clone());
+        }
+        let imported = import()?;
+        report.indexed_file_fingerprint = index_status::file_fingerprint(backend)?;
+        report.scip.insert(label.into(), imported.clone());
+        Ok(imported)
+    })
 }
 
 pub(crate) fn auto_scip(
@@ -1025,6 +1159,12 @@ fn run_scip_indexer_cmd(
             {
                 use std::os::unix::process::ExitStatusExt;
                 result.signal = status.signal();
+                if result
+                    .signal
+                    .is_some_and(|signal| signal == 2 || signal == 15)
+                {
+                    result.reason = "SCIP_PROCESS_CANCELLED".into();
+                }
             }
             result
         }
@@ -1706,6 +1846,7 @@ mod outcome_tests {
         assert_eq!(terminated.state, StageState::Failed);
         assert_eq!(terminated.exit_code, None);
         assert_eq!(terminated.signal, Some(15));
+        assert_eq!(terminated.reason, "SCIP_PROCESS_CANCELLED");
         fake_script(dir.path(), "exit 0");
         assert_eq!(
             run_scip_indexer_cmd(
@@ -1863,6 +2004,178 @@ mod pipeline_tests {
                 .file_name()
                 .to_string_lossy()
                 .starts_with("scip-run-")));
+    }
+
+    #[test]
+    fn explicit_modes_parse_and_ast_only_never_requests_enrichment() {
+        use clap::Parser;
+        assert!(
+            crate::Cli::try_parse_from(["infigraph", "index", "--ast-only", "--enriched"]).is_err()
+        );
+        assert!(
+            crate::Cli::try_parse_from(["infigraph", "index", "--enriched", "--no-embed"]).is_ok()
+        );
+        let dir = tempfile::tempdir().unwrap();
+        let source = b"export const helper = () => 1;";
+        std::fs::write(dir.path().join("app.ts"), source).unwrap();
+        std::fs::write(dir.path().join("index.scip"), b"retained").unwrap();
+        for _ in 0..2 {
+            cmd_index_mode(dir.path(), false, false, IndexMode::AstOnly).unwrap();
+            let report = index_status::load(dir.path()).unwrap();
+            assert_eq!(report.resolution.state, StageState::Succeeded);
+            assert_eq!(report.scip["scip-typescript"].state, StageState::Skipped);
+            assert_eq!(report.scip["scip-typescript"].reason, "NOT_REQUESTED");
+            assert!(!dir.path().join(".infigraph/embeddings.bin").exists());
+            assert!(!dir.path().join("CLAUDE.md").exists());
+            assert_eq!(std::fs::read(dir.path().join("app.ts")).unwrap(), source);
+            assert_eq!(
+                std::fs::read(dir.path().join("index.scip")).unwrap(),
+                b"retained"
+            );
+        }
+    }
+
+    #[test]
+    fn preflight_reports_all_missing_tools_without_launch_or_retry() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut prism = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+        prism.init().unwrap();
+        prism.index().unwrap();
+        let languages = ["typescript".to_string(), "python".to_string()]
+            .into_iter()
+            .collect();
+        let run = local_run_id(dir.path()).unwrap().unwrap();
+        let probes = std::cell::Cell::new(0);
+        let error = preflight_scip_with_tools(dir.path(), &languages, Some(&run), |_| {
+            probes.set(probes.get() + 1);
+            None
+        })
+        .unwrap_err();
+        assert!(error.to_string().contains("SCIP_TOOL_UNAVAILABLE"));
+        assert!(error
+            .to_string()
+            .contains("retry only after prerequisites change"));
+        assert_eq!(probes.get(), 2);
+        let report = index_status::load(dir.path()).unwrap();
+        assert!(report.has_failures());
+        assert_eq!(report.scip.len(), 2);
+        assert!(report
+            .scip
+            .values()
+            .all(|s| s.reason == "SCIP_TOOL_UNAVAILABLE"));
+    }
+
+    #[test]
+    fn same_attempt_import_is_guarded_at_the_storage_boundary() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("other.ts"), "export const independent = 1;").unwrap();
+        std::fs::write(
+            dir.path().join("app.ts"),
+            "export const helper = () => 1;\nexport const caller = () => {\n  return helper;\n};\nexport const ast = () => helper();",
+        )
+        .unwrap();
+        let mut prism = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
+        prism.init().unwrap();
+        prism.index().unwrap();
+        let backend = prism.backend().unwrap();
+        let run = local_run_id(dir.path()).unwrap().unwrap();
+        let label = "scip-typescript";
+        let artifact = dir.path().join("fixture.scip");
+        std::fs::write(
+            &artifact,
+            include_bytes!("../../../tests/fixtures/scip/compiler-reference.scip"),
+        )
+        .unwrap();
+        let ast_calls = backend
+            .raw_query(
+                "MATCH (a:Symbol)-[:CALLS]->(b:Symbol) WHERE a.id = 'app.ts::ast' RETURN b.id",
+            )
+            .unwrap();
+        assert!(!ast_calls.is_empty());
+        import_current(dir.path(), &run, label, backend, || {
+            backend.import_scip_index(&artifact, None)?;
+            Ok(StageOutcome::new(StageState::Succeeded, "SCIP_IMPORTED"))
+        })
+        .unwrap()
+        .unwrap();
+        let count = backend
+            .raw_query("MATCH (:Symbol)-[r:CALLS]->(:Symbol) RETURN count(r)")
+            .unwrap();
+        assert_eq!(count[0][0], "2");
+        assert_eq!(
+            backend
+                .raw_query(
+                    "MATCH (a:Symbol)-[:CALLS]->(b:Symbol) WHERE a.id = 'app.ts::ast' RETURN b.id"
+                )
+                .unwrap(),
+            ast_calls
+        );
+        for outcome in [
+            StageOutcome::new(StageState::Running, "SCIP_RUNNING"),
+            StageOutcome::new(StageState::Failed, "SCIP_PROCESS_FAILED"),
+        ] {
+            record_scip(dir.path(), Some(&run), label, outcome).unwrap();
+        }
+        import_current(dir.path(), &run, label, backend, || {
+            backend.import_scip_index(&artifact, None)?;
+            panic!("late same-attempt worker must not mutate storage")
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            backend
+                .raw_query("MATCH (:Symbol)-[r:CALLS]->(:Symbol) RETURN count(r)")
+                .unwrap(),
+            count
+        );
+        let receipt = std::fs::read(dir.path().join(".infigraph/index-status.json")).unwrap();
+        assert!(
+            import_current(dir.path(), "obsolete", label, backend, || panic!(
+                "obsolete worker must not import"
+            ))
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(
+            std::fs::read(dir.path().join(".infigraph/index-status.json")).unwrap(),
+            receipt
+        );
+        let malformed = dir.path().join("bad.scip");
+        std::fs::write(&malformed, [0xff]).unwrap();
+        assert!(backend.import_scip_index(&malformed, None).is_err());
+        assert!(prism.index_file(Path::new("missing.ts")).is_err());
+        assert_eq!(
+            std::fs::read(dir.path().join(".infigraph/index-status.json")).unwrap(),
+            receipt
+        );
+        prism.index_file(Path::new("app.ts")).unwrap();
+        assert_eq!(
+            index_status::load(dir.path()).unwrap().scip[label].state,
+            StageState::Succeeded
+        );
+        assert_eq!(
+            backend
+                .raw_query("MATCH (:Symbol)-[r:CALLS]->(:Symbol) RETURN count(r)")
+                .unwrap(),
+            count
+        );
+        let noop_run = local_run_id(dir.path()).unwrap().unwrap();
+        std::fs::write(dir.path().join("app.ts"), "export const helper = () => 2;").unwrap();
+        prism.index_file(Path::new("app.ts")).unwrap();
+        assert!(
+            import_current(dir.path(), &noop_run, label, backend, || panic!(
+                "newer source must reject previous no-op generation"
+            ))
+            .unwrap()
+            .is_none()
+        );
+        assert!(import_current(dir.path(), &run, label, backend, || panic!(
+            "changed source invalidates old worker"
+        ))
+        .unwrap()
+        .is_none());
+        assert!(index_status::load(dir.path()).unwrap().scip.is_empty());
+        assert_eq!(backend.symbols_in_file("other.ts").unwrap().len(), 1);
     }
 
     #[test]
