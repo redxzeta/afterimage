@@ -31,7 +31,7 @@ def limits():
 
 
 def run_case(binary, base, name, *, always_crash=False, cli_exit=0,
-             indexed=True, symlink=False, backend="kuzu", signal=11):
+             indexed=True, symlink=False, backend="kuzu", signal=11, profile="normal"):
     case = base / name
     active = case / "active"
     unrelated = case / "unrelated"
@@ -57,15 +57,15 @@ def run_case(binary, base, name, *, always_crash=False, cli_exit=0,
     env = {**os.environ, "HOME": str(home), "INFIGRAPH_REGISTRY_HOME": str(home),
            "INFIGRAPH_BACKEND": backend, "TEST_COUNT": str(count), "TEST_CALLS": str(calls),
            "TEST_ALWAYS_CRASH": str(int(always_crash)), "TEST_CLI_EXIT": str(cli_exit),
-           "TEST_SIGNAL": str(signal)}
+           "TEST_SIGNAL": str(signal), "INFIGRAPH_MCP_PROFILE": profile}
     result = subprocess.run([str(binary), "--mcp", "--port=31415"], cwd=active, env=env,
                             input=b"client-request\n", capture_output=True, timeout=10,
                             preexec_fn=limits)
-    expected_attempts = 2 if signal == 11 else 1
+    expected_attempts = 2 if signal == 11 and profile == "normal" else 1
     assert len(count.read_text().splitlines()) == expected_attempts, result.stderr
-    assert result.returncode == (1 if always_crash or signal != 11 else 0), result.stderr
+    assert result.returncode == (1 if always_crash or signal != 11 or profile != "normal" else 0), result.stderr
     assert result.stdout == b"", result.stdout  # CLI output never enters MCP transport.
-    expected_reindex = signal == 11 and indexed and not symlink and backend == "kuzu"
+    expected_reindex = signal == 11 and indexed and not symlink and backend == "kuzu" and profile == "normal"
     assert calls.exists() == expected_reindex
     if expected_reindex:
         assert calls.read_text().splitlines() == [str(active), "index", "1"]
@@ -187,6 +187,8 @@ exit "$TEST_CLI_EXIT"
         run_case(binary, base, "no-launch-index", indexed=False)
         run_case(binary, base, "symlink-index", symlink=True)
         run_case(binary, base, "remote-backend", backend="neo4j")
+        run_case(binary, base, "read-only-crash-never-reindexes", profile="read-only")
+        run_case(binary, base, "invalid-profile-never-reindexes", profile="read-onyl")
         run_case(binary, base, "sigill-does-not-trigger-reindex", signal=4)
         run_case(binary, base, "sigterm-does-not-trigger-reindex", signal=15)
         tests = base / "supervisor-tests"

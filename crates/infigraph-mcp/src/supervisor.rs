@@ -19,6 +19,9 @@ pub fn run(args: &[String], home: Option<&Path>, log: Log) -> std::io::Result<i3
             .stderr(Stdio::inherit())
             .status()?;
 
+        if !crate_profile_permits_recovery() {
+            return Ok(status.code().unwrap_or(1));
+        }
         if crashed(status) && !recovery_attempted {
             recovery_attempted = true;
             log(
@@ -36,6 +39,10 @@ pub fn run(args: &[String], home: Option<&Path>, log: Log) -> std::io::Result<i3
         }
         return Ok(status.code().unwrap_or(1));
     }
+}
+
+fn crate_profile_permits_recovery() -> bool {
+    std::env::var("INFIGRAPH_MCP_PROFILE").map_or(true, |v| v == "normal")
 }
 
 fn crashed(status: ExitStatus) -> bool {
