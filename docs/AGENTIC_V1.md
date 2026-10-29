@@ -1,22 +1,50 @@
 # Agentic V1: acceptance, evaluation and runbook
 
-**Final M2: scoped source/local and combined functional acceptance READY.**
-Six practical sessions were completed and independently scored before arm mapping;
-five are budget-pass/AUDIT_LIMITED and one is INVALID. The pilot supports optional
-source-verified read-only investigation, not an advantage over ordinary file search.
-Default-branch adoption remains NOT_ADOPTED. No further runs are requested.
+**M3 product integration VERIFIED.** #16, #18, #19 and #20 are merged.
+Default product commit `5260ebc206294f5c55ca56e1be649a57bdd98f0c` has tree
+`abcdd0ef46b3a2806d6beede5e3ca8beaad71f94`, exactly the native candidate tree.
+Scoped M3 smoke is PENDING until actual Terra receipts. Installation/runtime
+activation is not established. The completed M2 exploratory pilot and its limits are unchanged.
 
-M2 policy: **Nathan authorized execution and explicitly waived hosted CI.**
-The earlier connector/tool merge refusal is a platform execution boundary,
-not withheld owner permission. We do not execute merges, default-branch pushes
-or alternate routes around that action. No protection/workflow changes bypass
-the refusal. Focused local evidence counts; skipped/failed checks retain their
-real status. #16's provenance review is complete; #13, #16 and #17 remain open.
-This document stays in existing report PR #15, which is also unmerged.
-No deployments, installation changes, global hooks, permanent service or live
-index operations are part of V1.
+Nathan authorized execution and waived hosted CI. The earlier #16 tool refusal
+is historical: the normal expected-head GitHub merge subsequently succeeded.
+ChatGPT is the sole remote merge/close executor for M3; this reviewer does not
+merge or push the default branch. A later #19 merge attempt returned HTTP405/source
+conflict; a subsequent correction steer was safety-blocked and is not retried
+through another route. The original authorized task had already produced the
+legitimate conflict correction; its normal merge then succeeded. No new
+branch-mutation authority is inferred from the blocked duplicate steer.
+No deployment, installation, authentication change, global hook, service,
+release or live-index operation is part of this milestone.
 
-## Final scoped acceptance
+## M3 verified integration state
+
+- #16 merged at `d10e1652f039f0e397c901f3447d872a4a828e25`, retaining parents
+  dc45de6e and original PR head662b245. All four original attributed picks
+  `e119b697`, `ba76d6fc`, `0a24b918`, `e83fe4f9` are retained ancestors with
+  their original `-x` trailers. No new provenance campaign was required.
+- #18 merged at `cef0fda488ed94952822999bacfac7d9cca3c370`.
+- #20 merged at `959a450b81b06614ae93138e26d781339cc5b744`.
+- Published #19 head `ba4cb40577fdfd1a84484dbe70c7dd74709342a8` has parents
+  accepted9ec80e8 and959a450; tree `abcdd0ef46b3a2806d6beede5e3ca8beaad71f94`.
+  Independent source review confirms all three appended #18 test blocks and
+  corrected #19 stale-worker block unchanged, including `update_current::<()>`,
+  panic and stale-generation assertions. Earlier #19 no-op/malformed-artifact
+  assertions also remain. Whitespace passes. The source-complete candidate is
+  independently verified merge #19 at `5260ebc206294f5c55ca56e1be649a57bdd98f0c`
+  has parents959a450 andba4cb405 and that same exact tree. Source is now on the
+  default branch; installation is not established.
+- #13 closed as superseded after #16; #10 closed as a retired provisional design
+  after #20, per caller handoff. #10's Git-dirty/pending-queue advisories are not
+  claimed to be identical to #20. Branches/evidence are preserved.
+- Terra owns the sole native slot for focused M3 smoke. Exact candidate/tree,
+  outcomes and final default-branch coverage will be recorded from actual receipts;
+  the older M2 tree and tests are not relabelled M3 evidence. Runner reports a
+  bounded offline CLI/MCP build exit0/34.017s on private candidate commit
+  `d9b1804e13e85a7bc73ea8b394cee7fe0794d899`; raw/final scoped-smoke receipts
+  remain pending here. Matching trees avoid a redundant build on merge metadata.
+
+## Completed M2 acceptance (historical adoption snapshot)
 
 One milestone acceptance matrix (base **dc45de6e5769c1d86116167dcb1660d9561736c8**).
 PR-level READY means independent source review plus accepted focused author-local
@@ -360,11 +388,28 @@ reports the prior reviewer pause was a provider-quota stop, not a code failure;
 it supplies no failing product evidence. This finite source-review turn has
 launched no provider retries or duplicate pilot sessions.
 
-## Short agent runbook
+## Short opt-in local runbook
+
+Use existing verified binaries and an explicit owner-approved local checkout;
+indexing is a separate requested write, never a read-tool fallback. No installation
+or global MCP configuration is implied:
+
+```sh
+cd -- "$EXPLICIT_CHECKOUT"
+"$AFTERIMAGE_CLI" index --ast-only
+INFIGRAPH_MCP_PROFILE=read-only "$AFTERIMAGE_MCP" --mcp
+```
+
+AST-only success covers syntax stages, not compiler completeness. Inspect the
+returned project identity/coverage before using the ten-tool server. Stop the
+foreground server with Ctrl-C; disable use by omitting it from the next session.
+No daemon, hook or persistent registration needs removal. Fall back to source
+reads on missing, stale, partial, incompatible or wrongly scoped graph results.
+
 
 1. Select the intended absolute worktree root explicitly; confirm returned
    identity matches it. Similar repo names and matching HEAD are insufficient.
-   Use the reviewed opt-in read-only profile once published; do not change
+   Use the reviewed opt-in read-only profile; do not change
    global MCP registrations, AGENTS/CLAUDE files or unconditional hooks.
 2. Inspect coverage/stage metadata first. Missing/stale/partial receipts permit
    only qualified graph navigation. They do not imply current source coverage,
@@ -387,8 +432,8 @@ launched no provider retries or duplicate pilot sessions.
 
 Acceptance is per artifact: source/local READY, combined functional ACCEPTED in
 the focused scope, pilot COMPLETED/EXPLORATORY with one invalid run and audit
-limits, default adoption NOT_ADOPTED. Nothing here grants runtime authority or
-bypasses the prior merge-tool refusal.
+limits. Its NOT_ADOPTED cells describe the M2 snapshot; current M3 merge state
+is above. Nothing here claims installation or grants runtime authority.
 
 ## Historical appendix: baseline and prior joint attempt
 

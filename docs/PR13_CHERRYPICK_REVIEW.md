@@ -2,13 +2,16 @@
 
 Review date: 2026-10-26 (America/Los_Angeles).
 
-Policy update, 2026-10-27: the source/provenance audit below is complete.
-Nathan subsequently authorized execution and accepted bypassing hosted CI.
-The connector/tool refused a merge action, so merges and alternate routes remain
-unexecuted at that platform boundary; this is not withheld owner permission. The
-historical failed run below is preserved; it is not a new V1 hosted-CI gate.
-Current scoped acceptance, pilot and runbook live in [AGENTIC_V1.md](AGENTIC_V1.md).
-No further #16 rebuild/review campaign is required by that milestone.
+Current M3 update: #16 was merged by the normal expected-head GitHub tool at
+`d10e1652f039f0e397c901f3447d872a4a828e25`; its four original authored picks
+remain ancestors with `-x` provenance. Old #13 was then closed as superseded.
+Nathan waived hosted CI; the earlier tool refusal is historical, not permanent
+withheld permission. ChatGPT owns M3 remote merges/closures; the reviewer does
+source/docs work. Current integration and optional-use status is in
+[AGENTIC_V1.md](AGENTIC_V1.md). No repeat provenance audit is needed.
+
+The following disposition and failure evidence are **historical**, before the
+CI waiver and successful merge; no failed check is relabelled green.
 
 **Disposition: HOLD / replacement CI failed.** Independent source review of
 [PR #16](https://github.com/redxzeta/afterimage/pull/16) at
