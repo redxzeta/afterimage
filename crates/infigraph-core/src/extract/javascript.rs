@@ -193,7 +193,7 @@ fn collect_bindings(
 fn pattern_contains(node: Node<'_>, name: &str, source: &[u8]) -> bool {
     if matches!(
         node.kind(),
-        "identifier" | "type_identifier" | "shorthand_property_identifier_pattern"
+        "identifier" | "shorthand_property_identifier_pattern"
     ) {
         return text(node, source) == name;
     }
@@ -211,7 +211,12 @@ fn has_binding(node: Node<'_>, name: &str, source: &[u8]) -> bool {
     {
         return true;
     }
-    if matches!(node.kind(), "variable_declarator" | "class_declaration") {
+    if node.kind() == "class_declaration" {
+        return node
+            .child_by_field_name("name")
+            .is_some_and(|n| text(n, source) == name);
+    }
+    if node.kind() == "variable_declarator" {
         return node
             .child_by_field_name("name")
             .is_some_and(|n| pattern_contains(n, name, source));
