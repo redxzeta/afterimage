@@ -712,8 +712,19 @@ pub fn handle_tools_list_with_profile(id: &Value, profile: profile::McpProfile) 
         for tool in &mut tools {
             tool["annotations"] =
                 json!({"readOnlyHint":true,"destructiveHint":false,"openWorldHint":false});
-            if tool["name"] == "search_symbols" {
-                tool["description"] = json!("Read-only lexical BM25 search of the existing local symbol graph. No models, downloads, caches, or watchers. Returns exact symbol IDs and source ranges. Limit defaults to 10 (maximum 1000).");
+            let description = match tool["name"].as_str().unwrap_or("") {
+                "search_symbols" => Some("Optionally search the existing local symbol graph using lexical BM25. Copy a returned symbol_id for other tools. Limit defaults to 10 (maximum 1000). No models, downloads, caches, or watchers."),
+                "get_symbols_in_file" => Some("Optionally list indexed symbols and ranges in a file. Copy a returned symbol_id for other tools."),
+                "trace_callers" => Some("Optionally inspect indexed direct callers. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callers. Sibling methods are excluded by default; expand_interface=true includes indexed callers of sibling methods."),
+                "trace_callees" => Some("Optionally inspect indexed direct callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callees."),
+                "transitive_impact" => Some("Optionally inspect reverse CALLS edges up to depth. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Sibling methods are excluded by default; expand_interface=true includes indexed impact through sibling methods."),
+                "get_code_snippet" => Some("Optionally retrieve a source snippet for a symbol. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
+                "symbol_context" => Some("Optionally inspect indexed context for a symbol, including callers and callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
+                "get_file_deps" => Some("Optionally inspect indexed file import dependencies and dependents."),
+                _ => None,
+            };
+            if let Some(description) = description {
+                tool["description"] = json!(format!("{description} Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source."));
             }
         }
     }

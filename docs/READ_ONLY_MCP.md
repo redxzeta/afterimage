@@ -55,6 +55,21 @@ allows `_meta`; newer `structuredContent` is not assumed. Essential evidence als
 appears in text for clients that discard metadata. `diagnose` retains versioned JSON text without a prose footer; in read-only mode
 it adds `analysis_evidence` containing the same scope and coverage warnings. No full graph is serialized twice.
 
+For raw JSON-RPC, inspect the top-level `error` first, then `result.isError`.
+For example, a successful graph call may return:
+
+```json
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"No callers found\nProject: /workspace/topic-checkout\nFreshness: unknown. Empty graph results do not prove absence."}],"_meta":{"afterimage":{"schema_version":1}}}}
+```
+
+Read `result.content[0].text` as a string and check its warnings. Graph tool
+text is prose; `diagnose` text is JSON and can be parsed as such. Metadata is
+optional for consumers; a client wrapper may already unwrap `result`. Discover
+the actual names and schemas with `tools/list` rather than invoking a placeholder
+such as `TOOL`. These tools are optional aids: verify current source, including
+when a graph result is empty. Confirm the process and profile you are using;
+do not assume a global MCP registration points to this server.
+
 Example text (project paths are illustrative):
 
 ```text
