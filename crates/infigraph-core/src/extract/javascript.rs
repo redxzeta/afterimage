@@ -113,6 +113,7 @@ pub(super) fn imported_call(node: Node<'_>, root: Node<'_>, source: &[u8]) -> Op
             && matches!(
                 scope.kind(),
                 "statement_block"
+                    | "class"
                     | "arrow_function"
                     | "function_declaration"
                     | "generator_function_declaration"
@@ -154,7 +155,10 @@ fn collect_bindings(
                 .named_children(&mut cursor)
                 .find(|n| n.kind() == "identifier")
             {
-                imports.insert(text(local, source).to_owned(), (module.to_owned(), "*".into()));
+                imports.insert(
+                    text(local, source).to_owned(),
+                    (module.to_owned(), "*".into()),
+                );
             }
             return;
         }
@@ -211,7 +215,7 @@ fn has_binding(node: Node<'_>, name: &str, source: &[u8]) -> bool {
     {
         return true;
     }
-    if node.kind() == "class_declaration" {
+    if matches!(node.kind(), "class_declaration" | "class") {
         return node
             .child_by_field_name("name")
             .is_some_and(|n| text(n, source) == name);
