@@ -57,9 +57,46 @@ fn node_condition_text<'a>(node: Node<'a>, source: &'a [u8], kind: &str) -> Stri
 fn truncate_condition(text: &str) -> String {
     let cleaned: String = text.chars().filter(|c| !c.is_control()).collect();
     if cleaned.len() > 120 {
-        format!("{}...", &cleaned[..117])
+        let mut end = 117;
+        while !cleaned.is_char_boundary(end) {
+            end -= 1;
+        }
+        format!("{}...", &cleaned[..end])
     } else {
         cleaned
+    }
+}
+
+#[cfg(test)]
+mod truncation_tests {
+    use super::truncate_condition;
+
+    #[test]
+    fn truncates_at_utf8_boundaries() {
+        for character in ["⠏", "😀", "\u{301}"] {
+            for offset in 114..=118 {
+                let prefix = "a".repeat(offset);
+                let input = format!("{prefix}{character}{}", "z".repeat(10));
+                let result = truncate_condition(&input);
+                let body = result.strip_suffix("...").unwrap();
+                assert!(result.len() <= 120);
+                assert!(input.starts_with(body));
+                assert!(body.len() <= 117);
+                assert!(body.len() + input[body.len()..].chars().next().unwrap().len_utf8() > 117);
+            }
+        }
+    }
+
+    #[test]
+    fn preserves_short_and_ascii_conditions() {
+        for input in ["", "⠏😀e\u{301}", &"a".repeat(120), &"⠏".repeat(40)] {
+            assert_eq!(truncate_condition(input), input);
+        }
+        assert_eq!(
+            truncate_condition(&"a".repeat(121)),
+            format!("{}...", "a".repeat(117))
+        );
+        assert_eq!(truncate_condition("a\nb"), "ab");
     }
 }
 
@@ -230,6 +267,15 @@ mod tests {
         let kinds: Vec<&str> = stmts.iter().map(|s| s.kind.as_str()).collect();
         assert!(kinds.contains(&"If"), "expected If, got {:?}", kinds);
         assert!(kinds.contains(&"Else"), "expected Else, got {:?}", kinds);
+    }
+
+    #[test]
+    fn test_python_if_with_multibyte_condition_at_cutoff() {
+        let condition = format!("'{}⠏{}'", "a".repeat(115), "z".repeat(10));
+        let source = format!("def check():\n    if {condition}:\n        pass\n");
+        let stmts = parse_python(&source);
+        let stmt = stmts.iter().find(|s| s.kind == StatementKind::If).unwrap();
+        assert_eq!(stmt.condition, format!("'{}...", "a".repeat(115)));
     }
 
     #[test]
