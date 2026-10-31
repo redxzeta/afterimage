@@ -174,6 +174,36 @@ fn curated_discovery_and_manual_calls_enforce_the_same_boundary() {
 }
 
 #[test]
+fn read_only_discovery_preserves_schema_and_gives_scoped_guidance() {
+    let original = infigraph_mcp::build_tools_list();
+    let normal = handle_tools_list_with_profile(&json!(1), McpProfile::Normal);
+    assert_eq!(normal["result"]["tools"], json!(original));
+    let list = handle_tools_list_with_profile(&json!(1), McpProfile::ReadOnly);
+    let tools = list["result"]["tools"].as_array().unwrap();
+    let names: std::collections::BTreeSet<_> =
+        tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
+    assert_eq!(names, profile::READ_ONLY_TOOLS.iter().copied().collect());
+    assert_eq!(tools.len(), 10);
+    for tool in tools {
+        let name = tool["name"].as_str().unwrap();
+        let original_tool = original.iter().find(|t| t["name"] == name).unwrap();
+        assert_eq!(tool["inputSchema"], original_tool["inputSchema"]);
+        assert_eq!(
+            tool["annotations"],
+            json!({"readOnlyHint":true,"destructiveHint":false,"openWorldHint":false})
+        );
+        let description = tool["description"].as_str().unwrap();
+        assert!(!description.contains("`search`"), "{name}: {description}");
+        assert!(!description.contains("INSTEAD OF"), "{name}: {description}");
+        assert!(!description.contains("BEFORE"), "{name}: {description}");
+        if !["diagnose", "get_stats"].contains(&name) {
+            assert!(description.contains("Verify current source"), "{name}");
+            assert!(description.contains("not exhaustive"), "{name}");
+        }
+    }
+}
+
+#[test]
 fn path_typos_are_errors_before_cwd_or_activity_selection() {
     for profile in [McpProfile::Normal, McpProfile::ReadOnly] {
         for key in [
