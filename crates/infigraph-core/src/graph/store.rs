@@ -59,6 +59,19 @@ pub fn is_lock_contention_error(err: &anyhow::Error) -> bool {
         .any(|cause| cause.to_string().contains("Could not set lock on file"))
 }
 
+/// Read-only checkpoint refusals that may clear when a concurrent writer finishes.
+/// A pending recovery can also survive a crashed writer, so callers must bound
+/// retries and return the original error rather than attempting write recovery.
+pub fn is_read_only_checkpoint_error(err: &anyhow::Error) -> bool {
+    err.chain().any(|cause| {
+        let message = cause.to_string();
+        message.contains("Cannot open database in read-only mode while checkpoint is in progress.")
+            || message.contains(
+                "Cannot open database in read-only mode while checkpoint recovery is pending.",
+            )
+    })
+}
+
 /// lbug's `DatabaseHeader` refusal for a data file stamped with a storage
 /// version this build cannot read ("Trying to read a database file with a
 /// different version. Database file version: N, Current build storage

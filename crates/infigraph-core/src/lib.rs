@@ -61,28 +61,30 @@ pub fn build_hash() -> &'static str {
 
 // Shared refusal classification for code, document and combined stores.
 use graph::store::{
-    is_lock_contention_error, is_storage_version_mismatch_error, storage_version_mismatch_context,
+    is_lock_contention_error, is_read_only_checkpoint_error, is_storage_version_mismatch_error,
+    storage_version_mismatch_context,
 };
 
-/// Open the Kùzu graph, retrying briefly on lock contention (AIF3X-331 #36).
+/// Open the Kùzu graph, retrying briefly on caller-selected availability errors.
 ///
 /// The graph is single-writer: while a watcher's per-reindex write holds the
 /// lock (~milliseconds), a concurrent open fails with "Could not set lock on
 /// file". That window is transient, so rather than hard-fail a reader/opener
 /// immediately, poll with exponential backoff (1ms doubling to a 200ms cap) up
 /// to `budget`, then surface the error. A genuinely stuck holder still fails
-/// after the budget. Non-lock errors (e.g. real corruption) return immediately
+/// after the budget. Other errors (e.g. real corruption) return immediately
 /// so the caller's wipe/rebuild path isn't delayed.
 fn open_kuzu_with_retry<T>(
     mut open: impl FnMut() -> Result<T>,
     budget: std::time::Duration,
+    retryable: impl Fn(&anyhow::Error) -> bool,
 ) -> Result<T> {
     let start = std::time::Instant::now();
     let mut delay = std::time::Duration::from_millis(1);
     loop {
         match open() {
             Ok(v) => return Ok(v),
-            Err(e) if is_lock_contention_error(&e) && start.elapsed() < budget => {
+            Err(e) if retryable(&e) && start.elapsed() < budget => {
                 let remaining = budget.saturating_sub(start.elapsed());
                 std::thread::sleep(delay.min(remaining));
                 delay = (delay * 2).min(std::time::Duration::from_millis(200));
@@ -163,6 +165,7 @@ impl Infigraph {
             _ => match open_kuzu_with_retry(
                 || graph::KuzuBackend::open(&self.db_path),
                 std::time::Duration::from_secs(3),
+                is_lock_contention_error,
             ) {
                 Ok(kb) => {
                     self.backend_kind = BackendKind::Kuzu(kb);
@@ -274,12 +277,13 @@ impl Infigraph {
                 anyhow::bail!("neo4j backend requested but binary compiled without `neo4j` feature")
             }
             _ => {
-                // Retry briefly on lock contention: a reader landing during a
-                // watcher's per-reindex write window should wait it out, not
-                // hard-fail (AIF3X-331 #36).
+                // A watcher may be closing/checkpointing after emitting an event.
+                // Retry only native availability refusals; persistent recovery
+                // still fails after the budget, without opening a writer.
                 let kb = open_kuzu_with_retry(
                     || graph::KuzuBackend::open_read_only(&self.db_path),
                     std::time::Duration::from_secs(3),
+                    |e| is_lock_contention_error(e) || is_read_only_checkpoint_error(e),
                 )?;
                 self.backend_kind = BackendKind::Kuzu(kb);
                 Ok(())
@@ -769,6 +773,7 @@ mod tests {
                 }
             },
             std::time::Duration::from_secs(2),
+            is_lock_contention_error,
         );
         assert_eq!(
             result.unwrap(),
@@ -791,6 +796,7 @@ mod tests {
                 ))
             },
             std::time::Duration::from_millis(50),
+            is_lock_contention_error,
         );
         assert!(
             result.is_err(),
@@ -817,6 +823,7 @@ mod tests {
                 ))
             },
             std::time::Duration::from_secs(5),
+            is_lock_contention_error,
         );
         assert!(result.is_err());
         assert_eq!(
@@ -824,6 +831,57 @@ mod tests {
             1,
             "a non-lock (corruption) error must not be retried"
         );
+    }
+
+    #[test]
+    fn read_only_checkpoint_retry_is_bounded_and_selective() {
+        for message in [
+            "Cannot open database in read-only mode while checkpoint is in progress. Please retry later.",
+            "Cannot open database in read-only mode while checkpoint recovery is pending. If another process is checkpointing, retry after it finishes; otherwise reopen in read-write mode to complete recovery before reopening read-only.",
+        ] {
+            let mut attempts = 0;
+            let result = open_kuzu_with_retry(
+                || {
+                    attempts += 1;
+                    if attempts < 3 {
+                        Err(anyhow::anyhow!(message).context("read-only open"))
+                    } else {
+                        Ok(())
+                    }
+                },
+                std::time::Duration::from_secs(1),
+                is_read_only_checkpoint_error,
+            );
+            assert!(result.is_ok());
+            assert_eq!(attempts, 3);
+
+            let start = std::time::Instant::now();
+            let result: Result<()> = open_kuzu_with_retry(
+                || Err(anyhow::anyhow!(message)),
+                std::time::Duration::from_millis(20),
+                is_read_only_checkpoint_error,
+            );
+            assert_eq!(result.unwrap_err().to_string(), message);
+            assert!(start.elapsed() >= std::time::Duration::from_millis(20));
+        }
+        for message in [
+            "Checksum verification failed, the WAL file is corrupted.",
+            "Database ID for temporary file 'graph.wal.checkpoint' does not match the current database.",
+            "Trying to read a database file with a different version.",
+            "Permission denied",
+        ] {
+            let mut attempts = 0;
+            let result: Result<()> = open_kuzu_with_retry(
+                || {
+                    attempts += 1;
+                    Err(anyhow::anyhow!(message))
+                },
+                std::time::Duration::from_secs(1),
+                is_read_only_checkpoint_error,
+            );
+            assert_eq!(result.unwrap_err().to_string(), message);
+            assert_eq!(attempts, 1);
+        }
     }
 
     /// Regression test for a second data-loss bug in the same area: a Kuzu
