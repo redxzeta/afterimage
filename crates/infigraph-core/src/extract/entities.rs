@@ -190,7 +190,29 @@ pub fn extract_entities(
             });
         }
 
-        if let (Some(name), Some(node), Some(sym_kind)) = (name_text, def_node, kind) {
+        if let (Some(name), Some(mut node), Some(mut sym_kind)) = (name_text, def_node, kind) {
+            if sym_kind == SymbolKind::Variable
+                && matches!(language, "typescript" | "tsx" | "javascript")
+            {
+                let mut cursor = node.walk();
+                let declaration = if node.kind() == "variable_declarator" {
+                    Some(node)
+                } else {
+                    node.named_children(&mut cursor).find(|n| {
+                        n.kind() == "variable_declarator"
+                            && n.child_by_field_name("name")
+                                .is_some_and(|n| node_text(n, source) == name)
+                    })
+                };
+                if let Some((declaration, generator)) = declaration.and_then(|d| {
+                    super::javascript::effect_function(d, source).map(|g| (d, g))
+                }) {
+                    node = declaration;
+                    sym_kind = SymbolKind::Function;
+                    params_capture = extract_child_text(generator, "parameters", source);
+                    return_type_capture = extract_child_text(generator, "return_type", source);
+                }
+            }
             let span = Span {
                 file: file.to_string(),
                 start_line: node.start_position().row as u32 + 1,
