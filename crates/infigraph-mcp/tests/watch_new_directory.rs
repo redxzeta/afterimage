@@ -78,7 +78,7 @@ fn names(root: &Path) -> Vec<String> {
         match KuzuBackend::open_read_only(&root.join(".infigraph/graph")) {
             Ok(reader) => break reader,
             Err(error)
-                if error.to_string().contains("checkpoint is in progress")
+                if infigraph_core::graph::store::is_read_only_checkpoint_error(&error)
                     && Instant::now() < deadline =>
             {
                 std::thread::sleep(Duration::from_millis(10));
