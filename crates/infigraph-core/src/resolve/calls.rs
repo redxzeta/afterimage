@@ -397,16 +397,24 @@ pub(crate) fn resolve_pairs(
 
                 let target_name = rel.target_id.rsplit("::").next().unwrap_or(&rel.target_id);
 
-                // JS/TS identifiers carry their import binding from the AST. A
-                // module dependency alone never establishes a callable binding.
-                if matches!(ext.language.as_str(), "typescript" | "tsx" | "javascript")
-                    && rel.receiver.is_none()
-                {
+                // JS/TS calls carry their binding from the AST, including members.
+                // Never send an unknown receiver through global name heuristics.
+                if matches!(ext.language.as_str(), "typescript" | "tsx" | "javascript") {
                     let raw = rel
                         .target_id
                         .strip_prefix(&format!("{}::", ext.file))
                         .unwrap_or(&rel.target_id);
-                    let target = if let Some((specifier, exported)) = raw.rsplit_once("::") {
+                    let target = if let Some(local) = ext.symbols.iter().find(|s| {
+                        s.id == rel.target_id
+                            && matches!(
+                                s.kind,
+                                crate::model::SymbolKind::Function
+                                    | crate::model::SymbolKind::Method
+                                    | crate::model::SymbolKind::Test
+                            )
+                    }) {
+                        Some(local.id.clone())
+                    } else if let Some((specifier, exported)) = raw.rsplit_once("::") {
                         modules.resolve(&ext.file, specifier).and_then(|file| {
                             let id = format!("{file}::{exported}");
                             symbol_map
@@ -419,6 +427,8 @@ pub(crate) fn resolve_pairs(
                                 })
                                 .map(|(id, _, _)| id.clone())
                         })
+                    } else if rel.receiver.is_some() {
+                        None
                     } else {
                         // No imported binding: only an actual local callable is
                         // eligible. Unknown globals stay explicitly unresolved.
