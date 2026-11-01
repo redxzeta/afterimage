@@ -52,8 +52,18 @@ Rust **1.98.1** was installed only in the private task tooling cache, without
 changing system/toolchain defaults. All **24 focused tests passed**: Effect 3,
 JSX 3, snapshots 4, TS members 2, read-only MCP 10, CLI refresh 2. The member
 suite passed again with computed/dynamic property negatives. Workspace formatting
-passed. The initial Rust 1.99.1 verifier refusal is superseded by the final
-exact-toolchain verification receipt recorded in the PR.
+passed. The complete repository verifier then passed at
+`ac742712e1f02965c5f7eccd1220d6e04730ece5` in **613.512 s**: 794 Rust test
+executions, 20 Python tests and 10 supervisor scenarios, with zero failures or
+ignored Rust tests. See the [validation receipt](M6-VALIDATION.json). The first
+full attempt found two schema-parity failures, fixed by adding the matching
+existing Cozo schema-only declaration; all ten parity tests and the complete
+rerun passed. Subsequent report/evidence edits do not change tested source code.
+
+Repository Actions were disabled at delivery; no hosted jobs ran, and no workflow
+was enabled or dispatched. Branch protection was absent and rulesets were empty.
+Optional Neo4j compilation was unavailable in the offline cache because
+`async-trait v0.1.91` was missing; no remote runtime was exercised.
 
 Coverage includes aliases, type-only imports, local/hoisted shadows, intrinsics,
 unknown and computed receivers, `Math.max/min`, `Effect.exit`, Effect factories,
@@ -96,6 +106,9 @@ T3Code index or a second agent experiment. No target application was run.
 Refresh took **11.082 s**, with reported maximum child RSS **335,260 KiB**;
 this is not simultaneous process-family RSS or a full-checkout estimate. A second
 refresh took **3.431 s**, returned `NO_OP`, and preserved the selection pointer.
+The warm-cache candidate CLI/MCP build reported **11.95 s**. Cold dependency and
+toolchain setup, and total export-copy duration, were not independently timed;
+cold-start cost remains **UNKNOWN**.
 The graph contained 11 modules/files, 1,722 symbols and 639 CALLS edges.
 Index resolution reported 915 resolved and 3,382 unresolved relations; these
 counters are not unique graph-edge counts or an accuracy denominator.

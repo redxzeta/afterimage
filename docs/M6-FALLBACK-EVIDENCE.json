@@ -1036,7 +1036,8 @@
       "apps/web/src/components/chat/ChatComposer.tsx": "6f997a3e31362a3237444ff719107e5c2f2ef9512e46399c329d422feeefaeef",
       "apps/server/src/orchestration-v2/EffectOutbox.ts": "43c0e9dca2c6339409713ff6b4dfe5aa31821f107e5ad3a0cb2348944910ea66"
     },
-    "copy_seconds": 0.018012972082942724
+    "initial_nine_file_copy_seconds": 0.018012972082942724,
+    "copy_timing_note": "Only the initial nine-file export was timed. Two supplementary file copies were not timed; total export setup duration is UNKNOWN."
   },
   "graph_manifest": {
     "schema_version": 1,
