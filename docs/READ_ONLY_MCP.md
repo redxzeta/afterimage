@@ -21,7 +21,10 @@ return HTTP 403 in read-only mode.
    default 10 matches, maximum 1000) or `get_symbols_in_file`. Copy the exact
    `symbol_id` into `symbol_context`, `get_code_snippet`, `trace_callers`,
    `trace_callees`, or `transitive_impact`. Use `get_file_deps` for import
-   dependencies and `get_stats` for graph counts. These are the ten exposed tools.
+   dependencies and `get_stats` for graph counts. `find_all_references` adds
+   indexed `JSX_USES` component value references alongside lexical `CALLS`;
+   JSX usage is not an invocation. Locations identify enclosing declarations,
+   not exact use sites. These are the eleven exposed tools.
 3. Read the text's **Project**, **Freshness**, coverage and truncation warnings
    before acting. Compiler `skipped/NOT_REQUESTED` means enrichment was not
    requested; `failed` is a failed attempt. Both leave compiler coverage partial
@@ -45,9 +48,12 @@ scope/warning footer; overflow is explicit. Narrow the query when truncated.
 Machine-readable supplemental data is `result._meta.afterimage`, schema version 1:
 project/worktree root; validated receipt generation when available; syntax,
 resolution and compiler coverage; warnings, error code, source file/range where
-known, and limits/truncation. Unknown facts are null/unknown. Freshness remains
-unknown: Git HEAD equality and watcher liveness are insufficient. Receipt evidence
-is observed after the query and does not promise an atomic source snapshot.
+known, and limits/truncation. Unknown facts are null/unknown. `get_stats` and
+`diagnose` verify selected source content for explicit refreshed snapshots;
+other tools report unknown freshness without scanning source. See
+[M6 freshness and refresh](M6-FRESHNESS-REFRESH.md). Git HEAD equality and watcher
+liveness are insufficient. Receipt evidence does not promise an atomic source
+snapshot.
 
 The server still negotiates `2024-11-05`. That version's official
 [Result schema](https://github.com/modelcontextprotocol/specification/blob/2024-11-05/schema/schema.ts)
@@ -79,3 +85,27 @@ Project: /workspace/topic-checkout
 Freshness: unknown. Warning: partial or unknown analysis coverage: scip-python Skipped (NOT_REQUESTED). Pending/running stages may have been interrupted; empty results do not prove absence.
 Empty graph results do not prove absence; verify current source before acting.
 ```
+
+
+## JSX reference coverage
+
+TSX and JSX uppercase identifier tags with direct runtime named imports or direct
+module-local function/variable bindings produce `JSX_USES`, separate from `CALLS`.
+Import aliases and memo-wrapped component values are supported. Imported targets
+must be direct named exports; type-only imports, lexical shadows, lowercase
+intrinsics, unbound tags, default imports, namespace/member tags and unsupported
+re-exports remain unresolved. This is syntax evidence, not a proof that a value
+is a valid React component or that React invokes it at runtime.
+
+The local graph resolver uses exact indexed module/export identity. Remote
+Neo4j imported JSX resolution abstains; it does not guess by globally unique
+names. Existing graphs without a JSX table remain readable; reindexing or an
+explicit refresh with this extractor is needed to obtain JSX edges. The extractor
+schema fingerprint advances so ordinary incremental indexing re-extracts unchanged
+source after the upgrade. No automatic indexing is started.
+
+Unknown Effect service receivers such as `outbox.claimNext` and
+`gitCore.statusDetailsRemote` remain unresolved. No new object-call heuristic is
+added: these concrete receivers are runtime service bindings, and syntax alone
+does not prove their implementation. `Math.max`, `Math.min`, and `Effect.exit`
+continue to avoid same-name unrelated local targets.

@@ -104,3 +104,12 @@ timeout with unchanged pointer, partial retry, immutable old-reader consistency,
 atomic rollback, snapshot-only MCP selection, source-edit staleness, wrong-path
 isolation and mutation denial. The tests use temporary isolated fixtures; no live
 T3Code graph or project configuration is modified.
+
+
+Separate snapshot storage retains the explicit source checkout as the module
+resolver context. Imported CALLS and JSX_USES resolve against source manifests
+and indexed paths, never against the otherwise empty generation directory.
+Selected snapshot readers reject non-regular, escaped or sub-4096-byte graph
+files before calling the native database parser. CLI freshness and refresh
+no-op checks require a valid manifest before opening an old graph; unproven
+legacy graphs are left unopened and untouched.

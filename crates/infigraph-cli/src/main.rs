@@ -358,7 +358,7 @@ enum Commands {
         ecosystem: Option<String>,
     },
 
-    /// Find every reference location for a symbol (for safe rename/refactor)
+    /// Find indexed CALLS/JSX_USES references (owner locations; partial coverage)
     #[command(alias = "refs")]
     FindRefs {
         /// Symbol ID (e.g. "auth.py::authenticate")

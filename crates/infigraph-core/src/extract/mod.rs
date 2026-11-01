@@ -35,7 +35,7 @@ pub fn extract_file(path: &str, source: &[u8], pack: &LanguagePack) -> Result<Fi
             let symbols = extract_entities(path, source, root, entity_query, &pack.name);
             let owners = matches!(pack.name.as_str(), "typescript" | "tsx" | "javascript")
                 .then_some(symbols.as_slice());
-            let relations = relations::extract_relations_with_owners(
+            let mut relations = relations::extract_relations_with_owners(
                 path,
                 source,
                 root,
@@ -44,6 +44,9 @@ pub fn extract_file(path: &str, source: &[u8], pack: &LanguagePack) -> Result<Fi
                 inherit_decompose_query.as_deref(),
                 owners,
             );
+            if matches!(pack.name.as_str(), "tsx" | "javascript") {
+                relations.extend(javascript::jsx_relations(root, source, path, &symbols));
+            }
             let stmts = extract_statements_for_symbols(root, source, &symbols);
             Ok((symbols, relations, stmts))
         })?,

@@ -126,3 +126,43 @@ fn changed_during_build_and_running_receipt_never_ready() {
         State::Unknown
     ));
 }
+
+#[test]
+fn truncated_selected_snapshot_is_refused_before_native_open() {
+    let temp = tempfile::tempdir().unwrap();
+    std::fs::write(temp.path().join("app.ts"), "export function run() {}").unwrap();
+    drop(build(temp.path(), "truncated"));
+    snapshot::promote(temp.path(), "truncated").unwrap();
+    let storage = snapshot::selected(temp.path()).unwrap();
+    std::fs::write(storage.join(".infigraph/graph"), b"broken").unwrap();
+    let mut project = Infigraph::open_snapshot_shared(
+        temp.path(),
+        &storage,
+        Arc::new(infigraph_languages::bundled_registry().unwrap()),
+    )
+    .unwrap();
+    let error = project.init_read_only().unwrap_err().to_string();
+    assert!(error.contains("truncated; not opened"), "{error}");
+}
+
+#[test]
+fn separate_snapshot_resolves_imports_against_source_checkout() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("dep.tsx"),
+        "export function helper() {} export const Menu = memo(function Menu() { return <div/>; });",
+    )
+    .unwrap();
+    std::fs::write(dir.path().join("app.tsx"),
+        "import { helper, Menu } from './dep'; export function run() { helper(); } export const App = memo(function App() { return <Menu/>; });").unwrap();
+    let project = build(dir.path(), "imports");
+    let backend = project.backend().unwrap();
+    assert_eq!(
+        backend.callers_of("dep.tsx::helper").unwrap(),
+        vec!["app.tsx::run"]
+    );
+    let refs = backend.find_all_references("dep.tsx::Menu").unwrap();
+    assert_eq!(refs.len(), 1);
+    assert_eq!(refs[0].caller_id, "app.tsx::App");
+    assert_eq!(refs[0].kind, "JSX_USES");
+}

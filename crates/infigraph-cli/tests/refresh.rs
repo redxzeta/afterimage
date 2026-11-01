@@ -84,3 +84,30 @@ fn refresh_noop_lock_partial_retry_and_rollback() {
     );
     assert!(!root.join(".infigraph/watch.lock").exists());
 }
+
+#[test]
+fn malformed_legacy_graph_is_never_opened_or_replaced_by_refresh() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join(".infigraph")).unwrap();
+    let graph = dir.path().join(".infigraph/graph");
+    std::fs::write(&graph, b"broken legacy graph").unwrap();
+    std::fs::write(dir.path().join("app.ts"), "export function run() {}").unwrap();
+    let freshness = run(dir.path(), &["freshness"]);
+    assert!(freshness.status.success());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&freshness.stdout).unwrap()["state"],
+        "UNKNOWN"
+    );
+    let result = run(dir.path(), &["refresh", "--max-seconds", "60"]);
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    assert_eq!(std::fs::read(&graph).unwrap(), b"broken legacy graph");
+    let freshness = run(dir.path(), &["freshness"]);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&freshness.stdout).unwrap()["state"],
+        "FRESH"
+    );
+}

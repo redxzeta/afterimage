@@ -434,3 +434,28 @@ mod workspace_tests {
         assert_eq!(modules.resolve("app.ts", "'@test/shared'"), None);
     }
 }
+
+/// Preserve incoming JSX references when only their target module is reindexed.
+pub(crate) fn inbound_jsx(
+    conn: &kuzu::Connection<'_>,
+    changed: &HashSet<&str>,
+) -> anyhow::Result<Vec<(String, String)>> {
+    Ok(conn
+        .query("MATCH (a:Symbol)-[:JSX_USES]->(b:Symbol) RETURN a.id, b.id, a.file, b.file")?
+        .filter(|row| {
+            !changed.contains(row[2].to_string().as_str())
+                && changed.contains(row[3].to_string().as_str())
+        })
+        .map(|row| (row[0].to_string(), row[1].to_string()))
+        .collect())
+}
+
+pub(crate) fn merge_jsx(
+    conn: &kuzu::Connection<'_>,
+    pairs: &[(String, String)],
+) -> anyhow::Result<()> {
+    for (a, b) in pairs {
+        conn.query(&format!("MATCH (a:Symbol), (b:Symbol) WHERE a.id = '{}' AND b.id = '{}' AND b.visibility = 'public' AND b.kind IN ['Function', 'Variable', 'Test'] MERGE (a)-[:JSX_USES]->(b)", super::store_util::escape(a), super::store_util::escape(b)))?;
+    }
+    Ok(())
+}

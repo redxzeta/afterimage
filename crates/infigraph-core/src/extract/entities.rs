@@ -204,9 +204,9 @@ pub fn extract_entities(
                                 .is_some_and(|n| node_text(n, source) == name)
                     })
                 };
-                if let Some((declaration, generator)) = declaration.and_then(|d| {
-                    super::javascript::effect_function(d, source).map(|g| (d, g))
-                }) {
+                if let Some((declaration, generator)) = declaration
+                    .and_then(|d| super::javascript::effect_function(d, source).map(|g| (d, g)))
+                {
                     node = declaration;
                     sym_kind = SymbolKind::Function;
                     params_capture = extract_child_text(generator, "parameters", source);
@@ -253,8 +253,10 @@ pub fn extract_entities(
 
             let visibility = if matches!(language, "typescript" | "tsx" | "javascript")
                 && parent.is_none()
-                && matches!(sym_kind, SymbolKind::Function | SymbolKind::Test)
-            {
+                && matches!(
+                    sym_kind,
+                    SymbolKind::Function | SymbolKind::Test | SymbolKind::Variable
+                ) {
                 Some(
                     if super::javascript::direct_named_export(node) {
                         "public"

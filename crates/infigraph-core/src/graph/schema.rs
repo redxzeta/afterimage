@@ -20,6 +20,7 @@ pub const MIGRATIONS: &[&str] = &[
     // package-manager-dependency table (a name collision on a Symbol->Symbol
     // table of the same name would clash with that existing table's schema).
     "CREATE REL TABLE IF NOT EXISTS INJECTS_DEPENDENCY(FROM Symbol TO Symbol)",
+    "CREATE REL TABLE IF NOT EXISTS JSX_USES(FROM Symbol TO Symbol)",
     "CREATE REL TABLE IF NOT EXISTS REGISTERS_MIDDLEWARE(FROM Symbol TO Symbol)",
     // A call whose receiver resolves to a real class/type name but that type
     // has no local Symbol (its source isn't indexed — a statically-linked

@@ -1,4 +1,8 @@
-use infigraph_core::{extract::extract_file, model::{SymbolKind, RelationKind}, Infigraph};
+use infigraph_core::{
+    extract::extract_file,
+    model::{RelationKind, SymbolKind},
+    Infigraph,
+};
 use infigraph_languages::bundled_registry;
 
 #[test]
@@ -26,19 +30,60 @@ function helper() {}
             let s = ext.symbols.iter().find(|s| s.name == name).unwrap();
             assert_eq!(s.kind, SymbolKind::Function, "{file}: {name}");
             assert!(s.parameters.is_some());
-            assert!(ext.relations.iter().any(|r| r.kind == RelationKind::Calls && r.source_id == format!("{file}::{name}") && r.target_id == format!("{file}::helper")));
+            assert!(ext.relations.iter().any(|r| r.kind == RelationKind::Calls
+                && r.source_id == format!("{file}::{name}")
+                && r.target_id == format!("{file}::helper")));
         }
-        for name in ["value", "methodReference", "arbitrary", "noBody", "curry", "extraInvocation", "dynamicName"] {
-            assert_eq!(ext.symbols.iter().find(|s| s.name == name).unwrap().kind, SymbolKind::Variable, "{file}: {name}");
+        for name in [
+            "value",
+            "methodReference",
+            "arbitrary",
+            "noBody",
+            "curry",
+            "extraInvocation",
+            "dynamicName",
+        ] {
+            assert_eq!(
+                ext.symbols.iter().find(|s| s.name == name).unwrap().kind,
+                SymbolKind::Variable,
+                "{file}: {name}"
+            );
         }
     }
     let typed = b"import * as Effect from 'effect/Effect'; const readTask = Effect.fn(\"x\")(function* (id: Effect.Effect<string>) {}); function helper({Effect: renamed} = {}) {}";
     let ext = extract_file("typed.ts", typed, registry.for_file("typed.ts").unwrap()).unwrap();
-    assert_eq!(ext.symbols.iter().find(|s| s.name == "readTask").unwrap().kind, SymbolKind::Function);
-    for import in ["import type\n* as Effect from 'effect/Effect';", "import { type\nEffect } from 'effect';", "import type /* comment */ * as Effect from 'effect/Effect';", "import type * as Effect from 'effect/Effect';", "import { type Effect } from 'effect';", "import Effect from 'effect/Effect';", ""] {
+    assert_eq!(
+        ext.symbols
+            .iter()
+            .find(|s| s.name == "readTask")
+            .unwrap()
+            .kind,
+        SymbolKind::Function
+    );
+    for import in [
+        "import type\n* as Effect from 'effect/Effect';",
+        "import { type\nEffect } from 'effect';",
+        "import type /* comment */ * as Effect from 'effect/Effect';",
+        "import type * as Effect from 'effect/Effect';",
+        "import { type Effect } from 'effect';",
+        "import Effect from 'effect/Effect';",
+        "",
+    ] {
         let source = format!("{import} const rejected = Effect.fnUntraced(function* () {{}});");
-        let ext = extract_file("app.ts", source.as_bytes(), registry.for_file("app.ts").unwrap()).unwrap();
-        assert_eq!(ext.symbols.iter().find(|s| s.name == "rejected").unwrap().kind, SymbolKind::Variable);
+        let ext = extract_file(
+            "app.ts",
+            source.as_bytes(),
+            registry.for_file("app.ts").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            ext.symbols
+                .iter()
+                .find(|s| s.name == "rejected")
+                .unwrap()
+                .kind,
+            SymbolKind::Variable
+        );
     }
 }
 
@@ -52,24 +97,37 @@ import * as Effect from 'effect/Effect';
 function helper() {}
 const make = () => Effect.gen(function* () {
   const readTask = Effect.fn("readTask")(function* () { helper(); });
-  const runOnce = Effect.fnUntraced(function* () { readTask(); outbox.claimNext(); executor.execute(); Math.max(1,2); Effect.exit(0); }, effect => effect);
+  const runOnce = Effect.fnUntraced(function* () { readTask(); outbox.claimNext(); executor.execute(); gitCore.statusDetailsRemote(); Math.max(1,2); Effect.exit(0); }, effect => effect);
   const waitForTask = () => readTask();
   return { runOnce: runOnce(), runRecoveryOnce: runOnce(true), waitForTask };
 });
 "#).unwrap();
-        std::fs::write(dir.path().join("other.ts"), "export function claimNext() {} export function execute() {} export function max() {} export class Replay { exit() {} }").unwrap();
+        std::fs::write(dir.path().join("other.ts"), "export function claimNext() {} export function execute() {} export function statusDetailsRemote() {} export function max() {} export class Replay { exit() {} }").unwrap();
         let mut graph = Infigraph::open(dir.path(), bundled_registry().unwrap()).unwrap();
-        graph.init().unwrap(); graph.index().unwrap();
+        graph.init().unwrap();
+        graph.index().unwrap();
         for batch in [vec![], vec![file.clone().into()], vec!["other.ts".into()]] {
-            if !batch.is_empty() { graph.index_files(&batch).unwrap(); }
+            if !batch.is_empty() {
+                graph.index_files(&batch).unwrap();
+            }
             let b = graph.backend().unwrap();
-            let mut callers = b.callers_of(&format!("{file}::readTask")).unwrap(); callers.sort();
-            assert_eq!(callers, vec![format!("{file}::runOnce"), format!("{file}::waitForTask")]);
+            let mut callers = b.callers_of(&format!("{file}::readTask")).unwrap();
+            callers.sort();
+            assert_eq!(
+                callers,
+                vec![format!("{file}::runOnce"), format!("{file}::waitForTask")]
+            );
             let mut callers = b.callers_of(&format!("{file}::runOnce")).unwrap();
             callers.dedup();
             assert_eq!(callers, vec![format!("{file}::make")]);
-            assert_eq!(b.callees_of(&format!("{file}::runOnce")).unwrap(), vec![format!("{file}::readTask")]);
-            assert_eq!(b.callers_of(&format!("{file}::helper")).unwrap(), vec![format!("{file}::readTask")]);
+            assert_eq!(
+                b.callees_of(&format!("{file}::runOnce")).unwrap(),
+                vec![format!("{file}::readTask")]
+            );
+            assert_eq!(
+                b.callers_of(&format!("{file}::helper")).unwrap(),
+                vec![format!("{file}::readTask")]
+            );
         }
     }
 }

@@ -368,7 +368,7 @@ fn compress_doc_context(raw: &str, _args: &Value, level: CompressionLevel) -> St
 }
 
 fn compress_references(raw: &str, _args: &Value, level: CompressionLevel) -> String {
-    if !raw.starts_with("References to ") {
+    if !raw.starts_with("References to ") || raw.contains("[JSX_USES]") {
         return raw.to_string();
     }
 

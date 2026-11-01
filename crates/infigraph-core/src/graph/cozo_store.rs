@@ -316,6 +316,7 @@ impl CozoStore {
                 file: dv_str(&row[2]),
                 line: dv_u32(&row[3]),
                 target_id: dv_str(&row[4]),
+                kind: "CALLS".into(),
             })
             .collect())
     }

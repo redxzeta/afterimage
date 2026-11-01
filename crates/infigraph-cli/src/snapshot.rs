@@ -13,6 +13,9 @@ pub(crate) fn freshness(root: &Path) -> Result<()> {
     let result = (|| -> Result<_> {
         let root = root.canonicalize()?;
         let storage = snapshot::selected(&root)?;
+        // Legacy graphs have no trustworthy snapshot provenance. Do not open
+        // them merely to learn that freshness is unknown.
+        snapshot::load_manifest(&storage)?;
         let mut project = project(&root, &storage)?;
         project.init_read_only()?;
         Ok(snapshot::verify(&project, true))
@@ -55,7 +58,9 @@ pub(crate) fn refresh(root: &Path, seconds: u64, rollback: Option<&str>) -> Resu
         return Ok(());
     }
     if let Ok(storage) = snapshot::selected(&root) {
-        if let Ok(mut current) = project(&root, &storage) {
+        if let Ok(mut current) =
+            snapshot::load_manifest(&storage).and_then(|_| project(&root, &storage))
+        {
             if current.init_read_only().is_ok()
                 && matches!(
                     snapshot::verify(&current, true).state,

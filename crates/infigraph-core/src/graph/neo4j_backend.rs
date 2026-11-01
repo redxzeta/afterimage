@@ -860,9 +860,9 @@ impl GraphBackend for Neo4jBackend {
     fn find_all_references(&self, id: &str) -> Result<Vec<ReferenceRow>> {
         let rows = self.run_query(
             query(
-                "MATCH (ref:Symbol)-[r:CALLS|IMPORTS|INHERITS]->(target:Symbol {id: $id}) \
+                "MATCH (ref:Symbol)-[r:CALLS|IMPORTS|INHERITS|JSX_USES]->(target:Symbol {id: $id}) \
                  RETURN ref.id AS caller_id, ref.name AS caller_name, \
-                        ref.file AS file, ref.start_line AS line, target.id AS target_id",
+                        ref.file AS file, ref.start_line AS line, target.id AS target_id, type(r) AS kind",
             )
             .param("id", id.to_string()),
         )?;
@@ -875,6 +875,7 @@ impl GraphBackend for Neo4jBackend {
                     file: r.get::<String>("file").ok()?,
                     line: r.get::<i64>("line").ok().unwrap_or(0) as u32,
                     target_id: r.get::<String>("target_id").ok()?,
+                    kind: r.get::<String>("kind").ok()?,
                 })
             })
             .collect())
@@ -2090,6 +2091,12 @@ impl GraphBackend for Neo4jBackend {
                         .entry(edge_name.clone())
                         .or_default()
                         .push((rel.source_id.clone(), rel.target_id.clone()));
+                    continue;
+                }
+                // JSX imports require exact module/export binding. The local
+                // snapshot resolver supports this; remote mode abstains rather
+                // than feeding a JSX tag into global name heuristics.
+                if edge_name == "JSX_USES" {
                     continue;
                 }
                 // Cross-file: look up by bare name in the global symbol table.

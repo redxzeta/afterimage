@@ -6,8 +6,8 @@ fn unknown_members_never_become_bare_name_calls() {
     for extension in ["ts", "tsx", "js"] {
         let dir = tempfile::tempdir().unwrap();
         let app = format!("app.{extension}");
-        std::fs::write(dir.path().join(&app), "function max() {} function min() {} function exit() {} export function run(outbox, executor) { Math.max(1, 2); Math.min(1, 2); Effect.exit(0); outbox.claimNext(); executor.execute(); }").unwrap();
-        std::fs::write(dir.path().join("unrelated.ts"), "export class Replay { exit() {} } export function claimNext() {} export function execute() {}").unwrap();
+        std::fs::write(dir.path().join(&app), "function max() {} function min() {} function exit() {} export function run(outbox, executor) { Math.max(1, 2); Math.min(1, 2); Effect.exit(0); outbox.claimNext(); executor.execute(); gitCore.statusDetailsRemote(); outbox['claimNext'](); outbox[method](); gitCore['statusDetailsRemote'](); }").unwrap();
+        std::fs::write(dir.path().join("unrelated.ts"), "export class Replay { exit() {} } export function claimNext() {} export function execute() {} export function statusDetailsRemote() {}").unwrap();
         std::fs::write(
             dir.path().join("schema.graphql"),
             "type Query { max: Float min: Float }",

@@ -186,7 +186,8 @@ impl Infigraph {
         let config = kuzu::SystemConfig::default()
             .buffer_pool_size(512 * 1024 * 1024)
             .max_num_threads(2);
-        let store = graph::GraphStore::open_with_config(&self.db_path, config)?;
+        let store = graph::GraphStore::open_with_config(&self.db_path, config)?
+            .with_source_root(self.root.clone());
         self.backend_kind = BackendKind::Kuzu(graph::KuzuBackend::from_store(store));
         Ok(())
     }
@@ -313,6 +314,19 @@ impl Infigraph {
     /// - `neo4j`: connects to remote Neo4j sidecar (no local DB)
     /// - default: opens embedded Kùzu in read-only mode
     pub fn init_read_only(&mut self) -> Result<()> {
+        if self.storage_root != self.root {
+            // Validate separately selected snapshots before entering the native
+            // parser: a once-ready file can be truncated after promotion.
+            anyhow::ensure!(
+                self.db_path.canonicalize()? == self.db_path,
+                "PATH_ESCAPE: snapshot graph"
+            );
+            let metadata = self.db_path.metadata()?;
+            anyhow::ensure!(
+                metadata.is_file() && metadata.len() >= 4096,
+                "snapshot graph missing or truncated; not opened"
+            );
+        }
         let backend_env = std::env::var("INFIGRAPH_BACKEND").unwrap_or_else(|_| "kuzu".into());
 
         match backend_env.as_str() {
@@ -331,7 +345,13 @@ impl Infigraph {
                 // Retry only native availability refusals; persistent recovery
                 // still fails after the budget, without opening a writer.
                 let kb = open_kuzu_with_retry(
-                    || graph::KuzuBackend::open_read_only(&self.db_path),
+                    || {
+                        graph::GraphStore::open_read_only(&self.db_path).map(|store| {
+                            graph::KuzuBackend::from_store(
+                                store.with_source_root(self.root.clone()),
+                            )
+                        })
+                    },
                     std::time::Duration::from_secs(3),
                     |e| is_lock_contention_error(e) || is_read_only_checkpoint_error(e),
                 )?;

@@ -136,6 +136,7 @@ pub fn non_corruption_open_context(err: &anyhow::Error, db_path: &Path) -> Strin
 pub struct GraphStore {
     db: Database,
     lock_path: PathBuf,
+    source_root: Option<PathBuf>,
 }
 
 impl GraphStore {
@@ -152,7 +153,11 @@ impl GraphStore {
         let lock_path = path.with_extension("lock");
         let db = Database::new(path, config)
             .map_err(|e| anyhow::anyhow!("failed to open kuzu db: {e}"))?;
-        let store = Self { db, lock_path };
+        let store = Self {
+            db,
+            lock_path,
+            source_root: None,
+        };
         store.init_schema()?;
         Ok(store)
     }
@@ -168,8 +173,17 @@ impl GraphStore {
         self.lock_path.parent()
     }
 
-    /// Workspace metadata is available only for the standard project database layout.
+    /// Bind separately stored snapshots to their actual source checkout.
+    pub(crate) fn with_source_root(mut self, root: PathBuf) -> Self {
+        self.source_root = Some(root);
+        self
+    }
+
+    /// Prefer explicit source context; otherwise retain the legacy layout inference.
     pub(crate) fn project_root(&self) -> Option<&Path> {
+        if let Some(root) = &self.source_root {
+            return Some(root);
+        }
         self.db_dir()
             .filter(|p| p.file_name().is_some_and(|n| n == ".infigraph"))?
             .parent()
@@ -188,7 +202,11 @@ impl GraphStore {
         let config = config.read_only(true).throw_on_wal_replay_failure(false);
         let db = Database::new(path, config)
             .map_err(|e| anyhow::anyhow!("failed to open kuzu db (read-only): {e}"))?;
-        Ok(Self { db, lock_path })
+        Ok(Self {
+            db,
+            lock_path,
+            source_root: None,
+        })
     }
 
     /// Acquire exclusive write lock. Waits up to 30s, returning `Busy` if

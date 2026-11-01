@@ -315,7 +315,10 @@ pub fn tool_find_all_references(args: &Value) -> Result<String> {
 
     let mut out = format!("References to '{}' ({} total):\n\n", symbol_id, refs.len());
     for r in &refs {
-        out.push_str(&format!("  {}:{} — in {}\n", r.file, r.line, r.caller_name));
+        out.push_str(&format!(
+            "  {}:{} — in {} [{}] (owner declaration)\n",
+            r.file, r.line, r.caller_name, r.kind
+        ));
     }
     Ok(out)
 }
