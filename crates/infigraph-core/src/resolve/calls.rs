@@ -40,7 +40,7 @@ pub fn resolve_calls_incremental(
 
     let mut stats = write_resolved_calls(store, &conn, extractions, &symbol_map, learned_store)?;
     stats.inherits_resolved = resolve_inherits(&conn, extractions, &symbol_map)?;
-    resolve_custom_edges(&conn, extractions, &symbol_map)?;
+    resolve_custom_edges(store, &conn, extractions, &symbol_map)?;
     Ok(stats)
 }
 
@@ -76,7 +76,7 @@ pub fn resolve_calls(
 
     let mut stats = write_resolved_calls(store, &conn, extractions, &symbol_map, learned_store)?;
     stats.inherits_resolved = resolve_inherits(&conn, extractions, &symbol_map)?;
-    resolve_custom_edges(&conn, extractions, &symbol_map)?;
+    resolve_custom_edges(store, &conn, extractions, &symbol_map)?;
     Ok(stats)
 }
 
@@ -93,6 +93,7 @@ pub fn resolve_calls(
 /// Caller must hold WriteLock. Each edge kind is resolved and written to its
 /// own rel table (never CALLS) to keep call-graph semantics unchanged.
 fn resolve_custom_edges(
+    store: &GraphStore,
     conn: &kuzu::Connection<'_>,
     extractions: &[FileExtraction],
     symbol_map: &HashMap<String, Vec<(String, String, String)>>,
@@ -102,6 +103,12 @@ fn resolve_custom_edges(
         .flat_map(|v| v.iter().map(|(id, _, _)| id.as_str()))
         .collect();
 
+    let files = crate::graph::imports::module_files(conn)?;
+    let modules = crate::graph::imports::ModuleImports::new(files.iter().map(String::as_str))
+        .with_root(store.project_root());
+    let jsx_exports: std::collections::HashSet<String> = conn
+        .query("MATCH (s:Symbol) WHERE s.visibility = 'public' AND s.kind IN ['Function', 'Variable', 'Test'] RETURN s.id")?
+        .map(|row| row[0].to_string()).collect();
     let mut by_edge_kind: HashMap<&str, Vec<(String, String)>> = HashMap::new();
 
     for ext in extractions {
@@ -110,6 +117,40 @@ fn resolve_custom_edges(
                 continue;
             };
 
+            if edge_name == "JSX_USES" {
+                let local = ext.symbols.iter().find(|s| {
+                    s.id == rel.target_id
+                        && matches!(
+                            s.kind,
+                            crate::model::SymbolKind::Function
+                                | crate::model::SymbolKind::Variable
+                                | crate::model::SymbolKind::Test
+                        )
+                });
+                // Local endpoints were already written during upsert.
+                if local.is_some() {
+                    continue;
+                }
+                let target = {
+                    rel.target_id
+                        .strip_prefix(&format!("{}::", ext.file))
+                        .and_then(|raw| raw.rsplit_once("::"))
+                        .and_then(|(specifier, exported)| {
+                            modules
+                                .resolve(&ext.file, specifier)
+                                .map(|file| format!("{file}::{exported}"))
+                        })
+                        .filter(|id| jsx_exports.contains(id))
+                };
+                if let Some(target) = target {
+                    by_edge_kind
+                        .entry(edge_name)
+                        .or_default()
+                        .push((rel.source_id.clone(), target));
+                }
+                // A JSX reference never participates in global bare-name guessing.
+                continue;
+            }
             let target_name = rel.target_id.rsplit("::").next().unwrap_or(&rel.target_id);
             if known_ids.contains(rel.target_id.as_str()) {
                 // Already resolves (e.g. local-file target) — write as-is.

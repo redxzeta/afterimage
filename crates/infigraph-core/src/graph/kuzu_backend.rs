@@ -438,6 +438,7 @@ impl GraphBackend for KuzuBackend {
             extractions.iter().map(|e| e.file.as_str()).collect();
         let inbound = super::imports::inbound_imports(&conn, &changed)?;
         let inbound_calls = super::imports::inbound_calls(&conn, &changed)?;
+        let inbound_jsx = super::imports::inbound_jsx(&conn, &changed)?;
         let use_csv = existing_hashes_empty || extractions.len() > 100;
 
         if use_csv {
@@ -487,6 +488,7 @@ impl GraphBackend for KuzuBackend {
         }
         super::imports::merge_imports(&conn, &imports)?;
         super::imports::merge_calls(&conn, &inbound_calls)?;
+        super::imports::merge_jsx(&conn, &inbound_jsx)?;
         // Upsert folder hierarchy
         let file_paths: Vec<&str> = extractions.iter().map(|e| e.file.as_str()).collect();
         let conn = self.store.connection()?;

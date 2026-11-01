@@ -167,7 +167,10 @@ pub(crate) fn cmd_find_refs(root: &Path, symbol: &str) -> Result<()> {
     }
     println!("References to '{}' ({} total):\n", symbol, refs.len());
     for r in &refs {
-        println!("  {}:{:<6} in {}", r.file, r.line, r.caller_name);
+        println!(
+            "  {}:{:<6} in {} [{}] (owner declaration)",
+            r.file, r.line, r.caller_name, r.kind
+        );
     }
     Ok(())
 }

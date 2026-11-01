@@ -476,7 +476,7 @@ pub fn build_tools_list() -> Vec<Value> {
             p(true,false,false,json!({})), &["path"]),
         tool_def("get_dependencies", "PRIMARY: List external dependencies. Use INSTEAD OF reading package.json/Cargo.toml/go.mod manually. Filter by ecosystem (npm/cargo/pip/maven/gem/nuget/go/composer/pub).",
             p(true,false,false,json!({"ecosystem":{"type":"string"}})), &["path"]),
-        tool_def("find_all_references", "PRIMARY: Find every location where a symbol is referenced. Use INSTEAD OF grep for rename/refactor safety. Default groups by file; set detail=true for per-line calling context. symbol_id is discovered in two steps: run `search`/`search_symbols` first, then pass the exact id from the results (format 'file/path::name', e.g. 'app/auth.py::login').",
+        tool_def("find_all_references", "Find indexed lexical CALLS and JSX_USES component references. JSX_USES denotes a value reference, not an invocation. Locations identify the enclosing symbol; coverage is partial. Verify current source before refactoring. Default groups by file; set detail=true for context. symbol_id is discovered in two steps: run `search`/`search_symbols` first, then pass the exact id from the results (format 'file/path::name', e.g. 'app/auth.py::login').",
             p(true,true,false,json!({"detail":{"type":"boolean","default":false,"description":"If true, return full per-reference context. Default (false) groups by file."}})), &["path","symbol_id"]),
         tool_def("get_api_surface", "PRIMARY: Public API surface — all public symbols and HTTP routes in one call. Use INSTEAD OF reading every file to find public interfaces. Set include_tests=false to exclude test/e2e symbols (useful for languages like Python where any non-underscore name is 'public' by convention, which otherwise swamps the real API surface with test helpers).",
             p(true,false,true,json!({"include_tests":{"type":"boolean","default":true,"description":"Include test-function/method symbols. Set false to see only non-test public symbols."}})), &["path"]),
@@ -692,7 +692,7 @@ pub fn handle_initialize(id: &Value, is_primary: bool) -> Value {
         profile::McpProfile::from_env(),
         Ok(profile::McpProfile::ReadOnly)
     ) {
-        response["result"]["instructions"] = json!("Afterimage read-only instructions v1: Pass the exact checkout as path on every call. Use search_symbols then exact symbol_id for context/callers/callees/impact. Read Project, coverage, freshness and truncation warnings in text. Empty results do not prove absence. NOT_INDEXED requires an explicit indexing action outside this profile; do not switch to a parent/sibling. Compiler NOT_REQUESTED/FAILED is partial coverage even when requested AST work succeeded. Verify current source before editing.");
+        response["result"]["instructions"] = json!("Afterimage read-only instructions v1: Pass the exact checkout as path on every call. Use search_symbols then exact symbol_id for context/callers/callees/impact. For JSX component usage use find_all_references; JSX_USES is a reference, not a call. Read Project, coverage, freshness and truncation warnings in text. Empty results do not prove absence. NOT_INDEXED requires an explicit indexing action outside this profile; do not switch to a parent/sibling. Compiler NOT_REQUESTED/FAILED is partial coverage even when requested AST work succeeded. Verify current source before editing.");
     }
     response
 }
@@ -715,12 +715,15 @@ pub fn handle_tools_list_with_profile(id: &Value, profile: profile::McpProfile) 
             let description = match tool["name"].as_str().unwrap_or("") {
                 "search_symbols" => Some("Optionally search the existing local symbol graph using lexical BM25. Copy a returned symbol_id for other tools. Limit defaults to 10 (maximum 1000). No models, downloads, caches, or watchers."),
                 "get_symbols_in_file" => Some("Optionally list indexed symbols and ranges in a file. Copy a returned symbol_id for other tools."),
+                "find_all_references" => Some("Optionally inspect indexed lexical CALLS and JSX_USES component value references. JSX_USES does not imply invocation. Locations identify enclosing symbol declarations. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
                 "trace_callers" => Some("Optionally inspect indexed direct callers. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callers. Sibling methods are excluded by default; expand_interface=true includes indexed callers of sibling methods."),
                 "trace_callees" => Some("Optionally inspect indexed direct callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callees."),
                 "transitive_impact" => Some("Optionally inspect reverse CALLS edges up to depth. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Sibling methods are excluded by default; expand_interface=true includes indexed impact through sibling methods."),
                 "get_code_snippet" => Some("Optionally retrieve a source snippet for a symbol. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
                 "symbol_context" => Some("Optionally inspect indexed context for a symbol, including callers and callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
                 "get_file_deps" => Some("Optionally inspect indexed file import dependencies and dependents."),
+                "get_stats" => Some("Graph statistics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. Explicit refresh outside MCP selects immutable snapshots."),
+                "diagnose" => Some("Read-only diagnostics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. No repair or refresh."),
                 _ => None,
             };
             if let Some(description) = description {

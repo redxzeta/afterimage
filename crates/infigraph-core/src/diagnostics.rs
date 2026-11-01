@@ -274,6 +274,21 @@ fn diagnose_with(
     probe: &impl Fn(&Path) -> anyhow::Result<GraphCounts>,
     registry: &impl Fn() -> anyhow::Result<Registry>,
 ) -> DiagnosticReport {
+    diagnose_storage(root, None, probe, registry)
+}
+
+/// Diagnose a generation already pinned by a read-only request.
+/// The MCP helper validates storage provenance before passing this path.
+pub fn diagnose_snapshot(root: &Path, storage: &Path) -> DiagnosticReport {
+    diagnose_storage(root, Some(storage), &isolated_probe, &Registry::load)
+}
+
+fn diagnose_storage(
+    root: &Path,
+    storage: Option<&Path>,
+    probe: &impl Fn(&Path) -> anyhow::Result<GraphCounts>,
+    registry: &impl Fn() -> anyhow::Result<Registry>,
+) -> DiagnosticReport {
     use CheckStatus::*;
     use DiagnosticCode::*;
     use Severity::*;
@@ -311,7 +326,19 @@ fn diagnose_with(
             Some("Check the selected backend configuration and service separately."),
         );
     } else {
-        check_graph(&mut report, &root, probe);
+        match storage
+            .map(Path::to_path_buf)
+            .map_or_else(|| crate::snapshot::selected(&root), Ok)
+        {
+            Ok(storage) => check_graph(&mut report, &storage, probe),
+            Err(error) => report.push(
+                GraphUnreadable,
+                Problem,
+                Error,
+                format!("Selected snapshot unavailable: {error}"),
+                Some("Explicitly refresh or roll back; no fallback graph was used."),
+            ),
+        }
         check_registry(&mut report, &root, registry);
         check_watcher(&mut report, &root);
         check_embeddings(&mut report, &root);

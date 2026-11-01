@@ -1,0 +1,1062 @@
+{
+  "refresh": {
+    "exit_code": 0,
+    "elapsed_seconds": 11.081825713161379,
+    "max_child_rss_kib": 335260,
+    "stdout": "REFRESHED 1793548863292823819-339958 (AST-only; old snapshots retained)\n",
+    "stderr": "Parsing: 3/11 (27%)\nParsing: 6/11 (54%)\nParsing: 9/11 (81%)\nParsing: 11/11 (100%)\nWriting: 11 files (backend bulk)\nWrite complete: 0s\nResolving: calls + inheritance for 11 files\nResolve complete: 0s (915 resolved, 3382 unresolved)\n"
+  },
+  "noop": {
+    "exit_code": 0,
+    "elapsed_seconds": 3.4309272868558764,
+    "stdout": "NO_OP: verified source content and file set unchanged\n",
+    "stderr": "",
+    "pointer_unchanged": true
+  },
+  "smoke": {
+    "method": "foreground shell MCP protocol smoke; NOT native agent comparison",
+    "candidate_source_sha": "553140f4da37480c487e7edcfcc0c0aef8e8d0de",
+    "t3code_sha": "07f00e9b1c27f411c80359c8525f7f835d01cbc0",
+    "source_files": 11,
+    "inventory": [
+      "diagnose",
+      "search_symbols",
+      "get_symbols_in_file",
+      "get_stats",
+      "trace_callers",
+      "trace_callees",
+      "transitive_impact",
+      "get_code_snippet",
+      "symbol_context",
+      "find_all_references",
+      "get_file_deps"
+    ],
+    "total_elapsed_seconds": 4.129886850947514,
+    "all_source_and_graph_bytes_preserved": true,
+    "native_agent_queries": 0,
+    "results": [
+      {
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {},
+          "clientInfo": {
+            "name": "m6-bounded-smoke",
+            "version": "1"
+          }
+        },
+        "elapsed_seconds": 0.009937772992998362,
+        "return": {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "result": {
+            "capabilities": {
+              "tools": {}
+            },
+            "instructions": "Afterimage read-only instructions v1: Pass the exact checkout as path on every call. Use search_symbols then exact symbol_id for context/callers/callees/impact. For JSX component usage use find_all_references; JSX_USES is a reference, not a call. Read Project, coverage, freshness and truncation warnings in text. Empty results do not prove absence. NOT_INDEXED requires an explicit indexing action outside this profile; do not switch to a parent/sibling. Compiler NOT_REQUESTED/FAILED is partial coverage even when requested AST work succeeded. Verify current source before editing.",
+            "protocolVersion": "2024-11-05",
+            "serverInfo": {
+              "name": "infigraph",
+              "version": "0.1.0"
+            }
+          }
+        }
+      },
+      {
+        "method": "tools/list",
+        "params": {},
+        "elapsed_seconds": 0.0016487902030348778,
+        "return": {
+          "id": 2,
+          "jsonrpc": "2.0",
+          "result": {
+            "tools": [
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Read-only diagnostics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. No repair or refresh. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "type": "object"
+                },
+                "name": "diagnose"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally search the existing local symbol graph using lexical BM25. Copy a returned symbol_id for other tools. Limit defaults to 10 (maximum 1000). No models, downloads, caches, or watchers. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "limit": {
+                      "default": 10,
+                      "type": "integer"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "query": {
+                      "description": "Search query",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "query"
+                  ],
+                  "type": "object"
+                },
+                "name": "search_symbols"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally list indexed symbols and ranges in a file. Copy a returned symbol_id for other tools. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "file": {
+                      "description": "Relative file path",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "file"
+                  ],
+                  "type": "object"
+                },
+                "name": "get_symbols_in_file"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Graph statistics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. Explicit refresh outside MCP selects immutable snapshots. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "type": "object"
+                },
+                "name": "get_stats"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect indexed direct callers. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callers. Sibling methods are excluded by default; expand_interface=true includes indexed callers of sibling methods. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "expand_interface": {
+                      "default": false,
+                      "description": "Aggregate callers across every sibling method on the same class/interface, not just symbol_id. Use when assessing the impact of changing the whole interface.",
+                      "type": "boolean"
+                    },
+                    "include_tests": {
+                      "default": true,
+                      "description": "Include test-function/method callers. Set false to see only non-test callers.",
+                      "type": "boolean"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "trace_callers"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect indexed direct callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Set include_tests=false to exclude test callees. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "include_tests": {
+                      "default": true,
+                      "description": "Include test-function/method callees. Set false to see only non-test callees.",
+                      "type": "boolean"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "trace_callees"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect reverse CALLS edges up to depth. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Sibling methods are excluded by default; expand_interface=true includes indexed impact through sibling methods. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "depth": {
+                      "default": 5,
+                      "type": "integer"
+                    },
+                    "expand_interface": {
+                      "default": false,
+                      "description": "Aggregate impact across every sibling method on the same class/interface, not just symbol_id. Use when assessing the impact of changing the whole interface.",
+                      "type": "boolean"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "transitive_impact"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally retrieve a source snippet for a symbol. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "get_code_snippet"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect indexed context for a symbol, including callers and callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "symbol_context"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect indexed lexical CALLS and JSX_USES component value references. JSX_USES does not imply invocation. Locations identify enclosing symbol declarations. Obtain the exact symbol_id from search_symbols or get_symbols_in_file. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "detail": {
+                      "default": false,
+                      "description": "If true, return full per-reference context. Default (false) groups by file.",
+                      "type": "boolean"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    },
+                    "symbol_id": {
+                      "description": "Symbol ID (e.g. 'auth.py::authenticate')",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "symbol_id"
+                  ],
+                  "type": "object"
+                },
+                "name": "find_all_references"
+              },
+              {
+                "annotations": {
+                  "destructiveHint": false,
+                  "openWorldHint": false,
+                  "readOnlyHint": true
+                },
+                "description": "Optionally inspect indexed file import dependencies and dependents. Graph coverage may be partial and freshness unknown; results are not exhaustive. Verify current source.",
+                "inputSchema": {
+                  "properties": {
+                    "file": {
+                      "description": "Relative file path",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "Project root path",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "file"
+                  ],
+                  "type": "object"
+                },
+                "name": "get_file_deps"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "get_stats",
+          "arguments": {
+            "path": "CHECKOUT"
+          }
+        },
+        "elapsed_seconds": 3.1978324190713465,
+        "return": {
+          "id": 3,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "fresh",
+                "freshness_evidence": {
+                  "checked_files": 11,
+                  "reason": "CONTENT_AND_FILE_SET_MATCH",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "FRESH"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": null
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "CONTENT_AND_FILE_SET_MATCH"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "Graph Statistics:\n  Symbols:      1722\n  Modules:      11\n  Files:        11\n  Folders:      14\n  Calls edges:  639\n  Inherits:     4\n  Contains:     1722\n\n\nProject: CHECKOUT\nFreshness: fresh (CONTENT_AND_FILE_SET_MATCH). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "find_all_references",
+          "arguments": {
+            "path": "CHECKOUT",
+            "symbol_id": "apps/web/src/components/chat/ComposerCommandMenu.tsx::ComposerCommandMenu"
+          }
+        },
+        "elapsed_seconds": 0.1276542879641056,
+        "return": {
+          "id": 4,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": null
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [
+                  {
+                    "end_line": 186,
+                    "file": "apps/web/src/components/chat/ComposerCommandMenu.tsx",
+                    "start_line": 94
+                  }
+                ],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "References to 'apps/web/src/components/chat/ComposerCommandMenu.tsx::ComposerCommandMenu' (1 total):\n\n  apps/web/src/components/chat/ChatComposer.tsx:506 \u2014 in ChatComposer [JSX_USES] (owner declaration)\n\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "trace_callers",
+          "arguments": {
+            "path": "CHECKOUT",
+            "symbol_id": "apps/web/src/components/chat/ComposerCommandMenu.tsx::ComposerCommandMenu"
+          }
+        },
+        "elapsed_seconds": 0.1213302668184042,
+        "return": {
+          "id": 5,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": null
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [
+                  {
+                    "end_line": 186,
+                    "file": "apps/web/src/components/chat/ComposerCommandMenu.tsx",
+                    "start_line": 94
+                  }
+                ],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nNo callers found in the current graph for 'apps/web/src/components/chat/ComposerCommandMenu.tsx::ComposerCommandMenu'\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "search_symbols",
+          "arguments": {
+            "path": "CHECKOUT",
+            "query": "statusDetailsRemote",
+            "limit": 5
+          }
+        },
+        "elapsed_seconds": 0.12668687594123185,
+        "return": {
+          "id": 6,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": 5
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "7.056  Function statusDetailsRemote (apps/server/src/vcs/GitVcsDriverCore.ts:L2345-2357)  id=apps/server/src/vcs/GitVcsDriverCore.ts::statusDetailsRemote\n\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "search_symbols",
+          "arguments": {
+            "path": "CHECKOUT",
+            "query": "WorktreeMcpService",
+            "limit": 5
+          }
+        },
+        "elapsed_seconds": 0.12562338286079466,
+        "return": {
+          "id": 7,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": 5
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "7.056  Class WorktreeMcpService (apps/server/src/mcp/WorktreeMcpService.ts:L27-38)  id=apps/server/src/mcp/WorktreeMcpService.ts::WorktreeMcpService\n\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "search_symbols",
+          "arguments": {
+            "path": "CHECKOUT",
+            "query": "ProviderRuntimeRecoveryService",
+            "limit": 5
+          }
+        },
+        "elapsed_seconds": 0.12953238794580102,
+        "return": {
+          "id": 8,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": 5
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "7.056  Class ProviderRuntimeRecoveryService (apps/server/src/orchestration-v2/ProviderRuntimeRecoveryService.ts:L69-78)  id=apps/server/src/orchestration-v2/ProviderRuntimeRecoveryService.ts::ProviderRuntimeRecoveryService\n\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "search_symbols",
+          "arguments": {
+            "path": "CHECKOUT",
+            "query": "ProjectFavicon",
+            "limit": 5
+          }
+        },
+        "elapsed_seconds": 0.13297614199109375,
+        "return": {
+          "id": 9,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": 5
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "No results for 'ProjectFavicon' in the current graph.\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "search_symbols",
+          "arguments": {
+            "path": "CHECKOUT",
+            "query": "claimNext",
+            "limit": 5
+          }
+        },
+        "elapsed_seconds": 0.13058201503008604,
+        "return": {
+          "id": 10,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "coverage": {
+                  "compiler": {},
+                  "completeness": "not_established",
+                  "languages": [
+                    "tsx",
+                    "typescript"
+                  ],
+                  "resolution": {
+                    "reason": "CALL_RESOLUTION_SUCCEEDED",
+                    "state": "succeeded"
+                  },
+                  "syntax": "indexed_files_recorded"
+                },
+                "error_code": null,
+                "evidence_observation": "after_tool_read; not an atomic source snapshot",
+                "freshness": "unknown",
+                "freshness_evidence": {
+                  "checked_files": 0,
+                  "reason": "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification",
+                  "scope": "supported non-hidden files selected by index ignore rules; observed content, not an atomic filesystem snapshot",
+                  "state": "UNKNOWN"
+                },
+                "generation": "339962-1793548866615082296-0",
+                "graph_root": "CHECKOUT/.infigraph/snapshots/1793548863292823819-339958",
+                "indexed_revision": null,
+                "limits": {
+                  "max_output_bytes": 32768,
+                  "max_output_lines": 200,
+                  "output_truncated": false,
+                  "query_truncated": false,
+                  "result_limit": 5
+                },
+                "project": {
+                  "root": "CHECKOUT",
+                  "worktree_root": null
+                },
+                "schema_version": 1,
+                "sources": [],
+                "warnings": [
+                  "Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.",
+                  "SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification"
+                ]
+              }
+            },
+            "content": [
+              {
+                "text": "No results for 'claimNext' in the current graph.\n\nProject: CHECKOUT\nFreshness: unknown (SOURCE_NOT_CHECKED: use get_stats, diagnose or CLI freshness for full verification). Warning: partial or unknown analysis coverage: no compiler enrichment recorded. Pending/running stages may have been interrupted; empty results do not prove absence.\nEmpty graph results do not prove absence; verify current source before acting.",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "index",
+          "arguments": {
+            "path": "CHECKOUT"
+          }
+        },
+        "elapsed_seconds": 0.00013647601008415222,
+        "return": {
+          "id": 11,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "error_code": "READ_ONLY_TOOL_DENIED",
+                "freshness": "unknown",
+                "schema_version": 1
+              }
+            },
+            "content": [
+              {
+                "text": "Error: READ_ONLY_TOOL_DENIED: index is unavailable in the read-only profile",
+                "type": "text"
+              }
+            ],
+            "isError": true
+          }
+        }
+      },
+      {
+        "method": "tools/call",
+        "params": {
+          "name": "get_stats",
+          "arguments": {
+            "path": "MISSING_CHECKOUT"
+          }
+        },
+        "elapsed_seconds": 0.0008369081187993288,
+        "return": {
+          "id": 12,
+          "jsonrpc": "2.0",
+          "result": {
+            "_meta": {
+              "afterimage": {
+                "error_code": "INVALID_PATH",
+                "freshness": "unknown",
+                "project": {
+                  "requested_path": "MISSING_CHECKOUT"
+                },
+                "schema_version": 1
+              }
+            },
+            "content": [
+              {
+                "text": "Error: INVALID_PATH: project path does not exist: MISSING_CHECKOUT: No such file or directory (os error 2)\nProject requested: MISSING_CHECKOUT\nFreshness: unknown; no indexing or repair was performed.",
+                "type": "text"
+              }
+            ],
+            "isError": true
+          }
+        }
+      }
+    ],
+    "binaries": {
+      "infigraph": "76ad1a53d4ff2bb997706dbf6f7bb9dd7a71ab5130aeaa5b948474339116c076",
+      "infigraph-mcp": "a7ca0da3791493360cdec7d0d5bc989c6e482b06146543ece2676889aa1f38c0"
+    }
+  },
+  "source_manifest": {
+    "sha": "07f00e9b1c27f411c80359c8525f7f835d01cbc0",
+    "files": {
+      "apps/web/src/components/chat/ComposerCommandMenu.tsx": "cc8af1dcba301f6f6da0ae5816cbc2542d747e133cf1ed9ec7eef817ebd8472d",
+      "apps/server/src/git/GitManager.ts": "de79db042cee0e0d134e57d8145b760cfbe130c78bc17f6331ae71e0e3dab9b3",
+      "apps/server/src/vcs/GitVcsDriverCore.ts": "0ce09998a091120ef6deced2cd03d5b6e93764a231ca0df9e88b0d4e41e54084",
+      "apps/server/src/vcs/GitVcsDriver.ts": "d16a7299b92c57c00d5b8c58c155eaaaa03f72521139af78e34381601674a940",
+      "apps/server/src/mcp/WorktreeMcpService.ts": "ece8fea3fe7e79bd33f67f2e5f7785ae7dc656f63c8dd7e8cb8ef38b943896ac",
+      "apps/server/src/orchestration-v2/ProviderRuntimeRecoveryService.ts": "e507abcaa08eee14d0b52f740a870380bbfd766b9552ca4b86a4cdbfe1cf280f",
+      "apps/server/src/orchestration-v2/EffectWorker.ts": "73f0b734414d997f4329ddb1596d1ce9f23cf87726ed32978c5f4b4991fe1e15",
+      "packages/client-runtime/src/projectFaviconCache.ts": "3caa549a89087c663dd214bd20b595fb8e5439fcc76dd238340942bfaaefa63a",
+      "packages/client-runtime/src/projectFaviconCache.test.ts": "7536e11c9c57d5d91c21a431f4df510548d6123bbb6e0a1cc55f2e4ab69bada7",
+      "apps/web/src/components/chat/ChatComposer.tsx": "6f997a3e31362a3237444ff719107e5c2f2ef9512e46399c329d422feeefaeef",
+      "apps/server/src/orchestration-v2/EffectOutbox.ts": "43c0e9dca2c6339409713ff6b4dfe5aa31821f107e5ad3a0cb2348944910ea66"
+    },
+    "initial_nine_file_copy_seconds": 0.018012972082942724,
+    "copy_timing_note": "Only the initial nine-file export was timed. Two supplementary file copies were not timed; total export setup duration is UNKNOWN."
+  },
+  "graph_manifest": {
+    "schema_version": 1,
+    "source_root": "CHECKOUT",
+    "engine_version": "3.2.16",
+    "engine_build": "553140f4da37",
+    "ready": true,
+    "files": {
+      "apps/server/src/git/GitManager.ts": "c86a09d6a354811093687f34380985e4fc14634912339926ec69b0744f5d69e4",
+      "apps/server/src/mcp/WorktreeMcpService.ts": "c4bb6e99eff2af2c1d60c95a9fc81a4d8b07e1ede392641d02f512642dd54d12",
+      "apps/server/src/orchestration-v2/EffectOutbox.ts": "fe7881bb3af12d15bde8ab3c9e1ec0827497a22f66bdfbbf55ed234b745a1bef",
+      "apps/server/src/orchestration-v2/EffectWorker.ts": "8128b7af24d2f3b866ed4eaffbd16eb400ea3afb9212bd1e262406662013ef8f",
+      "apps/server/src/orchestration-v2/ProviderRuntimeRecoveryService.ts": "9b4f78034b3408ff4db25447571900a7924d75355b028f0a520c4928420a0d81",
+      "apps/server/src/vcs/GitVcsDriver.ts": "53f970888f3343aae3c023a5cb7f5e623090a16d2348e83a57edc7a8710ecaa4",
+      "apps/server/src/vcs/GitVcsDriverCore.ts": "de0e1d7fe2e886bdb47fd3867f3d0fcaedbdfead00e6b7a2007b7cd5a199b9c2",
+      "apps/web/src/components/chat/ChatComposer.tsx": "94454737bd6aa1e51ed9cc44e44ab4152ef577360b50d3cdc81e7bf28a80ee75",
+      "apps/web/src/components/chat/ComposerCommandMenu.tsx": "1f80ab67d60e9f4f15b0c1e9f01caafb4e526a9775346149e24c56d3a25f32f1",
+      "packages/client-runtime/src/projectFaviconCache.test.ts": "53563a7b6297f9b3c5f23220b599937ace4d347b6c0c8f92365d925d218870c9",
+      "packages/client-runtime/src/projectFaviconCache.ts": "53c9212dc8ac5df5d28d6f3c766eb4c1e90ef32fde10facea6eba5110fde216f"
+    }
+  }
+}

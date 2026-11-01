@@ -1,0 +1,67 @@
+{
+  "frozen_at": "2026-11-01T15:33:03.717820+00:00",
+  "source_sha": "07f00e9b1c27f411c80359c8525f7f835d01cbc0",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "per_task_seconds": 180,
+  "per_task_output_words": 600,
+  "context": "fresh per response; same prompt and instructions except optional native tool permission",
+  "arms": [
+    "source-only",
+    "optional-native-afterimage"
+  ],
+  "order": [
+    "S,G",
+    "G,S",
+    "S,G",
+    "G,S",
+    "S,G"
+  ],
+  "tasks": [
+    {
+      "id": "web-menu",
+      "prompt": "Trace how ChatComposer supplies and renders ComposerCommandMenu and how a selected command reaches composer state. Identify component ownership, runtime import, callback path, and one relevant test. Distinguish JSX use from function invocation."
+    },
+    {
+      "id": "git-status",
+      "prompt": "Trace GitManager remote status requests into GitVcsDriverCore.statusDetailsRemote. Identify receiver acquisition, interface contract, concrete implementation and one test. Explain where static lexical binding stops."
+    },
+    {
+      "id": "mcp-effect",
+      "prompt": "Trace WorktreeMcpService handling of a worktree operation: public service contract, Effect implementation, underlying git operation and error mapping. Identify one test for that path."
+    },
+    {
+      "id": "provider-lifecycle",
+      "prompt": "Trace provider runtime recovery handling for an interrupted active run. Identify entry point, persisted state inputs, recovery action and one regression test; separate intended behavior from observed runtime."
+    },
+    {
+      "id": "holdout-favicon",
+      "prompt": "Investigate client-runtime projectFaviconCache: identify cache key, invalidation/update behavior, consumer boundary and one regression test. Explain which relationships are direct calls versus callbacks/data references. This is the novel holdout."
+    }
+  ],
+  "rubric": {
+    "max_per_task": 4,
+    "points": "1 each for four requested source-supported facts; require path and line evidence; partial credit 0.5 only when endpoint correct but path incomplete",
+    "false_edge_penalty": "subtract 1 per invented consequential relationship, min score 0; unsupported dynamic edges or absence claims count",
+    "uncertainty": "honest unresolved fact gets 0, no false-edge penalty"
+  },
+  "measurements": [
+    "elapsed wall time per response",
+    "shell calls and source reads from actual transcript",
+    "native query names arguments and returns",
+    "tokens/cost only if exposed",
+    "setup and refresh time separately"
+  ],
+  "validity_gates": [
+    "exact source clean and immutable during arms",
+    "fresh graph from implemented build baseline",
+    "native tools actually present in optional child",
+    "identical provider effort limits",
+    "independent fresh contexts, no previous answers"
+  ],
+  "thresholds": {
+    "KEEP_OPTIONAL": "equal or higher supported score, no consequential false edges; qualitative navigation value without proven broad ROI",
+    "EXPAND": "higher aggregate score or at least 15% lower median paired elapsed with no score loss and no consequential false edges; still provisional n=5",
+    "DISABLE": "lower accuracy, consequential false edges, or persistent setup/runtime cost with no demonstrated benefit; invalid comparison cannot establish speed gain"
+  }
+}

@@ -168,29 +168,34 @@ impl<'a, 'db> GraphQuery<'a, 'db> {
         Ok(None)
     }
 
-    /// Find all reference locations for a symbol — file, line, column, and calling symbol.
-    /// Returns every place the symbol is called/used, for rename/refactor workflows.
+    /// Find indexed CALLS and JSX_USES reference owners. Locations identify
+    /// enclosing declarations, not exact use sites; dynamic coverage is partial.
     pub fn find_all_references(&self, symbol_id: &str) -> Result<Vec<ReferenceRow>> {
-        let q = format!(
-            "MATCH (caller:Symbol)-[:CALLS]->(target:Symbol) \
-             WHERE target.id = '{}' \
-             RETURN caller.id, caller.name, caller.file, caller.start_line, target.id",
-            symbol_id.replace('\'', "\\'")
-        );
-        let result = self
+        let mut kinds = vec!["CALLS"];
+        // Old immutable graphs need no migration or write merely to read them.
+        if self
             .conn
-            .query(&q)
-            .map_err(|e| anyhow::anyhow!("query failed: {e}"))?;
+            .query("CALL show_tables() RETURN name")?
+            .any(|row| row[0].to_string() == "JSX_USES")
+        {
+            kinds.push("JSX_USES");
+        }
         let mut rows = Vec::new();
-        for row in result {
-            if row.len() >= 5 {
-                rows.push(ReferenceRow {
-                    caller_id: row[0].to_string(),
-                    caller_name: row[1].to_string(),
-                    file: row[2].to_string(),
-                    line: row[3].to_string().parse().unwrap_or(0),
-                    target_id: row[4].to_string(),
-                });
+        for kind in kinds {
+            let result = self.conn.query(&format!(
+                "MATCH (caller:Symbol)-[:{kind}]->(target:Symbol) WHERE target.id = '{}' RETURN caller.id, caller.name, caller.file, caller.start_line, target.id",
+                symbol_id.replace('\'', "\\'")))?;
+            for row in result {
+                if row.len() >= 5 {
+                    rows.push(ReferenceRow {
+                        caller_id: row[0].to_string(),
+                        caller_name: row[1].to_string(),
+                        file: row[2].to_string(),
+                        line: row[3].to_string().parse().unwrap_or(0),
+                        target_id: row[4].to_string(),
+                        kind: kind.into(),
+                    });
+                }
             }
         }
         Ok(rows)
@@ -801,6 +806,7 @@ pub struct ReferenceRow {
     pub file: String,
     pub line: u32,
     pub target_id: String,
+    pub kind: String,
 }
 
 #[derive(Debug, Serialize)]

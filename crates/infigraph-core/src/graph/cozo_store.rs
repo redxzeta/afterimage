@@ -316,6 +316,7 @@ impl CozoStore {
                 file: dv_str(&row[2]),
                 line: dv_u32(&row[3]),
                 target_id: dv_str(&row[4]),
+                kind: "CALLS".into(),
             })
             .collect())
     }
@@ -1734,6 +1735,7 @@ const COZO_SCHEMA: &[&str] = &[
     // implementation (only Kuzu/Neo4j are — see backend.rs), so this is
     // schema-shape parity only, not a functional query path.
     ":create injects_dependency {source: String, target: String}",
+    ":create jsx_uses {source: String, target: String}",
     ":create registers_middleware {source: String, target: String}",
     // Parity entry for the Kuzu ExternalRef node table / EXTERNAL_CALL rel
     // table (see schema.rs's ExternalRef comment for what these represent —

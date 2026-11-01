@@ -23,6 +23,10 @@ impl GraphStore {
         conn: &Connection<'_>,
         extraction: &FileExtraction,
     ) -> Result<()> {
+        let inbound_jsx = super::imports::inbound_jsx(
+            conn,
+            &std::collections::HashSet::from([extraction.file.as_str()]),
+        )?;
         let inbound_calls = super::imports::inbound_calls(
             conn,
             &std::collections::HashSet::from([extraction.file.as_str()]),
@@ -46,6 +50,7 @@ impl GraphStore {
         ));
         self.upsert_file_conn_no_delete(conn, extraction)?;
         super::imports::merge_calls(conn, &inbound_calls)?;
+        super::imports::merge_jsx(conn, &inbound_jsx)?;
         super::imports::merge_imports(conn, &inbound)
     }
 

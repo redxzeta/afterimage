@@ -35,6 +35,7 @@ pub const READ_ONLY_TOOLS: &[&str] = &[
     "transitive_impact",
     "get_file_deps",
     "get_stats",
+    "find_all_references",
 ];
 
 pub fn validate(tool: &str, args: &Value, profile: McpProfile) -> Result<()> {
@@ -93,7 +94,7 @@ pub fn validate(tool: &str, args: &Value, profile: McpProfile) -> Result<()> {
     Ok(())
 }
 
-/// The ten curated tools all use read-only graph opens. Symbol context must not
+/// The curated tools all use read-only graph opens. Symbol context must not
 /// open the session store. Search uses the existing in-memory BM25 mechanism,
 /// avoiding embedding/model/HNSW caches, downloads, and opportunistic watchers.
 pub(crate) fn dispatch(tool: &str, args: &Value) -> Result<String> {

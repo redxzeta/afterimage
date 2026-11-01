@@ -1,0 +1,25 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 613.5123370219953,
+  "source_sha": "ac742712e1f02965c5f7eccd1220d6e04730ece5",
+  "rust": "1.98.1",
+  "jobs": 2,
+  "wall_bound_seconds": 1200,
+  "rust_test_executions_passed": 794,
+  "rust_failures": 0,
+  "rust_ignored": 0,
+  "result_groups": 36,
+  "supervisor_scenarios": 10,
+  "command": "python3 scripts/verify.py --base e59380d3c7cff5f6e7a28c85b0164ec6451a5c62",
+  "python_tests_passed": 20,
+  "hosted_checks": "NOT_RUN: repository Actions disabled",
+  "required_branch_checks": [],
+  "neo4j_compile": "UNAVAILABLE: offline cache missing async-trait v0.1.91",
+  "remote_runtime": "NOT_RUN",
+  "initial_full_attempt": {
+    "source_sha": "b6878c2d0bf993cf3596e5c898881f37833fad61",
+    "exit_code": 101,
+    "schema_parity_failures": 2,
+    "remediation": "Added existing Cozo schema-only JSX_USES equivalent; targeted parity10 passed; complete verifier rerun passed."
+  }
+}

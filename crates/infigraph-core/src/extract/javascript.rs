@@ -393,16 +393,22 @@ fn conflicting_effect_binding(
     }
     if matches!(
         node.kind(),
-        "variable_declarator" | "function_declaration" | "generator_function_declaration"
-            | "class_declaration" | "class" | "function_expression" | "generator_function"
-            | "interface_declaration" | "enum_declaration" | "type_alias_declaration"
-    )
-        && node.child_by_field_name("name").is_some_and(|n| {
-            text(n, source) == receiver || binding_pattern_contains(n, receiver, source)
-                || (node != definition
-                    && (text(n, source) == target || binding_pattern_contains(n, target, source)))
-        })
-    {
+        "variable_declarator"
+            | "function_declaration"
+            | "generator_function_declaration"
+            | "class_declaration"
+            | "class"
+            | "function_expression"
+            | "generator_function"
+            | "interface_declaration"
+            | "enum_declaration"
+            | "type_alias_declaration"
+    ) && node.child_by_field_name("name").is_some_and(|n| {
+        text(n, source) == receiver
+            || binding_pattern_contains(n, receiver, source)
+            || (node != definition
+                && (text(n, source) == target || binding_pattern_contains(n, target, source)))
+    }) {
         return true;
     }
     if node
@@ -411,7 +417,8 @@ fn conflicting_effect_binding(
         .is_some_and(|n| binding_pattern_contains(n, receiver, source))
         || (node.kind() == "for_in_statement"
             && node.child_by_field_name("kind").is_some()
-            && node.child_by_field_name("left")
+            && node
+                .child_by_field_name("left")
                 .is_some_and(|n| binding_pattern_contains(n, receiver, source)))
     {
         return true;
@@ -435,14 +442,220 @@ fn binding_pattern_contains(node: Node<'_>, name: &str, source: &[u8]) -> bool {
         "assignment_pattern" | "object_assignment_pattern" => node
             .child_by_field_name("left")
             .is_some_and(|n| binding_pattern_contains(n, name, source)),
-        "pair_pattern" => node.child_by_field_name("value")
+        "pair_pattern" => node
+            .child_by_field_name("value")
             .is_some_and(|n| binding_pattern_contains(n, name, source)),
         "formal_parameters" | "object_pattern" | "array_pattern" | "rest_pattern" => {
             let mut cursor = node.walk();
-            let found = node.named_children(&mut cursor)
+            let found = node
+                .named_children(&mut cursor)
                 .any(|n| binding_pattern_contains(n, name, source));
             found
         }
         _ => false,
     }
+}
+
+// `var` declarations in nested blocks still bind throughout their function.
+// Inspect those blocks while excluding nested functions with separate scopes.
+fn hoisted_jsx_binding(node: Node<'_>, name: &str, source: &[u8]) -> bool {
+    if node.kind() == "variable_declaration" {
+        let mut cursor = node.walk();
+        if node.named_children(&mut cursor).any(|child| {
+            child
+                .child_by_field_name("name")
+                .is_some_and(|pattern| binding_pattern_contains(pattern, name, source))
+        }) {
+            return true;
+        }
+    }
+    let mut cursor = node.walk();
+    let found = node.named_children(&mut cursor).any(|child| {
+        !matches!(
+            child.kind(),
+            "arrow_function"
+                | "function_declaration"
+                | "generator_function_declaration"
+                | "function_expression"
+                | "generator_function"
+                | "method_definition"
+                | "class"
+                | "class_declaration"
+        ) && hoisted_jsx_binding(child, name, source)
+    });
+    found
+}
+
+/// JSX denotes a component value reference, never a lexical invocation.
+/// Only identifier tags with a runtime lexical binding are eligible. Namespace,
+/// member, intrinsic and unknown tags deliberately remain unresolved.
+pub(super) fn jsx_relations(
+    root: Node<'_>,
+    source: &[u8],
+    file: &str,
+    symbols: &[crate::model::Symbol],
+) -> Vec<crate::model::Relation> {
+    use crate::model::{Relation, RelationKind, Span, SymbolKind};
+    fn visit<'a>(node: Node<'a>, nodes: &mut Vec<Node<'a>>) {
+        if matches!(
+            node.kind(),
+            "jsx_opening_element" | "jsx_self_closing_element"
+        ) {
+            nodes.push(node);
+        }
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            visit(child, nodes);
+        }
+    }
+    let mut nodes = Vec::new();
+    visit(root, &mut nodes);
+    let mut imports = HashMap::new();
+    let mut cursor = root.walk();
+    for statement in root
+        .named_children(&mut cursor)
+        .filter(|n| n.kind() == "import_statement")
+    {
+        if !type_only_import(statement) {
+            if let Some(module) = statement.child_by_field_name("source") {
+                collect_bindings(statement, text(module, source), source, &mut imports);
+            }
+        }
+    }
+    let mut relations = Vec::new();
+    for node in nodes {
+        let Some(tag) = node
+            .child_by_field_name("name")
+            .filter(|n| n.kind() == "identifier")
+        else {
+            continue;
+        };
+        let name = text(tag, source);
+        if !name.chars().next().is_some_and(char::is_uppercase) {
+            continue;
+        }
+        let mut scope = node.parent();
+        let mut shadowed = false;
+        while let Some(parent) = scope.filter(|n| *n != root) {
+            if parent
+                .child_by_field_name("parameters")
+                .or_else(|| parent.child_by_field_name("parameter"))
+                .is_some_and(|n| pattern_contains(n, name, source))
+                || (matches!(
+                    parent.kind(),
+                    "statement_block"
+                        | "class"
+                        | "arrow_function"
+                        | "function_declaration"
+                        | "generator_function_declaration"
+                        | "function_expression"
+                        | "generator_function"
+                        | "method_definition"
+                        | "catch_clause"
+                        | "for_statement"
+                        | "for_in_statement"
+                ) && has_binding(parent, name, source))
+                || (matches!(
+                    parent.kind(),
+                    "arrow_function"
+                        | "function_declaration"
+                        | "generator_function_declaration"
+                        | "function_expression"
+                        | "generator_function"
+                        | "method_definition"
+                ) && hoisted_jsx_binding(parent, name, source))
+            {
+                shadowed = true;
+                break;
+            }
+            scope = parent.parent();
+        }
+        if shadowed || (imports.contains_key(name) && has_binding(root, name, source)) {
+            continue;
+        }
+        let target = if let Some((module, exported)) = imports.get(name) {
+            if exported == "*" || exported == "default" {
+                continue;
+            }
+            format!("{file}::{module}::{exported}")
+        } else {
+            // Only direct module declarations can be used without a lexical
+            // binding graph. Nested locals, aliases and duplicate IDs abstain.
+            let mut cursor = root.walk();
+            let declared = root.named_children(&mut cursor).any(|statement| {
+                let declaration = if statement.kind() == "export_statement" {
+                    statement
+                        .child_by_field_name("declaration")
+                        .unwrap_or(statement)
+                } else {
+                    statement
+                };
+                if declaration.kind() == "function_declaration" {
+                    return declaration
+                        .child_by_field_name("name")
+                        .is_some_and(|n| text(n, source) == name);
+                }
+                if !matches!(
+                    declaration.kind(),
+                    "lexical_declaration" | "variable_declaration"
+                ) {
+                    return false;
+                }
+                let mut cursor = declaration.walk();
+                let declared = declaration.named_children(&mut cursor).any(|n| {
+                    n.kind() == "variable_declarator"
+                        && n.child_by_field_name("name")
+                            .is_some_and(|n| text(n, source) == name)
+                });
+                declared
+            });
+            if !declared {
+                continue;
+            }
+            format!("{file}::{name}")
+        };
+        let start = (
+            node.start_position().row as u32 + 1,
+            node.start_position().column as u32,
+        );
+        let end = (
+            node.end_position().row as u32 + 1,
+            node.end_position().column as u32,
+        );
+        let Some(owner) = symbols
+            .iter()
+            .filter(|s| {
+                matches!(
+                    s.kind,
+                    SymbolKind::Function
+                        | SymbolKind::Method
+                        | SymbolKind::Test
+                        | SymbolKind::Variable
+                ) && (s.span.start_line, s.span.start_col) <= start
+                    && (s.span.end_line, s.span.end_col) >= end
+            })
+            .max_by_key(|s| {
+                (
+                    (s.span.start_line, s.span.start_col),
+                    std::cmp::Reverse((s.span.end_line, s.span.end_col)),
+                )
+            })
+        else {
+            continue;
+        };
+        relations.push(Relation {
+            source_id: owner.id.clone(),
+            target_id: target,
+            kind: RelationKind::Custom("JSX_USES".into()),
+            span: Some(Span {
+                file: file.into(),
+                start_line: start.0,
+                start_col: start.1,
+                end_line: end.0,
+                end_col: end.1,
+            }),
+            receiver: None,
+        });
+    }
+    relations
 }

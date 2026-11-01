@@ -13,6 +13,7 @@ mod install;
 mod pipeline_commands;
 mod scip_download;
 mod search_commands;
+mod snapshot;
 mod viz_commands;
 
 use std::path::{Path, PathBuf};
@@ -66,6 +67,19 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// Verify selected snapshot against all supported source content (read-only)
+    Freshness,
+    /// Build/select an immutable AST-only snapshot for read-only MCP (legacy CLI unchanged)
+    Refresh {
+        /// Maximum build duration in seconds (0..=3600; zero refuses any build)
+        #[arg(long, default_value = "600", value_parser = clap::value_parser!(u64).range(0..=3600))]
+        max_seconds: u64,
+        /// Select a previous ready generation instead of building (explicit rollback)
+        #[arg(long)]
+        rollback: Option<String>,
+    },
+    #[command(hide = true)]
+    SnapshotBuild { generation: String },
     /// Initialize infigraph in the current project
     Init {
         /// Associate with a repo group (writes multi-repo instructions for agents)
@@ -344,7 +358,7 @@ enum Commands {
         ecosystem: Option<String>,
     },
 
-    /// Find every reference location for a symbol (for safe rename/refactor)
+    /// Find indexed CALLS/JSX_USES references (owner locations; partial coverage)
     #[command(alias = "refs")]
     FindRefs {
         /// Symbol ID (e.g. "auth.py::authenticate")
@@ -815,6 +829,22 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
+    // These explicit operations never check for updates or start a watcher.
+    if matches!(
+        cli.command,
+        Commands::Freshness | Commands::Refresh { .. } | Commands::SnapshotBuild { .. }
+    ) {
+        let _ = rayon::ThreadPoolBuilder::new()
+            .num_threads(2)
+            .stack_size(32 * 1024 * 1024)
+            .build_global();
+        return std::thread::Builder::new()
+            .stack_size(32 * 1024 * 1024)
+            .spawn(move || run(cli.command, &root))?
+            .join()
+            .map_err(|_| anyhow::anyhow!("snapshot operation panicked"))?;
+    }
+
     // ANTLR parsers recurse deeply; Rayon's default 2MB stack overflows.
     // Windows default main-thread stack is 1MB — also too small.
     let _ = rayon::ThreadPoolBuilder::new()
@@ -870,6 +900,12 @@ fn main() -> Result<()> {
 
 fn run(command: Commands, root: &Path) -> Result<()> {
     match command {
+        Commands::Freshness => snapshot::freshness(root),
+        Commands::Refresh {
+            max_seconds,
+            rollback,
+        } => snapshot::refresh(root, max_seconds, rollback.as_deref()),
+        Commands::SnapshotBuild { generation } => snapshot::build(root, &generation),
         Commands::Doctor { json } => doctor::run(root, json).map(|_| ()),
         Commands::Init { group, quick, yes } => cmd_init(root, group.as_deref(), quick, yes),
         Commands::Index {
