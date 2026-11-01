@@ -141,11 +141,16 @@ pub struct GraphStore {
 impl GraphStore {
     /// Open or create a Kuzu database at the given path.
     pub fn open(path: &Path) -> Result<Self> {
+        Self::open_with_config(path, SystemConfig::default())
+    }
+
+    /// Explicit resource limits for a newly built isolated snapshot.
+    pub fn open_with_config(path: &Path, config: SystemConfig) -> Result<Self> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
         let lock_path = path.with_extension("lock");
-        let db = Database::new(path, SystemConfig::default())
+        let db = Database::new(path, config)
             .map_err(|e| anyhow::anyhow!("failed to open kuzu db: {e}"))?;
         let store = Self { db, lock_path };
         store.init_schema()?;

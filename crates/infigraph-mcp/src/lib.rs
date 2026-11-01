@@ -721,6 +721,8 @@ pub fn handle_tools_list_with_profile(id: &Value, profile: profile::McpProfile) 
                 "get_code_snippet" => Some("Optionally retrieve a source snippet for a symbol. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
                 "symbol_context" => Some("Optionally inspect indexed context for a symbol, including callers and callees. Obtain the exact symbol_id from search_symbols or get_symbols_in_file."),
                 "get_file_deps" => Some("Optionally inspect indexed file import dependencies and dependents."),
+                "get_stats" => Some("Graph statistics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. Explicit refresh outside MCP selects immutable snapshots."),
+                "diagnose" => Some("Read-only diagnostics plus full selected-source content freshness verification for the specified checkout; may read every supported source file. No repair or refresh."),
                 _ => None,
             };
             if let Some(description) = description {

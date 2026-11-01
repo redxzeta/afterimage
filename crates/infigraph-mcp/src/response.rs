@@ -18,6 +18,10 @@ pub(crate) fn read_only_call(id: &Value, tool: &str, args: &Value) -> Value {
             .ok_or_else(|| anyhow::anyhow!("INVALID_PATH: explicit path required"))?;
         let root = helpers::resolve_project_path(raw)?;
         scoped["path"] = json!(root);
+        // Pin the immutable generation once for result and evidence together.
+        scoped["_snapshot_storage"] = json!(infigraph_core::snapshot::selected(
+            std::path::Path::new(&root)
+        )?);
         let content = profile::dispatch(tool, &scoped)?;
         Ok(with_evidence(id, tool, &scoped, content, true))
     }));
@@ -59,7 +63,7 @@ fn bounded(text: String) -> (String, bool) {
     (text[..end].to_owned(), truncated)
 }
 
-fn evidence(args: &Value) -> Result<(Value, String)> {
+fn evidence(args: &Value, scan_source: bool) -> Result<(Value, String)> {
     let raw = args
         .get("path")
         .and_then(Value::as_str)
@@ -74,7 +78,7 @@ fn evidence(args: &Value) -> Result<(Value, String)> {
         .ok_or_else(|| anyhow::anyhow!("graph unavailable"))?;
     // Fingerprint only the stored module hashes, never the source tree. Receipts
     // are observations of analysis stages, not proof of working-tree freshness.
-    let report = infigraph_core::index_status::load(root_path)
+    let report = infigraph_core::index_status::load(prism.storage_root())
         .ok()
         .filter(|r| {
             infigraph_core::index_status::file_fingerprint(backend)
@@ -107,16 +111,23 @@ fn evidence(args: &Value) -> Result<(Value, String)> {
         .ancestors()
         .find(|p| p.join(".git").exists())
         .map(|p| p.to_string_lossy().into_owned());
-    let warnings = vec![notice.trim().to_owned(), "Freshness unknown; HEAD equality and watcher liveness do not establish current source coverage.".into()];
+    let freshness = infigraph_core::snapshot::verify(&prism, scan_source);
+    // Preserve the existing schema-v1 lowercase field; detailed state/CLI use
+    // the explicit FRESH / STALE / UNKNOWN vocabulary.
+    let state = serde_json::to_value(&freshness.state)?
+        .as_str()
+        .unwrap_or("UNKNOWN")
+        .to_ascii_lowercase();
+    let warnings = vec![notice.trim().to_owned(), freshness.reason.clone()];
     let meta = json!({
         "schema_version":1,
         "project":{"root":root,"worktree_root":worktree},
         "indexed_revision":null, "generation":generation,
-        "coverage":coverage, "freshness":"unknown", "warnings":warnings,
+        "coverage":coverage, "freshness":state, "freshness_evidence":freshness, "graph_root":prism.storage_root(), "warnings":warnings,
         "sources":sources, "error_code":null,
         "evidence_observation":"after_tool_read; not an atomic source snapshot"
     });
-    let text = format!("\n\nProject: {root}\nFreshness: unknown. {notice}Empty graph results do not prove absence; verify current source before acting.");
+    let text = format!("\n\nProject: {root}\nFreshness: {} ({}). {notice}Empty graph results do not prove absence; verify current source before acting.", state, freshness.reason);
     Ok((meta, text))
 }
 
@@ -135,7 +146,7 @@ pub(crate) fn with_evidence(
     };
     let mut meta = json!({"schema_version":1});
     if profile::READ_ONLY_TOOLS.contains(&tool) && tool != "diagnose" {
-        match evidence(args) {
+        match evidence(args, tool == "get_stats") {
             Ok((observed, fallback)) => {
                 meta = observed;
                 text.push_str(&fallback);
@@ -153,14 +164,16 @@ pub(crate) fn with_evidence(
     // Keep diagnostics parseable JSON. Read-only diagnostics add evidence inside
     // that JSON too: essential partial/unknown warnings cannot live only in _meta.
     if read_only && tool == "diagnose" {
-        meta = evidence(args).map(|(meta, _)| meta).unwrap_or_else(|_| {
-            json!({
-                "schema_version":1,"project":{"root":args["path"]},
-                "freshness":"unknown","coverage":"unknown",
-                "warnings":["Analysis coverage unknown; no valid local graph receipt."],
-                "error_code":"EVIDENCE_UNAVAILABLE"
-            })
-        });
+        meta = evidence(args, true)
+            .map(|(meta, _)| meta)
+            .unwrap_or_else(|_| {
+                json!({
+                    "schema_version":1,"project":{"root":args["path"]},
+                    "freshness":"unknown","coverage":"unknown",
+                    "warnings":["Analysis coverage unknown; no valid local graph receipt."],
+                    "error_code":"EVIDENCE_UNAVAILABLE"
+                })
+            });
         if let Ok(mut report) = serde_json::from_str::<Value>(&text) {
             report["analysis_evidence"] = meta.clone();
             text = serde_json::to_string_pretty(&report).unwrap_or(text);

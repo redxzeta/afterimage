@@ -19,7 +19,13 @@ pub fn tool_diagnose(args: &Value) -> Result<String> {
         .and_then(Value::as_str)
         .context("missing 'path'")?;
     let root = Path::new(path);
-    let mut report = diagnose(root);
+    let mut report = if args.get("_snapshot_storage").is_some() {
+        let root = root.canonicalize()?;
+        let storage = super::helpers::selected_storage(&root, args)?;
+        infigraph_core::diagnostics::diagnose_snapshot(&root, &storage)
+    } else {
+        diagnose(root)
+    };
     // Consume the owning watcher registry; no second watcher/process manager.
     if let Ok(root) = root.canonicalize() {
         let root = root.to_string_lossy().replace('\\', "/");

@@ -427,3 +427,84 @@ fn source_and_index_symlink_escapes_are_rejected() {
         b"other-index"
     );
 }
+
+#[test]
+fn immutable_snapshot_only_freshness_and_mutation_denial() {
+    use infigraph_core::snapshot;
+    use std::sync::Arc;
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    std::fs::write(root.join("app.ts"), "export function current() {}\n").unwrap();
+    let storage = root.join(".infigraph/snapshots/fixture");
+    std::fs::create_dir_all(&storage).unwrap();
+    let mut project =
+        Infigraph::open_snapshot_shared(root, &storage, Arc::new(bundled_registry().unwrap()))
+            .unwrap();
+    let before = project.source_fingerprints().unwrap();
+    project.init_new_snapshot().unwrap();
+    project.index().unwrap();
+    snapshot::finish(&project, before).unwrap();
+    drop(project);
+    snapshot::promote(root, "fixture").unwrap();
+    assert!(!root.join(".infigraph/graph").exists());
+    let files_before = bytes(root);
+    for tool in ["get_stats", "diagnose"] {
+        let response = call(tool, json!({"path":root}));
+        assert_ne!(response["result"]["isError"], true, "{response}");
+        assert_eq!(
+            response["result"]["_meta"]["afterimage"]["freshness"], "fresh",
+            "{response}"
+        );
+        assert_eq!(
+            response["result"]["_meta"]["afterimage"]["project"]["root"],
+            root.to_str().unwrap()
+        );
+    }
+    assert_eq!(bytes(root), files_before);
+    std::fs::write(root.join("app.ts"), "export function changed() {}\n").unwrap();
+    let response = call("get_stats", json!({"path":root}));
+    assert_eq!(
+        response["result"]["_meta"]["afterimage"]["freshness"],
+        "stale"
+    );
+    let before_denial = bytes(root);
+    assert!(text(&call("index_project", json!({"path":root}))).contains("READ_ONLY_TOOL_DENIED"));
+    assert_eq!(bytes(root), before_denial);
+    let other = tempfile::tempdir().unwrap();
+    let response = call(
+        "get_stats",
+        json!({"path":other.path(), "_snapshot_storage":storage}),
+    );
+    assert_eq!(response["result"]["isError"], true);
+    assert!(!other.path().join(".infigraph").exists());
+}
+
+#[test]
+fn non_git_export_never_borrows_outer_snapshot() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    std::fs::create_dir(root.join(".infigraph")).unwrap();
+    std::fs::write(root.join(".infigraph/graph"), b"not a real database").unwrap();
+    let exported = root.join("export");
+    std::fs::create_dir(&exported).unwrap();
+    assert_eq!(
+        resolve_project_path(exported.to_str().unwrap()).unwrap(),
+        exported.to_str().unwrap()
+    );
+    let response = call("get_stats", json!({"path":exported}));
+    assert!(text(&response).contains("NOT_INDEXED"));
+}
+
+#[test]
+fn missing_graph_diagnose_remains_structured_and_read_only() {
+    let directory = tempfile::tempdir().unwrap();
+    let response = call("diagnose", json!({"path":directory.path()}));
+    assert_ne!(response["result"]["isError"], true, "{response}");
+    let report: Value = serde_json::from_str(text(&response)).unwrap();
+    assert!(report["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|c| c["code"] == "PROJECT_NOT_INDEXED"));
+    assert!(!directory.path().join(".infigraph").exists());
+}

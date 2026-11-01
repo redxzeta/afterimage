@@ -33,6 +33,7 @@ pub mod scip;
 pub mod search;
 pub mod security;
 pub mod sequence;
+pub mod snapshot;
 pub mod structured;
 pub mod taint;
 pub mod viz;
@@ -97,6 +98,7 @@ fn open_kuzu_with_retry<T>(
 pub struct Infigraph {
     root: PathBuf,
     db_path: PathBuf,
+    storage_root: PathBuf,
     registry: std::sync::Arc<LanguageRegistry>,
     backend_kind: BackendKind,
     /// When set, all file paths and symbol IDs are prefixed with `{namespace}/`.
@@ -133,12 +135,60 @@ impl Infigraph {
         let root = root.canonicalize().context("invalid project root")?;
         let db_path = root.join(".infigraph").join("graph");
         Ok(Self {
+            storage_root: root.clone(),
             root,
             db_path,
             registry,
             backend_kind: BackendKind::Uninit,
             namespace: None,
         })
+    }
+
+    /// Opt-in separate storage for an immutable snapshot. Source paths remain
+    /// relative to `root`; receipts and graph live below `storage_root`.
+    pub fn open_snapshot_shared(
+        root: &Path,
+        storage_root: &Path,
+        registry: std::sync::Arc<LanguageRegistry>,
+    ) -> Result<Self> {
+        let mut project = Self::open_shared(root, registry)?;
+        project.storage_root = storage_root.canonicalize()?;
+        project.db_path = project.storage_root.join(".infigraph/graph");
+        Ok(project)
+    }
+
+    pub fn storage_root(&self) -> &Path {
+        &self.storage_root
+    }
+
+    /// Fingerprint the exact supported file set used by indexing, including
+    /// untracked non-ignored files. Errors refuse a freshness claim.
+    pub fn source_fingerprints(&self) -> Result<std::collections::BTreeMap<String, String>> {
+        let mut hashes = std::collections::BTreeMap::new();
+        for path in self.collect_files()? {
+            let relative = path
+                .strip_prefix(&self.root)?
+                .to_string_lossy()
+                .replace('\\', "/");
+            let bytes = std::fs::read(&path)?;
+            let pack = self
+                .registry
+                .for_file_with_content(&relative, &bytes)
+                .context("unsupported source during fingerprint")?;
+            hashes.insert(relative, pack.content_fingerprint(&bytes));
+        }
+        Ok(hashes)
+    }
+
+    /// Build only into a new snapshot; never repair, wipe, or touch a live graph.
+    pub fn init_new_snapshot(&mut self) -> Result<()> {
+        anyhow::ensure!(!self.db_path.exists(), "snapshot graph already exists");
+        let config = kuzu::SystemConfig::default()
+            .buffer_pool_size(512 * 1024 * 1024)
+            .max_num_threads(2);
+        let store = graph::GraphStore::open_with_config(&self.db_path, config)?;
+        self.backend_kind = BackendKind::Kuzu(graph::KuzuBackend::from_store(store));
+        Ok(())
     }
 
     /// Initialize the graph store (creates DB on first run).
@@ -294,7 +344,10 @@ impl Infigraph {
     /// Execution coverage for the current local graph, without a freshness claim.
     pub fn coverage_notice(&self) -> String {
         let local = matches!(self.backend_kind, BackendKind::Kuzu(_));
-        index_status::coverage_notice(&self.root, if local { self.backend() } else { None })
+        index_status::coverage_notice(
+            &self.storage_root,
+            if local { self.backend() } else { None },
+        )
     }
 
     /// Index all supported files in the project, building the graph.
@@ -307,7 +360,7 @@ impl Infigraph {
     /// Backend-agnostic index path (used for Neo4j and future backends).
     fn index_via_backend(&self, backend: &dyn graph::GraphBackend) -> Result<IndexResult> {
         let status = if matches!(self.backend_kind, BackendKind::Kuzu(_)) {
-            Some(index_status::AstRun::begin(&self.root)?)
+            Some(index_status::AstRun::begin(&self.storage_root)?)
         } else {
             None
         };
@@ -498,7 +551,7 @@ impl Infigraph {
         let extraction = extract::extract_file(&rel, &source, pack)?;
         let backend = self.backend().context("call init() first")?;
         let status = if matches!(self.backend_kind, BackendKind::Kuzu(_)) {
-            Some(index_status::AstRun::begin(&self.root)?)
+            Some(index_status::AstRun::begin(&self.storage_root)?)
         } else {
             None
         };
@@ -567,7 +620,7 @@ impl Infigraph {
 
         let backend = self.backend().context("call init() first")?;
         let status = if matches!(self.backend_kind, BackendKind::Kuzu(_)) {
-            Some(index_status::AstRun::begin(&self.root)?)
+            Some(index_status::AstRun::begin(&self.storage_root)?)
         } else {
             None
         };
@@ -669,10 +722,7 @@ impl Infigraph {
             .build();
 
         for result in walker {
-            let entry = match result {
-                Ok(e) => e,
-                Err(_) => continue,
-            };
+            let entry = result?;
             if entry.file_type().is_some_and(|ft| ft.is_file()) {
                 let path = entry.path();
                 if self.registry.for_file(&path.to_string_lossy()).is_some() {

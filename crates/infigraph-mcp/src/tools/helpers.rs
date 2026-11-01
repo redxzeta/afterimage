@@ -20,33 +20,40 @@ pub fn resolve_project_path(path: &str) -> Result<String> {
         .canonicalize()
         .with_context(|| format!("INVALID_PATH: project path does not exist: {path}"))?;
     anyhow::ensure!(start.is_dir(), "INVALID_PATH: expected a project directory");
-    for current in start.ancestors() {
-        let index = current.join(".infigraph");
-        if index.join("graph").exists() && !index.join("registry.json").exists() {
-            validate_local_index(current)?;
-            return Ok(current.to_string_lossy().into_owned());
-        }
-        if current.join(".git").exists() {
-            return Ok(current.to_string_lossy().into_owned());
-        }
+    // Git subdirectories may resolve to their explicit checkout boundary.
+    // Exported non-Git directories are exact roots; never borrow an outer graph.
+    let root = start
+        .ancestors()
+        .find(|p| p.join(".git").exists())
+        .unwrap_or(&start);
+    if root.join(".infigraph/graph").exists()
+        || root.join(".infigraph/current-snapshot.json").exists()
+    {
+        validate_local_index(root)?;
     }
-    Ok(start.to_string_lossy().into_owned())
+    Ok(root.to_string_lossy().into_owned())
 }
 
 /// A symlinked index can belong to another checkout, even inside the same repo.
 fn validate_local_index(root: &std::path::Path) -> Result<()> {
-    for path in [root.join(".infigraph"), root.join(".infigraph/graph")] {
-        anyhow::ensure!(
-            path.canonicalize()? == path,
-            "PATH_ESCAPE: index must belong to the requested checkout"
-        );
-    }
+    let index = root.join(".infigraph");
+    anyhow::ensure!(
+        index.canonicalize()? == index,
+        "PATH_ESCAPE: index must belong to the requested checkout"
+    );
+    let storage = infigraph_core::snapshot::selected(root)?;
+    let graph = storage.join(".infigraph/graph");
+    anyhow::ensure!(
+        graph.canonicalize()? == graph,
+        "PATH_ESCAPE: graph must belong to selected snapshot"
+    );
     Ok(())
 }
 
 pub fn require_local_index(root: &std::path::Path) -> Result<()> {
-    anyhow::ensure!(root.join(".infigraph/graph").exists(),
-        "NOT_INDEXED: {} has no local graph. Explicitly index this checkout outside read-only mode; no parent or sibling graph was used.", root.display());
+    let storage = infigraph_core::snapshot::selected(root)?;
+    anyhow::ensure!(storage.join(".infigraph/graph").exists(),
+        "NOT_INDEXED: {} has no selected local graph. Explicitly index or refresh this checkout outside read-only mode; no parent or sibling graph was used.", root.display());
     validate_local_index(root)
 }
 
@@ -98,14 +105,53 @@ pub fn open_prism_read_only(args: &Value) -> Result<Infigraph> {
         .and_then(|p| p.as_str())
         .context("missing 'path' argument")?;
     let path = resolve_project_path(raw_path)?;
-    if std::env::var("INFIGRAPH_BACKEND").map_or(true, |v| v == "kuzu") {
+    let local = std::env::var("INFIGRAPH_BACKEND").map_or(true, |v| v == "kuzu");
+    if local {
         require_local_index(std::path::Path::new(&path))?;
     }
     let registry = shared_read_registry()?;
-    let mut prism = Infigraph::open_shared(&PathBuf::from(&path), registry)?;
+    let root = PathBuf::from(&path);
+    let mut prism = if local {
+        let storage = selected_storage(&root, args)?;
+        let graph = storage.join(".infigraph/graph");
+        anyhow::ensure!(
+            graph.canonicalize()? == graph,
+            "PATH_ESCAPE: selected graph"
+        );
+        Infigraph::open_snapshot_shared(&root, &storage, registry)?
+    } else {
+        Infigraph::open_shared(&root, registry)?
+    };
     prism.init_read_only()?;
     apply_repo_filter(&mut prism, &path);
     Ok(prism)
+}
+
+/// Validate pinned generation identity without requiring a readable graph.
+/// Diagnostics must still describe missing or damaged graphs.
+pub fn selected_storage(root: &std::path::Path, args: &Value) -> Result<PathBuf> {
+    let storage = if let Some(storage) = args.get("_snapshot_storage").and_then(Value::as_str) {
+        let storage = PathBuf::from(storage);
+        anyhow::ensure!(
+            storage.canonicalize()? == storage,
+            "PATH_ESCAPE: snapshot storage"
+        );
+        anyhow::ensure!(
+            storage == root
+                || storage.parent() == Some(root.join(".infigraph/snapshots").as_path()),
+            "PATH_ESCAPE: snapshot storage outside project"
+        );
+        if storage != root {
+            anyhow::ensure!(
+                infigraph_core::snapshot::load_manifest(&storage)?.source_root == root,
+                "WRONG_CHECKOUT"
+            );
+        }
+        storage
+    } else {
+        infigraph_core::snapshot::selected(root)?
+    };
+    Ok(storage)
 }
 
 /// In Neo4j (remote) mode, scope read queries to the repo matching this path.
