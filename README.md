@@ -205,6 +205,11 @@ Doctor and MCP `diagnose` inspect local state without repair or network access.
 For `INDEX_STALE`, run `infigraph index`, then rerun doctor. See
 [checks, exit codes, and safety limits](docs/DOCTOR.md).
 
+For explicit immutable snapshots consumed by read-only MCP, see
+[freshness and refresh](docs/M6-FRESHNESS-REFRESH.md). The
+[M6 assessment](docs/M6-REPORT.md) records validation, JSX reference coverage,
+and the native-agent benchmark validity limits.
+
 ## Offline-First Design
 
 Infigraph is **built for offline operation** — everything runs locally, no cloud APIs or network access needed. The ML embedding model (`potion-base-8M`, 29MB) is bundled in this repository for immediate use without additional downloads.
